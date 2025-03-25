@@ -116,7 +116,7 @@ const PORT = process.env.PORT || 5000;
 
 // Firebase Admin Setup
 const serviceAccount = JSON.parse(
-  fs.readFileSync("../serviceAccountKey.json", "utf-8")
+  fs.readFileSync("../../serviceAccountKey.json", "utf-8")
 );
 initializeApp({
   credential: cert(serviceAccount),
@@ -127,7 +127,7 @@ const bucket = getStorage().bucket();
 const db: Firestore = getFirestore();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
 
 const storage = multer.memoryStorage();
@@ -185,6 +185,7 @@ app.post(
       res.status(400).json({ error: "No file uploaded" });
       return;
     }
+    console.log(req.statusCode);
 
     const file = req.file;
     const fileName = `${Date.now()}-${file.originalname}`;
