@@ -6,7 +6,7 @@ const API_URL = "http://localhost:5000";
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<any[]>([]); // updated type for files
 
   useEffect(() => {
     fetchFiles();
@@ -15,7 +15,7 @@ function App() {
   const fetchFiles = async () => {
     try {
       const res = await axios.get(`${API_URL}/files`);
-      setFiles(res.data);
+      setFiles(res.data); // Assuming the response contains the necessary file data
     } catch (err) {
       console.error("Error fetching files:", err);
     }
@@ -26,6 +26,7 @@ function App() {
       setFile(e.target.files[0]);
     }
   };
+
   const uploadFile = async () => {
     if (!file) return alert("Please select a file");
 
@@ -37,10 +38,46 @@ function App() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("File uploaded successfully!");
-      fetchFiles();
+      fetchFiles(); // Re-fetch files to display the new one
     } catch (err) {
       console.error("Upload error:", err);
       alert("Upload failed");
+    }
+  };
+
+  const getFileViewer = (fileUrl: string, fileName: string) => {
+    const fileExtension = fileName.split(".").pop()?.toLowerCase();
+
+    switch (fileExtension) {
+      case "pdf":
+        return (
+          <embed
+            src={fileUrl}
+            type="application/pdf"
+            width="600"
+            height="400"
+          />
+        );
+      case "jpg":
+      case "jpeg":
+      case "png":
+      case "gif":
+        return <img src={fileUrl} alt={fileName} width="600" />;
+      case "txt":
+        return (
+          <iframe
+            src={fileUrl}
+            width="600"
+            height="400"
+            title="Text File Viewer"
+          />
+        );
+      default:
+        return (
+          <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+            Download {fileName}
+          </a>
+        );
     }
   };
 
@@ -54,9 +91,17 @@ function App() {
       <ul>
         {files.map((f: any) => (
           <li key={f.id}>
-            <a href={f?.url} target="_blank" rel="noopener noreferrer">
-              {f.name}
-            </a>
+            <p>{f.name}</p>
+            {getFileViewer(f.url, f.name)}{" "}
+            {/* Render appropriate file viewer */}
+            {f.qrPDFUrl && (
+              <div>
+                <p>QR Code PDF:</p>
+                <a href={f.qrPDFUrl} target="_blank" rel="noopener noreferrer">
+                  View QR Code PDF
+                </a>
+              </div>
+            )}
           </li>
         ))}
       </ul>
