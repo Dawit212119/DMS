@@ -18,7 +18,7 @@ function App() {
   const [file, setFile] = useState<File | null>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
   // const [isUploading, setIsUploading] = useState(false);
-  const { uploadFiles, isUploading, progress } = useFileUploader();
+  const { uploadFiles, isUploading, progress, error } = useFileUploader();
   const {
     uploadFiles: getFiles,
     isUploading: uploading,
@@ -148,6 +148,9 @@ function App() {
 
       <h3>Uploaded Files</h3>
       <div className="file-list">
+        {error && (
+          <p className="text-red text-center">Error occur while fetching </p>
+        )}
         {files.length === 0 ? (
           <p>No files uploaded yet</p>
         ) : (
