@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Image from "next/image";
+import useFileUploader from "../action/useFileuploader";
+import useGetFiles from "../action/useGetFiles";
 
 const API_URL = "http://localhost:5000";
 
@@ -15,7 +17,13 @@ interface FileItem {
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [files, setFiles] = useState<FileItem[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  // const [isUploading, setIsUploading] = useState(false);
+  const { uploadFiles, isUploading, progress } = useFileUploader();
+  const {
+    uploadFiles: getFiles,
+    isUploading: uploading,
+    progress: Progress,
+  } = useGetFiles();
 
   useEffect(() => {
     fetchFiles();
@@ -23,8 +31,9 @@ function App() {
 
   const fetchFiles = async () => {
     try {
-      const res = await axios.get(`${API_URL}/files`);
-      setFiles(res.data);
+      const res = await getFiles();
+      setFiles(res);
+      // const res = await axios.get(`${API_URL}/files`);
     } catch (err) {
       console.error("Error fetching files:", err);
       alert("Failed to load files");
@@ -42,20 +51,22 @@ function App() {
 
     const formData = new FormData();
     formData.append("file", file);
+    await uploadFiles(formData);
+    await fetchFiles();
 
-    try {
-      setIsUploading(true);
-      await axios.post(`${API_URL}/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      alert("File uploaded successfully!");
-      await fetchFiles();
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert("Upload failed");
-    } finally {
-      setIsUploading(false);
-    }
+    // try {
+    //   setIsUploading(true);
+    //   await axios.post(`${API_URL}/upload`, formData, {
+    //     headers: { "Content-Type": "multipart/form-data" },
+    //   });
+    //   alert("File uploaded successfully!");
+    //   await fetchFiles();
+    // } catch (err) {
+    //   console.error("Upload error:", err);
+    //   alert("Upload failed");
+    // } finally {
+    //   setIsUploading(false);
+    // }
   };
 
   const getFileViewer = (fileUrl: string, fileName: string) => {
@@ -127,11 +138,12 @@ function App() {
         <input type="file" onChange={handleFileChange} className="file-input" />
         <button
           onClick={uploadFile}
-          disabled={!file || isUploading}
+          disabled={isUploading}
           className="upload-btn"
         >
           {isUploading ? "Uploading..." : "Upload"}
         </button>
+        {isUploading && <progress value={progress} max="100" />}
       </div>
 
       <h3>Uploaded Files</h3>

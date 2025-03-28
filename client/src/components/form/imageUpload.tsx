@@ -1,13 +1,15 @@
 "use client";
 import { useState, useRef, useActionState } from "react";
 import Image from "next/image";
+import useImageUploader from "@/app/action/useImageuploader";
 const ImageUploader = () => {
   const [images, setImages] = useState<File[]>([]);
   const [start, setStart] = useState<boolean>(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
+  const { uploadFiles, isUploading, progress, error, result } =
+    useImageUploader();
   // 📂 Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -57,14 +59,13 @@ const ImageUploader = () => {
     alert("upload");
     const formData = new FormData();
     images.forEach((image) => formData.append("images", image));
+    const res = await uploadFiles(formData);
+    // const res = await fetch("http://localhost:5000/upload/image", {
+    //   method: "POST",
+    //   body: formData,
+    // });
 
-    const res = await fetch("http://localhost:5000/upload/image", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    setPdfUrl(data);
+    setPdfUrl(res?.pdfUrl ?? null);
   };
 
   return (

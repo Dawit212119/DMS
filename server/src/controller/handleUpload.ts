@@ -55,9 +55,8 @@ const uploadFiles = async (
       });
       await modifiedFileRef.makePublic();
     } else {
+      const qrCodeBuffer = await generateQRCode(fileURL);
       const qrPDFFileName = `qr-code-${fileName}.pdf`;
-      qrPDFURL = getFirebasePublicUrl(bucket.name, qrPDFFileName);
-      const qrCodeBuffer = await generateQRCode(qrPDFURL);
 
       const qrPDFBuffer = await createQRCodePDF(
         qrCodeBuffer,
@@ -68,6 +67,7 @@ const uploadFiles = async (
         metadata: { contentType: "application/pdf" },
       });
       await qrPDFFileRef.makePublic();
+      qrPDFURL = getFirebasePublicUrl(bucket.name, qrPDFFileName);
     }
 
     // Store metadata

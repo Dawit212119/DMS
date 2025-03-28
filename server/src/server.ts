@@ -111,7 +111,6 @@ import PDFKit, { file } from "pdfkit";
 import { fileURLToPath } from "url";
 import uploadRouter from "./route/upload.js";
 import getRouter from "./route/Filesroute.js";
-import appAdmin from "./utils/adminsetup.js";
 dotenv.config();
 
 const app = express();
