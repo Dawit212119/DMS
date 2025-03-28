@@ -1,8 +1,9 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useActionState } from "react";
 import Image from "next/image";
 const ImageUploader = () => {
   const [images, setImages] = useState<File[]>([]);
+  const [start, setStart] = useState<boolean>(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -16,10 +17,14 @@ const ImageUploader = () => {
 
   // 📸 Capture image from camera
   const captureImage = () => {
+    if (!start) {
+      alert("please start the video");
+      return;
+    }
     if (videoRef.current && canvasRef.current) {
       const context = canvasRef.current.getContext("2d");
       if (context) {
-        context.drawImage(videoRef.current, 0, 0, 300, 300);
+        context.drawImage(videoRef.current, 0, 0, 400, 400);
         canvasRef.current.toBlob((blob) => {
           if (blob) {
             setImages((prev) => [
@@ -36,6 +41,7 @@ const ImageUploader = () => {
 
   // 🎥 Start camera
   const startCamera = async () => {
+    setStart(true);
     if (navigator.mediaDevices.getUserMedia) {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) videoRef.current.srcObject = stream;
@@ -52,13 +58,13 @@ const ImageUploader = () => {
     const formData = new FormData();
     images.forEach((image) => formData.append("images", image));
 
-    const res = await fetch("http://localhost:5000/upload/images", {
+    const res = await fetch("http://localhost:5000/upload/image", {
       method: "POST",
       body: formData,
     });
 
     const data = await res.json();
-    setPdfUrl(data.pdfUrl);
+    setPdfUrl(data);
   };
 
   return (
