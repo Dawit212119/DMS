@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
     "target": "ES6",
-    "module": "Node16", // Must match moduleResolution
-    "moduleResolution": "Node16", // or "NodeNext"
+    "module": "Preserve",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationDir": "./dist/types"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]

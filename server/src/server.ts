@@ -111,6 +111,9 @@ import PDFKit, { file } from "pdfkit";
 import { fileURLToPath } from "url";
 import uploadRouter from "./route/upload.js";
 import getRouter from "./route/Filesroute.js";
+import rootRoute from "./route/root.js";
+import { PrismaClient } from "@prisma/client";
+import { errorMiddleware } from "./exceptions/errorMiddleware";
 dotenv.config();
 
 const app = express();
@@ -142,6 +145,7 @@ app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use("/upload", uploadRouter);
 app.use("/files", getRouter);
+app.use("/api", rootRoute);
 
 // Middleware
 
@@ -357,7 +361,17 @@ app.use("/files", getRouter);
 //     res.status(500).json({ error: "Failed to fetch files" });
 //   }
 // });
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.use(errorMiddleware);
+const isProduction = process.env.NODE_ENV === "production";
+const startServer = async () => {
+  try {
+    const prisma = new PrismaClient();
+    await prisma.$connect();
+    if (!isProduction) {
+      app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    }
+  } catch (error) {
+    console.error("❌ Error starting server:", error);
+  }
+};
+startServer();
