@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -14,8 +15,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import GoogleSignInButton from "../GoogleSignInButton";
 import { useRouter } from "next/navigation";
+import { User, Mail, Lock, Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { cn } from "@/lib/utils";
+import GoogleSignInButton from "./googleSignin";
 
 const FormSchema = z
   .object({
@@ -34,6 +45,9 @@ const FormSchema = z
 
 const SignUpForm = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -45,6 +59,9 @@ const SignUpForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof FormSchema>) => {
+    setIsLoading(true);
+    setError(null);
+
     try {
       const response = await fetch("/api/user", {
         method: "POST",
@@ -57,94 +74,187 @@ const SignUpForm = () => {
           password: values.password,
         }),
       });
+
       if (response.ok) {
         router.push("/sign-in");
+      } else {
+        const data = await response.json();
+        setError(data.message || "An error occurred during sign up");
       }
     } catch (error) {
       console.log(error);
+      setError("An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const isProcessing = form.formState.isSubmitting || isLoading;
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-        <div className="space-y-2">
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input placeholder="johndoe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="mail@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Enter your password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Re-Enter your password</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Re-Enter your password"
-                    type="password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <Button className="w-full mt-6" type="submit">
-          Sign up
-        </Button>
-      </form>
-      <div className="mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400">
-        or
-      </div>
-      <GoogleSignInButton>Sign up with Google</GoogleSignInButton>
-      <p className="text-center text-sm text-gray-600 mt-2">
-        If you don&apos;t have an account, please&nbsp;
-        <Link className="text-blue-500 hover:underline" href="/sign-in">
-          Sign in
-        </Link>
-      </p>
-    </Form>
+    <div className="">
+      <Card className="w-full max-w-lg border-blue-600/20 bg-white shadow-lg px-8">
+        <CardHeader className="space-y-1 text-center pb-2 pt-4">
+          <CardTitle className="text-xl font-bold text-gray-900">
+            Create Account
+          </CardTitle>
+          <CardDescription className="text-gray-600">
+            Enter your information to create an account
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="px-6 py-2">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-gray-800">Username</FormLabel>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                      <FormControl>
+                        <Input
+                          placeholder="johndoe"
+                          className={cn(
+                            "border-gray-300 pl-10 focus-visible:border-blue-600 focus-visible:ring-blue-600",
+                            form.formState.errors.username
+                              ? "border-red-500 focus-visible:ring-red-500"
+                              : ""
+                          )}
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="text-sm font-medium text-red-500" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-gray-800">Email</FormLabel>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                      <FormControl>
+                        <Input
+                          placeholder="name@example.com"
+                          className={cn(
+                            "border-gray-300 pl-10 focus-visible:border-blue-600 focus-visible:ring-blue-600",
+                            form.formState.errors.email
+                              ? "border-red-500 focus-visible:ring-red-500"
+                              : ""
+                          )}
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="text-sm font-medium text-red-500" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-gray-800">Password</FormLabel>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          className={cn(
+                            "border-gray-300 pl-10 focus-visible:border-blue-600 focus-visible:ring-blue-600",
+                            form.formState.errors.password
+                              ? "border-red-500 focus-visible:ring-red-500"
+                              : ""
+                          )}
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="text-sm font-medium text-red-500" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-gray-800">
+                      Confirm Password
+                    </FormLabel>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          className={cn(
+                            "border-gray-300 pl-10 focus-visible:border-blue-600 focus-visible:ring-blue-600",
+                            form.formState.errors.confirmPassword
+                              ? "border-red-500 focus-visible:ring-red-500"
+                              : ""
+                          )}
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="text-sm font-medium text-red-500" />
+                  </FormItem>
+                )}
+              />
+
+              {error && (
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Sign up"
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+
+        <CardFooter className="flex flex-col space-y-3 border-t border-gray-200 p-4 pt-3">
+          <GoogleSignInButton className="w-full bg-white border border-gray-300 text-gray-800 hover:bg-gray-50">
+            Sign up with Google
+          </GoogleSignInButton>
+
+          <div className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              href="/sign-in"
+              className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              Sign in
+            </Link>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
   );
 };
 

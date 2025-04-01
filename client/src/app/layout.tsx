@@ -1,5 +1,4 @@
-import Navbar from "@/components/Navbar";
-import "@/styles/globals.css";
+import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
@@ -22,22 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="mb-8">
-          <Navbar />
-        </div>
-        <main className=" flex flex-col justify-center items-center">
-          <Providers>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <MuiProvider>{children}</MuiProvider>
-            </ThemeProvider>
-          </Providers>
-        </main>
-
+        <Providers>
+          <div>{children}</div>
+        </Providers>
         <Toaster richColors />
       </body>
     </html>
