@@ -11,8 +11,7 @@ import {
   Folder,
   LayoutDashboard,
   Image,
-  Settings,
-  User,
+  Mail,
   FileText,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -84,6 +83,11 @@ const routes: Route[] = [
         path: "/project/reports/annually",
       },
     ],
+  },
+  {
+    name: "Letters",
+    path: "/project/letter",
+    icon: Mail,
   },
   {
     name: "Site Images",
