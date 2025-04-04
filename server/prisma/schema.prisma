@@ -8,6 +8,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator zod{
+  provider = "zod-prisma-types"
+  output = "../zod"
+}
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
@@ -26,8 +30,8 @@ model Project{
      projectName String 
      clientName  String
      location String
-     startData  DateTime @default(now())
-     dueData DateTime @default(now())
+     startDate  DateTime @default(now())
+     dueDate DateTime @default(now())
      progress Int
      budget Budget[]
      team Team[]
@@ -113,6 +117,8 @@ model    TheIncomingLetter {
         projectId String  @db.ObjectId
         project Project @relation(fields: [projectId],references: [id])
         createdAt DateTime @default(now())
+            downloadedUrl String
+
         updatedAt DateTime @updatedAt
         @@index([projectId])
 
@@ -130,6 +136,8 @@ model TheOutgoingLetter {
           status OutgoingStatus
           priority  Priority
           createdAt DateTime @default(now())
+              downloadedUrl String
+
           projectId String  @db.ObjectId
           project Project @relation(fields: [projectId],references: [id])
           @@index([projectId])
