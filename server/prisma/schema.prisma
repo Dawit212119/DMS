@@ -117,8 +117,7 @@ model    TheIncomingLetter {
         projectId String  @db.ObjectId
         project Project @relation(fields: [projectId],references: [id])
         createdAt DateTime @default(now())
-            downloadedUrl String
-
+        downloadedUrl String
         updatedAt DateTime @updatedAt
         @@index([projectId])
 
@@ -136,8 +135,7 @@ model TheOutgoingLetter {
           status OutgoingStatus
           priority  Priority
           createdAt DateTime @default(now())
-              downloadedUrl String
-
+          downloadedUrl String
           projectId String  @db.ObjectId
           project Project @relation(fields: [projectId],references: [id])
           @@index([projectId])
