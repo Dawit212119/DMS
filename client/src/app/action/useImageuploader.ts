@@ -16,7 +16,7 @@ const useImageUploader = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:5000/upload/image`,
+        `http://localhost:8000/upload/report`,
         file,
         {
           headers: {

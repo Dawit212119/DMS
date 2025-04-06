@@ -7,7 +7,10 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  res.status(error.statusCode).json({
+  // Use 500 as a fallback if statusCode is not set
+  const statusCode = error.statusCode || 500;
+
+  res.status(statusCode).json({
     message: error.message,
     errorCode: error.errorCode,
     errors: error.error,

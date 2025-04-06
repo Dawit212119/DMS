@@ -36,15 +36,13 @@ model Project{
      budget Budget[]
      team Team[]
      upcomingMilstone UpcomingMilstone?
-     createdAt DateTime @default(now())
-     updatedAt DateTime @updatedAt
+    
      checkList CheckList[]
      documents Documents[]
      theIncomingLetter TheIncomingLetter[]
      theOutgoingLetter TheOutgoingLetter[]
      report Report[]
      constructionSiteImage ConstructionSiteImage[]
-      @@index([id])
 }
 model Budget{
     id         String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -104,6 +102,7 @@ model Documents{
       name String 
       date DateTime @default(now())
       projectId String  @db.ObjectId
+      downloadedUrl String
       project Project @relation(fields: [projectId],references: [id])
       @@index([projectId])
 }    

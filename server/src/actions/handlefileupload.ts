@@ -77,7 +77,9 @@ const uploadFiles = async (file: Express.Multer.File) => {
   }
 };
 
-const uploadImage = async (files: Express.Multer.File[]) => {
+const uploadImage = async (
+  files: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] }
+) => {
   if (files === undefined || !Array.isArray(files) || files.length === 0) {
     return;
   }
