@@ -114,12 +114,13 @@ import getRouter from "./route/Filesroute.js";
 import rootRoute from "./route/root.js";
 import { PrismaClient } from "@prisma/client";
 import { errorMiddleware } from "./exceptions/errorMiddleware";
+import project from "./route/project.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
+const PORT = process.env.PORT || 8000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // // Firebase Admin Setup
 // const serviceAccountPath = path.resolve(
@@ -143,9 +144,13 @@ const PORT = process.env.PORT || 5000;
 // const db = getFirestore();
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("Welcome to the home page!");
+});
 app.use("/upload", uploadRouter);
 app.use("/files", getRouter);
 app.use("/api", rootRoute);
+app.use("/project", project);
 
 // Middleware
 
@@ -363,15 +368,21 @@ app.use("/api", rootRoute);
 // });
 app.use(errorMiddleware);
 const isProduction = process.env.NODE_ENV === "production";
+
 const startServer = async () => {
   try {
     const prisma = new PrismaClient();
     await prisma.$connect();
-    if (!isProduction) {
-      app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-    }
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      if (!isProduction) {
+        console.log("🛠️ Running in development mode");
+      }
+    });
   } catch (error) {
     console.error("❌ Error starting server:", error);
   }
 };
+
 startServer();

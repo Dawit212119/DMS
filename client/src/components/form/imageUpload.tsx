@@ -59,12 +59,17 @@ const ImageUploader = () => {
     alert("upload");
     const formData = new FormData();
     images.forEach((image) => formData.append("images", image));
+    formData.append("status", "approved");
+    formData.append("publisher", "dawit");
+    formData.append("version", "version");
+    formData.append("reportType", "daily");
+
     const res = await uploadFiles(formData);
     // const res = await fetch("http://localhost:5000/upload/image", {
     //   method: "POST",
     //   body: formData,
     // });
-
+    console.log(res);
     setPdfUrl(res?.pdfUrl ?? null);
   };
 

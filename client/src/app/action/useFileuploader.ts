@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { kMaxLength } from "buffer";
 
 const useFileUploader = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -13,21 +14,26 @@ const useFileUploader = () => {
     setError(null);
 
     try {
-      const response = await axios.post(`http://localhost:5000/upload`, file, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setProgress(percentCompleted);
-          }
-        },
-      });
+      const response = await axios.post(
+        `http://localhost:8000/upload/files`,
+        file,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setProgress(percentCompleted);
+            }
+          },
+        }
+      );
 
       const data = response.data;
+      console.log(data);
       setResult(data);
       return data;
     } catch (err: unknown) {

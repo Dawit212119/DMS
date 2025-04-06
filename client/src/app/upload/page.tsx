@@ -15,7 +15,7 @@ interface FileItem {
 }
 
 function App() {
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File[]>([]);
   const [files, setFiles] = useState<FileItem[]>([]);
   // const [isUploading, setIsUploading] = useState(false);
   const { uploadFiles, isUploading, progress, error } = useFileUploader();
@@ -41,8 +41,8 @@ function App() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setFile(e.target.files[0]);
+    if (e.target?.files?.length) {
+      setFile((file) => [...file, ...Array.from(e.target.files!)]);
     }
   };
 
@@ -50,7 +50,7 @@ function App() {
     if (!file) return alert("Please select a file");
 
     const formData = new FormData();
-    formData.append("file", file);
+    file.forEach((file) => formData.append("file", file));
     await uploadFiles(formData);
     await fetchFiles();
 
@@ -69,73 +69,78 @@ function App() {
     // }
   };
 
-  const getFileViewer = (fileUrl: string, fileName: string) => {
-    const fileExtension = fileName.split(".").pop()?.toLowerCase();
+  // const getFileViewer = (fileUrl: string, fileName: string) => {
+  //   const fileExtension = fileName.split(".").pop()?.toLowerCase();
 
-    switch (fileExtension) {
-      case "pdf":
-        return (
-          <div className="pdf-viewer">
-            <iframe
-              src={`https://docs.google.com/viewer?url=${encodeURIComponent(
-                fileUrl
-              )}&embedded=true`}
-              width="100%"
-              height="500px"
-              style={{ border: "none" }}
-              title={`PDF: ${fileName}`}
-            />
-            <div className="pdf-actions">
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pdf-download-btn"
-              >
-                Open Original PDF
-              </a>
-            </div>
-          </div>
-        );
+  //   switch (fileExtension) {
+  //     case "pdf":
+  //       return (
+  //         <div className="pdf-viewer">
+  //           <iframe
+  //             src={`https://docs.google.com/viewer?url=${encodeURIComponent(
+  //               fileUrl
+  //             )}&embedded=true`}
+  //             width="100%"
+  //             height="500px"
+  //             style={{ border: "none" }}
+  //             title={`PDF: ${fileName}`}
+  //           />
+  //           <div className="pdf-actions">
+  //             <a
+  //               href={fileUrl}
+  //               target="_blank"
+  //               rel="noopener noreferrer"
+  //               className="pdf-download-btn"
+  //             >
+  //               Open Original PDF
+  //             </a>
+  //           </div>
+  //         </div>
+  //       );
 
-      case "jpg":
-      case "jpeg":
-      case "png":
-      case "gif":
-        return (
-          <div className="image-viewer">
-            <Image
-              src={fileUrl}
-              alt={fileName}
-              width={600}
-              height={400}
-              style={{ maxWidth: "100%", height: "auto" }}
-            />
-          </div>
-        );
+  //     case "jpg":
+  //     case "jpeg":
+  //     case "png":
+  //     case "gif":
+  //       return (
+  //         <div className="image-viewer">
+  //           <Image
+  //             src={fileUrl}
+  //             alt={fileName}
+  //             width={600}
+  //             height={400}
+  //             style={{ maxWidth: "100%", height: "auto" }}
+  //           />
+  //         </div>
+  //       );
 
-      default:
-        return (
-          <div className="file-download">
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="download-btn"
-            >
-              Download {fileName}
-            </a>
-          </div>
-        );
-    }
-  };
+  //     default:
+  //       return (
+  //         <div className="file-download">
+  //           <a
+  //             href={fileUrl}
+  //             target="_blank"
+  //             rel="noopener noreferrer"
+  //             className="download-btn"
+  //           >
+  //             Download {fileName}
+  //           </a>
+  //         </div>
+  //       );
+  //   }
+  //};
 
   return (
     <div className="file-upload-container">
       <h2>File Upload to Firebase</h2>
 
       <div className="upload-controls">
-        <input type="file" onChange={handleFileChange} className="file-input" />
+        <input
+          type="file"
+          onChange={handleFileChange}
+          multiple
+          className="file-input"
+        />
         <button
           onClick={uploadFile}
           disabled={isUploading}
@@ -158,7 +163,7 @@ function App() {
             <div key={f.id} className="file-item">
               <h4>{f.name}</h4>
 
-              <div className="file-preview">{getFileViewer(f.url, f.name)}</div>
+              {/* <div className="file-preview">{getFileViewer(f.url, f.name)}</div> */}
 
               {f.qrPDFUrl && (
                 <div className="qr-pdf-section">
