@@ -103,6 +103,7 @@ const routes: Route[] = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  console.log("the pathName is here >>>>", pathname);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     "/reports": true, // Default open state for Reports
   });

@@ -16,7 +16,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, Loader2 } from "lucide-react";
+import { User, Mail, Lock, Loader2, ArrowLeftCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -63,7 +63,7 @@ const SignUpForm = () => {
     setError(null);
 
     try {
-      const response = await fetch("/api/user", {
+      const response = await fetch("/http://localhost:8000", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,12 @@ const SignUpForm = () => {
       <Card className="w-full max-w-lg border-blue-600/20 bg-white shadow-lg px-8">
         <CardHeader className="space-y-1 text-center pb-2 pt-4">
           <CardTitle className="text-xl font-bold text-gray-900">
-            Create Account
+            <div className="flex items-center justify-center gap-4">
+              <Link href={"/"}>
+                <ArrowLeftCircle />
+              </Link>
+              Sign in
+            </div>
           </CardTitle>
           <CardDescription className="text-gray-600">
             Enter your information to create an account

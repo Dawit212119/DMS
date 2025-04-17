@@ -9,7 +9,7 @@ type FormData = {
 const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://document-management-system-1-u01g.onrender.com/api/auth",
+    baseUrl: "http://localhost:8000",
   }),
   endpoints: (builder) => ({
     signinUser: builder.mutation<{ token: string; id: string }, FormData>({

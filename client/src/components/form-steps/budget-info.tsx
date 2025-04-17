@@ -3,6 +3,7 @@
 import type { FormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { formatPrice } from "@/lib/utils/formatprice";
 
 interface BudgetInfoProps {
   formData: FormData;
@@ -22,7 +23,7 @@ export default function BudgetInfo({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="totalBudget">Total Budget ($)</Label>
+          <Label htmlFor="totalBudget">Total Budget (ETB)</Label>
           <Input
             id="totalBudget"
             type="number"
@@ -34,7 +35,7 @@ export default function BudgetInfo({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="amountSpent">Amount Spent ($)</Label>
+          <Label htmlFor="amountSpent">Amount Spent (ETB)</Label>
           <Input
             id="amountSpent"
             type="number"
@@ -53,7 +54,9 @@ export default function BudgetInfo({
             <div>
               <p className="text-sm text-muted-foreground">Remaining Budget:</p>
               <p className="font-medium">
-                ${Number(formData.totalBudget) - Number(formData.amountSpent)}
+                {formatPrice(
+                  Number(formData.totalBudget) - Number(formData.amountSpent)
+                )}
               </p>
             </div>
             <div>
