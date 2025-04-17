@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useFileUploader from "@/app/action/useFileuploader";
+import useImageUploader from "@/app/action/useImageuploader";
 
 export default function LettersStep() {
   const { formData, addDocument, removeDocument, getDocumentsByType } =
@@ -36,12 +38,15 @@ export default function LettersStep() {
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [imageFile, setImageFiles] = useState<File[]>([]);
 
   // Incoming letter fields
   const [inSender, setInSender] = useState("");
   const [inSubject, setInSubject] = useState("");
   const [inPriority, setInPriority] = useState("medium");
   const [inStatus, setInStatus] = useState("unread");
+  const { uploadFiles: UploadFile } = useFileUploader();
+  const { uploadFiles, error } = useImageUploader();
 
   // Outgoing letter fields
   const [outRecipient, setOutRecipient] = useState("");
@@ -56,6 +61,7 @@ export default function LettersStep() {
   const [cameraActive, setCameraActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +130,7 @@ export default function LettersStep() {
                 `letter-photo-${Date.now()}.jpg`,
                 { type: "image/jpeg" }
               );
-              setFiles([...files, newFile]);
+              setImageFiles([...imageFile, newFile]);
             }
           },
           "image/jpeg",
@@ -201,6 +207,22 @@ export default function LettersStep() {
 
     try {
       // Simulate API call with a delay
+      // Upload images (if any)
+      if (imageFile && imageFile.length > 0) {
+        const imageFormData = new FormData();
+        imageFile.forEach((img) => imageFormData.append("images", img));
+        const res = await uploadFiles(imageFormData);
+        console.log("Image upload result:", res);
+        setPdfUrl(res.pdfUrl!);
+      }
+
+      // Upload files (if any)
+      if (files && files.length > 0) {
+        const fileFormData = new FormData();
+        files.forEach((file) => fileFormData.append("files", file));
+        const res = await UploadFile(fileFormData);
+        console.log("File upload result:", res);
+      }
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Process each file

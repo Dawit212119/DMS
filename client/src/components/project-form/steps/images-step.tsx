@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ImageIcon, Upload, Trash2, Camera, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import useImageUploader from "@/app/action/useImageuploader";
 
 export default function ImagesStep() {
   const { formData, addDocument, removeDocument, getDocumentsByType } =
@@ -29,6 +30,8 @@ export default function ImagesStep() {
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("foundation");
   const [cameraActive, setCameraActive] = useState(false);
+  const { uploadFiles, error } = useImageUploader();
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -122,61 +125,74 @@ export default function ImagesStep() {
     }
   };
 
-  // Upload images
   const handleUpload = async () => {
-    if (files.length === 0) {
-      alert("Please select at least one image to upload");
+    // Check if at least one file or image is selected
+    if (!files || files.length === 0) {
+      alert("Please select at least one file or capture an image to upload");
+      return;
+    }
+
+    // Check if title is provided
+    if (!title.trim()) {
+      alert("Please enter a document title");
       return;
     }
 
     setIsUploading(true);
-
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = prev + 5;
-        return newProgress >= 90 ? 90 : newProgress;
-      });
-    }, 200);
+    setProgress(0);
 
     try {
-      // Simulate API call with a delay
+      // Upload images (if any)
+
+      // Upload files (if any)
+      if (files && files.length > 0) {
+        const fileFormData = new FormData();
+        files.forEach((file) => fileFormData.append("files", file));
+        const res = await uploadFiles(fileFormData);
+        console.log("File upload result:", res);
+      }
+
+      // Simulate progress (optional, can be replaced with real progress tracking)
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          const newProgress = prev + 5;
+          return newProgress >= 90 ? 90 : newProgress;
+        });
+      }, 200);
+
+      // Simulate processing delay (replace with actual API calls)
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Process each file
-      for (const file of files) {
-        const objectUrl = URL.createObjectURL(file);
-
-        const newDocument: ProjectDocument = {
-          id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          type: "image",
-          name: title || file.name,
-          date: new Date().toISOString(),
-          url: objectUrl,
-          thumbnailUrl: objectUrl,
-          metadata: {
-            location,
-            category,
-            size: file.size,
-            type: file.type,
-          },
-        };
-
-        addDocument(newDocument);
+      // Add documents to state (for UI update)
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          const newDocument: ProjectDocument = {
+            id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            type: "document",
+            name: title || file.name,
+            date: new Date().toISOString(),
+            url: URL.createObjectURL(file),
+            metadata: {
+              category,
+              size: file.size,
+              type: file.type,
+            },
+          };
+          addDocument(newDocument);
+        });
       }
 
       // Complete progress
       clearInterval(progressInterval);
       setProgress(100);
 
-      // Reset form
+      // Reset form after successful upload
       setTimeout(() => {
         resetForm();
       }, 1000);
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Failed to upload images. Please try again.");
-      clearInterval(progressInterval);
+      alert("Failed to upload documents. Please try again.");
       setIsUploading(false);
       setProgress(0);
     }

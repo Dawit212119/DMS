@@ -24,27 +24,33 @@ import {
   Camera,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import useImageUploader from "@/app/action/useImageuploader";
+import useFileUploader from "@/app/action/useFileuploader";
 
 export default function DocumentsStep() {
   const { formData, addDocument, removeDocument, getDocumentsByType } =
     useProjectForm();
   const [files, setFiles] = useState<File[]>([]);
+  const [imageFile, setImageFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [title, setTitle] = useState("");
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
   const [category, setCategory] = useState("general");
 
   const documents = getDocumentsByType("document");
+  const { uploadFiles: UploadFile } = useFileUploader();
 
   // Add these state variables and refs inside the DocumentsStep component
   const [cameraActive, setCameraActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
+  const { uploadFiles, error } = useImageUploader();
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setFiles(Array.from(event.target.files));
+      setFiles([...files, ...Array.from(event.target.files)]);
     }
   };
 
@@ -106,7 +112,7 @@ export default function DocumentsStep() {
               const newFile = new File([blob], `doc-photo-${Date.now()}.jpg`, {
                 type: "image/jpeg",
               });
-              setFiles([...files, newFile]);
+              setImageFiles([...imageFile, newFile]);
             }
           },
           "image/jpeg",
@@ -119,6 +125,7 @@ export default function DocumentsStep() {
   // Reset form after upload
   const resetForm = () => {
     setFiles([]);
+    setImageFiles([]);
     setTitle("");
     setCategory("general");
     setProgress(0);
@@ -132,60 +139,83 @@ export default function DocumentsStep() {
 
   // Upload documents
   const handleUpload = async () => {
-    if (files.length === 0) {
-      alert("Please select at least one file to upload");
+    // Check if at least one file or image is selected
+    if (
+      (!imageFile || imageFile.length === 0) &&
+      (!files || files.length === 0)
+    ) {
+      alert("Please select at least one file or capture an image to upload");
       return;
     }
 
+    // Check if title is provided
     if (!title.trim()) {
       alert("Please enter a document title");
       return;
     }
 
     setIsUploading(true);
-
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = prev + 5;
-        return newProgress >= 90 ? 90 : newProgress;
-      });
-    }, 200);
+    setProgress(0);
 
     try {
-      // Simulate API call with a delay
+      // Upload images (if any)
+      if (imageFile && imageFile.length > 0) {
+        const imageFormData = new FormData();
+        imageFile.forEach((img) => imageFormData.append("images", img));
+        const res = await uploadFiles(imageFormData);
+        console.log("Image upload result:", res);
+        setPdfUrl(res.pdfUrl!);
+      }
+
+      // Upload files (if any)
+      if (files && files.length > 0) {
+        const fileFormData = new FormData();
+        files.forEach((file) => fileFormData.append("files", file));
+        const res = await UploadFile(fileFormData);
+        console.log("File upload result:", res);
+      }
+
+      // Simulate progress (optional, can be replaced with real progress tracking)
+      const progressInterval = setInterval(() => {
+        setProgress((prev) => {
+          const newProgress = prev + 5;
+          return newProgress >= 90 ? 90 : newProgress;
+        });
+      }, 200);
+
+      // Simulate processing delay (replace with actual API calls)
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Process each file
-      for (const file of files) {
-        const newDocument: ProjectDocument = {
-          id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          type: "document",
-          name: title || file.name,
-          date: new Date().toISOString(),
-          url: URL.createObjectURL(file),
-          metadata: {
-            category,
-            size: file.size,
-            type: file.type,
-          },
-        };
-
-        addDocument(newDocument);
+      // Add documents to state (for UI update)
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          const newDocument: ProjectDocument = {
+            id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            type: "document",
+            name: title || file.name,
+            date: new Date().toISOString(),
+            url: URL.createObjectURL(file),
+            metadata: {
+              category,
+              size: file.size,
+              type: file.type,
+            },
+          };
+          addDocument(newDocument);
+        });
       }
 
       // Complete progress
       clearInterval(progressInterval);
       setProgress(100);
 
-      // Reset form
+      // Reset form after successful upload
       setTimeout(() => {
         resetForm();
       }, 1000);
     } catch (error) {
       console.error("Upload error:", error);
       alert("Failed to upload documents. Please try again.");
-      clearInterval(progressInterval);
       setIsUploading(false);
       setProgress(0);
     }
@@ -258,6 +288,7 @@ export default function DocumentsStep() {
                   />
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
+                <Button onClick={startCamera}>start camera</Button>
 
                 <Button type="button" onClick={captureImage} className="w-full">
                   <Camera className="h-4 w-4 mr-2" />
@@ -345,12 +376,10 @@ export default function DocumentsStep() {
             )}
 
             <div className="flex flex-col sm:flex-row gap-2">
-              {files.length > 0 && !isUploading && (
-                <Button type="button" onClick={handleUpload} className="flex-1">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Document
-                </Button>
-              )}
+              <Button type="button" onClick={handleUpload} className="flex-1">
+                <Upload className="h-4 w-4 mr-2 bg-black" />
+                Upload Document
+              </Button>
 
               {documents.length > 0 && !isUploading && (
                 <Button

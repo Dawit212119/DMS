@@ -127,7 +127,7 @@ export async function Projects(req: Request, res: Response) {
       data: {
         projectId: project.id,
         publisher,
-        status: reportstatus,
+        status: reportstatus || "draft", // Provide a default value for status
         version,
         reportType,
         downloadedUrl,
@@ -228,6 +228,295 @@ export async function GetProject(req: Request, res: Response) {
   } catch (error) {
     res.json({
       msg: "server error",
+      status: 500,
+    });
+  }
+}
+const UpdateProjectSchema = ProjectSchema.partial();
+const UpdateBudgetSchema = BudgetSchema.partial();
+const UpdateTeamSchema = TeamSchema.partial();
+const UpdateUpcomingMilstoneSchema = UpcomingMilstoneSchema.partial();
+const UpdateCheckListSchema = CheckListSchema.partial();
+const UpdateReportSchema = ReportSchema.partial();
+
+export async function UpdateProject(req: Request, res: Response) {
+  const projectId = req.params.id;
+
+  if (!projectId) {
+    return res.status(400).json({
+      msg: "Project ID is required",
+      status: 400,
+    });
+  }
+
+  try {
+    // Verify project exists
+    const existingProject = await prismaClient.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!existingProject) {
+      return res.status(404).json({
+        msg: "Project not found",
+        status: 404,
+      });
+    }
+
+    // Validate and update main project data if provided
+    if (req.body?.project) {
+      const validatedProjectData = UpdateProjectSchema.safeParse(
+        req.body.project
+      );
+
+      if (!validatedProjectData.success) {
+        return res.status(400).json({
+          msg: validatedProjectData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+
+      await prismaClient.project.update({
+        where: { id: projectId },
+        data: validatedProjectData.data,
+      });
+    }
+
+    // Update budget if provided
+    if (req.body?.budget) {
+      const validatedBudgetData = UpdateBudgetSchema.safeParse(req.body.budget);
+
+      if (validatedBudgetData.success) {
+        await prismaClient.budget.upsert({
+          where: { id: projectId },
+          update: validatedBudgetData.data,
+          create: {
+            total: validatedBudgetData.data.total ?? 0, // Provide a default value if undefined
+            spent: validatedBudgetData.data.spent ?? 0, // Provide a default value if undefined
+            projectId,
+          },
+        });
+      } else {
+        return res.status(400).json({
+          msg: validatedBudgetData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+    }
+
+    // Update team if provided
+    if (req.body?.team) {
+      const validatedTeamData = UpdateTeamSchema.safeParse(req.body.team);
+
+      if (validatedTeamData.success) {
+        await prismaClient.team.upsert({
+          where: { id: projectId },
+          update: validatedTeamData.data,
+          create: {
+            projectManger:
+              validatedTeamData.data.projectManger || "Unknown Manager",
+            siteManger: validatedTeamData.data.siteManger || "Unknown Manager",
+            civilManger:
+              validatedTeamData.data.civilManger || "Unknown Manager",
+            architecturalLoad:
+              validatedTeamData.data.architecturalLoad || "Unknown",
+            totalWorker: validatedTeamData.data.totalWorker || 0,
+            projectId,
+          },
+        });
+      } else {
+        return res.status(400).json({
+          msg: validatedTeamData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+    }
+
+    // Update upcoming milestone if provided
+    if (req.body?.upcomingMilstone) {
+      const validatedMilestoneData = UpdateUpcomingMilstoneSchema.safeParse(
+        req.body.upcomingMilstone
+      );
+
+      if (validatedMilestoneData.success) {
+        await prismaClient.upcomingMilstone.upsert({
+          where: { id: projectId },
+          update: validatedMilestoneData.data,
+          create: {
+            ...validatedMilestoneData.data,
+            title: validatedMilestoneData.data.title || "Default Title", // Provide a default title if undefined
+            status: validatedMilestoneData.data.status || "ontrack", // Provide a default status if undefined
+            projectId,
+          },
+        });
+      } else {
+        return res.status(400).json({
+          msg: validatedMilestoneData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+    }
+
+    // Update checklist if provided
+    if (req.body?.checkList) {
+      const validatedChecklistData = UpdateCheckListSchema.safeParse(
+        req.body.checkList
+      );
+
+      if (validatedChecklistData.success) {
+        await prismaClient.checkList.upsert({
+          where: { id: projectId },
+          update: validatedChecklistData.data,
+          create: {
+            ...validatedChecklistData.data,
+            task: validatedChecklistData.data.task || "ontrack", // Provide a default value for task
+            assignedTo: validatedChecklistData.data.assignedTo || "Unassigned", // Provide a default value for assignedTo
+            priority: validatedChecklistData.data.priority || "low", // Provide a default value for priority
+            completed: validatedChecklistData.data.completed ?? false, // Ensure completed is a boolean
+            projectId,
+          },
+        });
+      } else {
+        return res.status(400).json({
+          msg: validatedChecklistData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+    }
+
+    // Update reports if provided
+    if (req.body?.report) {
+      const validatedReportData = UpdateReportSchema.safeParse(req.body.report);
+
+      if (validatedReportData.success) {
+        // For reports, we'll update the first one or create if none exists
+        const existingReport = await prismaClient.report.findFirst({
+          where: { projectId },
+        });
+
+        if (existingReport) {
+          await prismaClient.report.update({
+            where: { id: existingReport.id },
+            data: validatedReportData.data,
+          });
+        } else {
+          await prismaClient.report.create({
+            data: {
+              ...validatedReportData.data,
+              publisher:
+                validatedReportData.data.publisher || "Unknown Publisher", // Provide a default value
+              status: validatedReportData.data.status || "approved", // Provide a default value for status
+              version: validatedReportData.data.version || "1.0", // Ensure version has a default value
+              downloadedUrl: validatedReportData.data.downloadedUrl || "", // Ensure downloadedUrl is a non-undefined string
+              reportType: validatedReportData.data.reportType || "daily", // Provide a default value for reportType
+              projectId,
+            },
+          });
+        }
+      } else {
+        return res.status(400).json({
+          msg: validatedReportData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+    }
+
+    // Update outgoing letters if provided
+    if (req.body?.theOutgoingLetter) {
+      const validatedLettersData = z
+        .array(TheOutgoingLetterSchema.partial())
+        .safeParse(req.body.theOutgoingLetter);
+
+      if (validatedLettersData.success) {
+        // First delete all existing letters for this project
+        await prismaClient.theOutgoingLetter.deleteMany({
+          where: { projectId },
+        });
+
+        // Then create new ones with updated data
+        if (validatedLettersData.data.length > 0) {
+          await prismaClient.theOutgoingLetter.createMany({
+            data: validatedLettersData.data.map((letter) => ({
+              recipent: letter.recipent || "", // Ensure recipent is a non-undefined string
+              subject: letter.subject || "",
+              downloadedUrl: letter.downloadedUrl || "",
+              status: letter.status || "draft",
+              priority: letter.priority || "low",
+              projectId,
+            })),
+          });
+        }
+      } else {
+        return res.status(400).json({
+          msg: validatedLettersData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+    }
+
+    // Update documents if provided
+    if (req.body?.documents) {
+      const validatedDocumentsData = z
+        .array(DocumentsSchema.partial())
+        .safeParse(req.body.documents);
+
+      if (validatedDocumentsData.success) {
+        // First delete all existing documents for this project
+        await prismaClient.documents.deleteMany({
+          where: {
+            id: {
+              in: validatedDocumentsData?.data
+                .map((doc) => doc.id)
+                .filter((id) => id !== undefined),
+            },
+          },
+        });
+
+        // Then create new ones with updated data
+        if (validatedDocumentsData.data.length > 0) {
+          await prismaClient.documents.createMany({
+            data: validatedDocumentsData.data
+              .filter(
+                (doc) =>
+                  doc.name !== undefined && doc.downloadedUrl !== undefined
+              ) // Ensure name and downloadedUrl are defined
+              .map((doc) => ({
+                ...doc,
+                name: doc.name || "Unnamed Document", // Provide a default name if necessary
+                downloadedUrl: doc.downloadedUrl || "", // Provide a default value for downloadedUrl
+                projectId,
+              })),
+          });
+        }
+      } else {
+        return res.status(400).json({
+          msg: validatedDocumentsData.error.flatten().fieldErrors,
+          status: 400,
+        });
+      }
+    }
+
+    // Return the updated project with all relations
+    const updatedProject = await prismaClient.project.findUnique({
+      where: { id: projectId },
+      include: {
+        team: true,
+        budget: true,
+        upcomingMilstone: true,
+        checkList: true,
+        theOutgoingLetter: true,
+        documents: true,
+        report: true,
+      },
+    });
+
+    return res.json({
+      success: true,
+      project: updatedProject,
+    });
+  } catch (error) {
+    console.error("Update project error:", error);
+    return res.status(500).json({
+      msg: "Internal server error",
       status: 500,
     });
   }
