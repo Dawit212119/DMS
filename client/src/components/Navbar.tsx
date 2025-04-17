@@ -32,14 +32,16 @@ export default function Header() {
       <Container>
         <div className="flex h-12 sm:h-14 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3 px-4 py-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0ea5e9] to-[#10b981] shadow-[0_0_15px_rgba(14,165,233,0.5)]">
-              <Folder className="h-6 w-6 text-white" />
+          <Link href={"/"}>
+            <div className="flex items-center gap-3 px-4 py-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#0ea5e9] to-[#10b981] shadow-[0_0_15px_rgba(14,165,233,0.5)]">
+                <Folder className="h-6 w-6 text-white" />
+              </div>
+              <div className="font-bold text-black text-lg tracking-tight">
+                E<span className="text-[#10b981]">File</span>
+              </div>
             </div>
-            <div className="font-bold text-black text-lg tracking-tight">
-              E<span className="text-[#10b981]">File</span>
-            </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation (visible on sm and above) */}
           <nav className="hidden sm:block flex-1 mx-4">

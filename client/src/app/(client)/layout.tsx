@@ -3,10 +3,10 @@ import Navbar from "@/components/Navbar";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
-      <div className="mb-8">
+      <div className="">
         <Navbar />
       </div>
-      <main className=" flex flex-col justify-center items-center">
+      <main className="">
         <div>{children}</div>
       </main>
     </div>
