@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +18,10 @@ import {
   Clock,
 } from "lucide-react";
 import Container from "@/components/container";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
   return (
     <Container>
       <div className="flex min-h-screen flex-col scroll-smooth">
@@ -41,6 +44,7 @@ export default function HomePage() {
                     <Button
                       size="lg"
                       className="bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={() => router.push(`/project/create?mode=create`)}
                     >
                       <FolderPlus className="mr-2 h-4 w-4" />
                       Create New Project
@@ -518,6 +522,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => router.push(`/project/create?mode=create`)}
               >
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Create New Project

@@ -28,7 +28,7 @@ export default function BudgetInfo() {
       <div className="space-y-2">
         <Label htmlFor="total">Total Budget</Label>
         <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+          {/* <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" /> */}
           <Input
             id="total"
             type="number"
@@ -45,7 +45,7 @@ export default function BudgetInfo() {
       <div className="space-y-2">
         <Label htmlFor="spent">Amount Spent</Label>
         <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+          {/* <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" /> */}
           <Input
             id="spent"
             type="number"
@@ -65,11 +65,11 @@ export default function BudgetInfo() {
             <div className="flex justify-between">
               <span className="text-gray-500">Remaining Budget:</span>
               <span
-                className={`font-semibold ${
+                className={`font-semibold ETB{
                   remainingBudget < 0 ? "text-red-500" : ""
                 }`}
               >
-                ${remainingBudget.toFixed(2)}
+                ETB{remainingBudget.toFixed(2)}
               </span>
             </div>
 
@@ -80,10 +80,10 @@ export default function BudgetInfo() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2.5">
                 <div
-                  className={`h-2.5 rounded-full ${
+                  className={`h-2.5 rounded-full ETB{
                     percentSpent > 100 ? "bg-red-500" : "bg-green-500"
                   }`}
-                  style={{ width: `${Math.min(percentSpent, 100)}%` }}
+                  style={{ width: `ETB{Math.min(percentSpent, 100)}%` }}
                 ></div>
               </div>
             </div>
