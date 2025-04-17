@@ -10,7 +10,10 @@ import {
   MailOpen,
   Search,
   Send,
+  QrCode,
+  Share2,
 } from "lucide-react";
+import QRCode from "qrcode";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +40,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // Define TypeScript interfaces for the letter data
 export interface IncomingLetter {
@@ -73,6 +83,80 @@ export default function LetterPage({
   onDownload = () => {},
 }: LetterPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [currentLetter, setCurrentLetter] = useState<{
+    id: string;
+    subject: string;
+    isIncoming: boolean;
+  } | null>(null);
+
+  // Function to generate QR code
+  const generateQRCode = async (
+    letterId: string,
+    subject: string,
+    isIncoming: boolean
+  ) => {
+    try {
+      // Generate a URL for the letter (this is a placeholder - replace with your actual URL structure)
+      const letterUrl = `${
+        window.location.origin
+      }/projects/${projectId}/letters/${
+        isIncoming ? "incoming" : "outgoing"
+      }/${letterId}`;
+
+      // Generate QR code
+      const qrCodeDataUrl = await QRCode.toDataURL(letterUrl);
+      setQrCodeUrl(qrCodeDataUrl);
+      setCurrentLetter({ id: letterId, subject, isIncoming });
+      setQrModalOpen(true);
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+    }
+  };
+
+  // Function to download QR code
+  const downloadQRCode = () => {
+    if (!qrCodeUrl || !currentLetter) return;
+
+    const link = document.createElement("a");
+    link.href = qrCodeUrl;
+    link.download = `qrcode-${currentLetter.id.toLowerCase()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Function to share QR code
+  const shareQRCode = async () => {
+    if (!qrCodeUrl || !currentLetter) return;
+
+    if (navigator.share) {
+      try {
+        // Convert data URL to Blob
+        const response = await fetch(qrCodeUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `qrcode-${currentLetter.id}.png`, {
+          type: "image/png",
+        });
+
+        await navigator.share({
+          title: `QR Code for ${currentLetter.subject}`,
+          text: `Scan this QR code to access the ${
+            currentLetter.isIncoming ? "incoming" : "outgoing"
+          } letter: ${currentLetter.subject}`,
+          files: [file],
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      alert(
+        "Sharing is not supported in your browser. You can download the QR code instead."
+      );
+    }
+  };
 
   // Filter letters based on search query
   const filteredIncoming = incomingLetters.filter(
@@ -233,11 +317,26 @@ export default function LetterPage({
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex justify-end">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    generateQRCode(
+                                      letter.id,
+                                      letter.subject,
+                                      true
+                                    )
+                                  }
+                                  title="QR Code"
+                                >
+                                  <QrCode className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => onDownload(letter.id, true)}
+                                  title="Download"
                                 >
                                   <Download className="h-4 w-4" />
                                 </Button>
@@ -292,7 +391,17 @@ export default function LetterPage({
                           >
                             {letter.status}
                           </Badge>
-                          <div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                generateQRCode(letter.id, letter.subject, true)
+                              }
+                            >
+                              <QrCode className="h-4 w-4 mr-1" />
+                              QR Code
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -378,11 +487,26 @@ export default function LetterPage({
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex justify-end">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    generateQRCode(
+                                      letter.id,
+                                      letter.subject,
+                                      false
+                                    )
+                                  }
+                                  title="QR Code"
+                                >
+                                  <QrCode className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => onDownload(letter.id, false)}
+                                  title="Download"
                                 >
                                   <Download className="h-4 w-4" />
                                 </Button>
@@ -437,7 +561,17 @@ export default function LetterPage({
                           >
                             {letter.status}
                           </Badge>
-                          <div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                generateQRCode(letter.id, letter.subject, false)
+                              }
+                            >
+                              <QrCode className="h-4 w-4 mr-1" />
+                              QR Code
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -457,6 +591,46 @@ export default function LetterPage({
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* QR Code Modal */}
+      <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              QR Code for {currentLetter?.isIncoming ? "Incoming" : "Outgoing"}{" "}
+              Letter
+            </DialogTitle>
+            <DialogDescription>
+              {currentLetter?.subject} (ID: {currentLetter?.id})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center p-4">
+            {qrCodeUrl && (
+              <div className="border p-4 rounded-lg bg-white">
+                <img
+                  src={qrCodeUrl || "/placeholder.svg"}
+                  alt="QR Code"
+                  className="w-64 h-64"
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex justify-center gap-4 mt-4">
+            <Button onClick={shareQRCode} className="flex items-center gap-2">
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+            <Button
+              onClick={downloadQRCode}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

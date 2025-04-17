@@ -1,7 +1,8 @@
 "use client";
 
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, QrCode, Share2 } from "lucide-react";
 import { useState } from "react";
+import QRCode from "qrcode";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface ProjectFile {
   id: string;
@@ -73,6 +81,11 @@ export default function ProjectFilesTable() {
     },
   ]);
 
+  // QR code state
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [currentFile, setCurrentFile] = useState<ProjectFile | null>(null);
+
   const handleDownload = (fileId: string) => {
     // In a real application, this would trigger the actual file download
     console.log(`Downloading file with ID: ${fileId}`);
@@ -86,6 +99,69 @@ export default function ProjectFilesTable() {
       month: "short",
       day: "numeric",
     });
+  };
+
+  // Function to generate QR code
+  const generateQRCode = async (file: ProjectFile) => {
+    try {
+      // Generate a URL for the file (this is a placeholder - replace with your actual URL structure)
+      const fileUrl = `${window.location.origin}/projects/files/${file.id}`;
+
+      // Generate QR code
+      const qrCodeDataUrl = await QRCode.toDataURL(fileUrl);
+      setQrCodeUrl(qrCodeDataUrl);
+      setCurrentFile(file);
+      setQrModalOpen(true);
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+    }
+  };
+
+  // Function to download QR code
+  const downloadQRCode = () => {
+    if (!qrCodeUrl || !currentFile) return;
+
+    const link = document.createElement("a");
+    link.href = qrCodeUrl;
+    link.download = `qrcode-${currentFile.name
+      .toLowerCase()
+      .replace(/\s+/g, "-")}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Function to share QR code
+  const shareQRCode = async () => {
+    if (!qrCodeUrl || !currentFile) return;
+
+    if (navigator.share) {
+      try {
+        // Convert data URL to Blob
+        const response = await fetch(qrCodeUrl);
+        const blob = await response.blob();
+        const file = new File(
+          [blob],
+          `qrcode-${currentFile.name.replace(/\s+/g, "-")}.png`,
+          {
+            type: "image/png",
+          }
+        );
+
+        await navigator.share({
+          title: `QR Code for ${currentFile.name}`,
+          text: `Scan this QR code to access the document: ${currentFile.name}`,
+          files: [file],
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      alert(
+        "Sharing is not supported in your browser. You can download the QR code instead."
+      );
+    }
   };
 
   return (
@@ -104,7 +180,7 @@ export default function ProjectFilesTable() {
               <TableHead className="hidden md:table-cell">Date</TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="hidden md:table-cell">Version</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -126,21 +202,69 @@ export default function ProjectFilesTable() {
                   {file.version}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1"
-                    onClick={() => handleDownload(file.id)}
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="hidden sm:inline">Download</span>
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      onClick={() => generateQRCode(file)}
+                    >
+                      <QrCode className="h-4 w-4" />
+                      <span className="hidden sm:inline">QR Code</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      onClick={() => handleDownload(file.id)}
+                    >
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline">Download</span>
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
+
+      {/* QR Code Modal */}
+      <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>QR Code for Document</DialogTitle>
+            <DialogDescription>
+              {currentFile?.name} (Version {currentFile?.version})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center p-4">
+            {qrCodeUrl && (
+              <div className="border p-4 rounded-lg bg-white">
+                <img
+                  src={qrCodeUrl || "/placeholder.svg"}
+                  alt="QR Code"
+                  className="w-64 h-64"
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex justify-center gap-4 mt-4">
+            <Button onClick={shareQRCode} className="flex items-center gap-2">
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+            <Button
+              onClick={downloadQRCode}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
