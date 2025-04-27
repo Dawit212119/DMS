@@ -1,7 +1,9 @@
 import { Router, Request, Response } from "express";
+import { login, me, signup } from "../controller/auth";
 
 const authRoute = Router();
-authRoute.get("/", (req: Request, res: Response) => {
-  res.json("your route is working ");
-});
+authRoute.post("/signup", signup);
+authRoute.post("/login", login);
+authRoute.get("/login", me);
+
 export default authRoute;

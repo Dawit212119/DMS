@@ -505,7 +505,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                             report.status.slice(1)}
                         </span>
                       </div>
-                      <a
+                      {/* <a
                         href={
                           Array.isArray(report.fileUrl)
                             ? typeof report.fileUrl[0] === "string"
@@ -520,7 +520,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                         className="text-xs text-blue-500 hover:underline mt-1 block"
                       >
                         {report.fileName}
-                      </a>
+                      </a> */}
                     </div>
                   </div>
 

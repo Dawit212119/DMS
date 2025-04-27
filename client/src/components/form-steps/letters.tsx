@@ -264,7 +264,7 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
             fileName: filesToUpload.map((file) => file.name).join(", "),
           },
         ];
-        uploaded = [...updatedLetters];
+        uploaded = [...uploaded, ...updatedLetters];
       }
       const fileForm = new FormData();
       newOutgoingLetter.file?.forEach((file) => fileForm.append("files", file));
@@ -283,7 +283,7 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
             fileName: "Outgoing Letters",
           },
         ];
-        uploaded = [...updatedLetters];
+        uploaded = [...uploaded, ...updatedLetters];
       }
       console.log(formData);
       updateFormData({
