@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { UnauthorizedException } from "../exceptions/unauthorizedException";
 import { ErrorCodes } from "../exceptions/root";
 import { prismaClient } from "../prisma";
@@ -11,18 +11,18 @@ const authMiddleware = async (
 ) => {
   const token = req.headers.authorization;
   if (!token) {
-    next(new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED));
-    return;
+    return next(
+      new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED)
+    );
   }
   try {
     if (!process.env.JWT_SECRET) {
-      next(
+      return next(
         new UnauthorizedException(
           "no jwt secret provided!",
           ErrorCodes.UnAUTHORIZED
         )
       );
-      return;
     }
     const payload = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload;
     const user = await prismaClient.user.findFirst({
@@ -30,18 +30,17 @@ const authMiddleware = async (
     });
     if (!user) {
       if (!user) {
-        next(
+        return next(
           new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED)
         );
-        return;
       }
       req.user = user;
+      next();
     }
   } catch (error) {
-    next(
+    return next(
       new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED, error)
     );
-    return;
   }
 };
 export default authMiddleware;

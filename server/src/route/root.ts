@@ -1,6 +1,10 @@
-import { Router } from "express";
-import authRoute from "./auth.js";
+import { Router, Request, Response } from "express";
+import { login, me, signup } from "../controller/auth";
+import authMiddleware from "../middelware/auth";
 
-const rootRoute = Router();
-rootRoute.use("/auth", authRoute);
-export default rootRoute;
+const authRoute = Router();
+authRoute.post("/signup", signup);
+authRoute.post("/login", login);
+authRoute.get("/me", authMiddleware, me);
+
+export default authRoute;
