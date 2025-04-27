@@ -12,15 +12,12 @@ const useFileUploader = () => {
     setIsUploading(true);
     setProgress(0);
     setError(null);
-
+    console.log(file);
     try {
       const response = await axios.post(
         `http://localhost:8000/upload/files`,
         file,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const percentCompleted = Math.round(

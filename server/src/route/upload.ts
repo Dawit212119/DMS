@@ -7,7 +7,7 @@ import upload from "../middelware/multermiddelware.js";
 import { uploadFiles, uploadImage } from "../controller/handleUpload.js";
 const router = express.Router();
 
-router.post("/files", upload.array("file"), uploadFiles);
+router.post("/files", upload.array("files"), uploadFiles);
 router.post("/images", upload.array("images"), uploadImage);
 
 export default router;

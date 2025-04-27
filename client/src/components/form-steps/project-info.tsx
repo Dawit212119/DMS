@@ -4,11 +4,11 @@ import type { FormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
-// Add TypeScript declaration for the window object to avoid TypeScript errors
 declare global {
   interface Window {
-    validationErrors: string[];
+    validationErrors?: string[];
   }
 }
 
@@ -21,6 +21,14 @@ export default function ProjectInfo({
   formData,
   updateFormData,
 }: ProjectInfoProps) {
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.validationErrors) {
+      setValidationErrors(window.validationErrors);
+    }
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -35,17 +43,16 @@ export default function ProjectInfo({
         </p>
       </div>
 
-      {/* Add this section to display validation errors
-      {window.validationErrors && window.validationErrors.length > 0 && (
+      {validationErrors.length > 0 && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
           <p className="font-medium">Please fix the following errors:</p>
           <ul className="list-disc pl-5 mt-1 text-sm">
-            {window.validationErrors.map((error, index) => (
+            {validationErrors.map((error, index) => (
               <li key={index}>{error}</li>
             ))}
           </ul>
         </div>
-      )} */}
+      )}
 
       <Card className="p-6 border border-blue-100 bg-blue-50/50">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -59,7 +66,7 @@ export default function ProjectInfo({
               onChange={(e) => updateFormData({ projectName: e.target.value })}
               placeholder="Enter project name"
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-              required={true}
+              required
             />
           </div>
 
@@ -73,7 +80,7 @@ export default function ProjectInfo({
               onChange={(e) => updateFormData({ clientName: e.target.value })}
               placeholder="Enter client name"
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-              required={true}
+              required
             />
           </div>
 
@@ -87,7 +94,7 @@ export default function ProjectInfo({
               onChange={(e) => updateFormData({ location: e.target.value })}
               placeholder="Enter project location"
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-              required={true}
+              required
             />
           </div>
 
@@ -101,7 +108,7 @@ export default function ProjectInfo({
               value={formData.startDate}
               onChange={(e) => updateFormData({ startDate: e.target.value })}
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-              required={true}
+              required
             />
           </div>
 
@@ -115,7 +122,7 @@ export default function ProjectInfo({
               value={formData.endDate}
               onChange={(e) => updateFormData({ endDate: e.target.value })}
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-              required={true}
+              required
             />
           </div>
         </div>

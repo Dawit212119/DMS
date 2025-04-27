@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -17,6 +16,9 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, File, Plus, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
+import useImageUploader from "@/app/action/useImageuploader";
+import useFileUploader from "@/app/action/useFileuploader";
 
 interface LettersProps {
   formData: FormData;
@@ -25,14 +27,22 @@ interface LettersProps {
 
 export default function Letters({ formData, updateFormData }: LettersProps) {
   const [activeTab, setActiveTab] = useState("outgoing");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Update the state to include isUploading
+  // State for file system images and camera images
+  const [fileSystemImages, setFileSystemImages] = useState<File[]>([]);
+  const [cameraImages, setCameraImages] = useState<File[]>([]);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const { uploadFiles: uploadImageFiles } = useImageUploader();
+  const { uploadFiles: uploadNonImageFiles } = useFileUploader();
+
   const [newOutgoingLetter, setNewOutgoingLetter] = useState({
     recipient: "",
     subject: "",
     priority: "medium" as "high" | "medium" | "low",
     status: "draft" as "draft" | "sent",
-    file: null as File | null,
+    file: null as File[] | null,
     isUploading: false,
   });
 
@@ -41,135 +51,260 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
     subject: "",
     priority: "medium" as "high" | "medium" | "low",
     status: "unread" as "read" | "unread",
-    file: null as File | null,
+    file: null as File[] | null,
     isUploading: false,
   });
 
-  // This function would upload the file to your storage service
-  const uploadOutgoingFile = async (
-    file: File
-  ): Promise<{ url: string; fileName: string }> => {
-    // In a real implementation, you would:
-    // 1. Create a FormData object
-    // 2. Append the file to it
-    // 3. Send it to your backend API
-    // 4. Get the URL back
-
-    // For now, we'll simulate this with a timeout
-    setNewOutgoingLetter((prev) => ({ ...prev, isUploading: true }));
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // This would be the URL returned from your storage service
-        const mockUrl = `https://storage.example.com/${file.name}`;
-        resolve({ url: mockUrl, fileName: file.name });
-        setNewOutgoingLetter((prev) => ({ ...prev, isUploading: false }));
-      }, 1000);
-    });
+  const isImageFile = (file: File): boolean => {
+    return file.type.startsWith("image/");
   };
 
-  const uploadIncomingFile = async (
-    file: File
-  ): Promise<{ url: string; fileName: string }> => {
-    // Similar implementation as above
-    setNewIncomingLetter((prev) => ({ ...prev, isUploading: true }));
+  const uploadOutgoingFile = async (file: File | File[]) => {
+    try {
+      const files = Array.isArray(file) ? file : [file];
+      const imageFiles = files.filter((f) => isImageFile(f));
+      const nonImageFiles = files.filter((f) => !isImageFile(f));
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockUrl = `https://storage.example.com/${file.name}`;
-        resolve({ url: mockUrl, fileName: file.name });
-        setNewIncomingLetter((prev) => ({ ...prev, isUploading: false }));
-      }, 1000);
-    });
+      let imageResponse = null;
+      let nonImageResponse = null;
+
+      if (imageFiles.length > 0) {
+        const formData = new FormData();
+        imageFiles.forEach((f) => formData.append("images", f));
+        imageResponse = await uploadImageFiles(formData);
+      }
+
+      if (nonImageFiles.length > 0) {
+        const formData = new FormData();
+        nonImageFiles.forEach((f) => formData.append("files", f));
+        nonImageResponse = await uploadNonImageFiles(formData);
+      }
+
+      // Combine results
+      // const fileURLs = [
+      //   ...(Array.isArray(imageResponse?.fileURL)
+      //     ? imageResponse.fileURL
+      //     : [imageResponse?.fileURL]),
+      //   ...(nonImageResponse?.fileURL || []),
+      // ];
+
+      const fileURLs = [
+        imageResponse!.fileURL,
+        ...nonImageResponse?.upload.value.qrPDFURL,
+      ];
+      const fileNames = files.map((f) => f.name).join(", ");
+
+      return {
+        fileURL: fileURLs,
+        fileName: fileNames,
+      };
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
   };
 
-  // Update the addOutgoingLetter function
+  const uploadIncomingFile = async (file: File | File[]) => {
+    try {
+      const files = Array.isArray(file) ? file : [file];
+      const imageFiles = files.filter((f) => isImageFile(f));
+      const nonImageFiles = files.filter((f) => !isImageFile(f));
+
+      let imageResponse = null;
+      let nonImageResponse = null;
+
+      if (imageFiles.length > 0) {
+        const formData = new FormData();
+        imageFiles.forEach((f) => formData.append("files", f));
+        imageResponse = await uploadImageFiles(formData);
+      }
+
+      if (nonImageFiles.length > 0) {
+        const formData = new FormData();
+        nonImageFiles.forEach((f) => formData.append("files", f));
+        nonImageResponse = await uploadNonImageFiles(formData);
+      }
+      const fileURLs = [
+        imageResponse!.fileURL,
+        ...nonImageResponse?.upload.value.qrPDFURL,
+      ];
+      console.log(fileURLs);
+      console.log(formData);
+      // Combine results
+      // const fileURLs = [
+      //   ...(Array.isArray(imageResponse?.fileURL)
+      //     ? imageResponse.fileURL
+      //     : [imageResponse?.fileURL]),
+      //   ...(nonImageResponse?.fileURL || []),
+      // ];
+
+      const fileNames = files.map((f) => f.name).join(", ");
+
+      return {
+        fileURL: fileURLs,
+        fileName: fileNames,
+      };
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  };
+
   const addOutgoingLetter = async () => {
-    if (
-      newOutgoingLetter.recipient &&
-      newOutgoingLetter.subject &&
-      newOutgoingLetter.file
-    ) {
-      try {
-        // Upload the file and get the URL
-        const { url, fileName } = await uploadOutgoingFile(
-          newOutgoingLetter.file
-        );
+    if (!newOutgoingLetter.recipient || !newOutgoingLetter.subject) {
+      alert("Please fill in recipient and subject");
+      return;
+    }
 
-        // Add the letter with the URL to the form data
+    const filesToUpload = [...fileSystemImages, ...cameraImages];
+    if (filesToUpload.length === 0 && !newOutgoingLetter.file) {
+      alert("Please add at least one file or image");
+      return;
+    }
+
+    try {
+      setNewOutgoingLetter((prev) => ({ ...prev, isUploading: true }));
+
+      const formDataobj = new FormData();
+      filesToUpload.forEach((file) => formDataobj.append("images", file));
+      const uploadResult =
+        filesToUpload.length > 0 ? await uploadImageFiles(formDataobj) : null;
+      let uploaded: any[] = [];
+      if (uploadResult) {
         const updatedLetters = [
-          ...formData.outgoingLetters,
           {
-            id: Date.now().toString(),
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             recipient: newOutgoingLetter.recipient,
             subject: newOutgoingLetter.subject,
             priority: newOutgoingLetter.priority,
             status: newOutgoingLetter.status,
-            fileUrl: url,
-            fileName: fileName,
+            fileUrl:
+              uploadResult && Array.isArray(uploadResult)
+                ? uploadResult.fileURL
+                : [],
+            fileName: filesToUpload.map((file) => file.name).join(", "),
           },
         ];
-
-        updateFormData({ outgoingLetters: updatedLetters });
-
-        // Reset the form
-        setNewOutgoingLetter({
-          recipient: "",
-          subject: "",
-          priority: "medium",
-          status: "draft",
-          file: null,
-          isUploading: false,
-        });
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload file. Please try again.");
+        uploaded = [...updatedLetters];
       }
+      const fileForm = new FormData();
+      newOutgoingLetter.file?.forEach((file) => fileForm.append("files", file));
+      const fileRes = await uploadNonImageFiles(fileForm);
+
+      if (fileRes) {
+        const updatedLetters = [
+          {
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            recipient: newOutgoingLetter.recipient,
+            subject: newOutgoingLetter.subject,
+            priority: newOutgoingLetter.priority,
+            status: newOutgoingLetter.status,
+            fileUrl: fileRes.upload.map((url: any) => url.value.qrPDFURL),
+
+            fileName: "Outgoing Letters",
+          },
+        ];
+        uploaded = [...updatedLetters];
+      }
+
+      updateFormData({
+        outgoingLetters: [...formData.outgoingLetters, ...uploaded],
+      });
+      console.log(formData);
+      setNewOutgoingLetter({
+        recipient: "",
+        subject: "",
+        priority: "medium",
+        status: "draft",
+        file: null,
+        isUploading: false,
+      });
+      setFileSystemImages([]);
+      setCameraImages([]);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setNewOutgoingLetter((prev) => ({ ...prev, isUploading: false }));
     }
   };
-
-  // Update the addIncomingLetter function similarly
+  console.log(formData);
   const addIncomingLetter = async () => {
-    if (
-      newIncomingLetter.sender &&
-      newIncomingLetter.subject &&
-      newIncomingLetter.file
-    ) {
-      try {
-        // Upload the file and get the URL
-        const { url, fileName } = await uploadIncomingFile(
-          newIncomingLetter.file
-        );
+    if (!newIncomingLetter.sender || !newIncomingLetter.subject) {
+      alert("Please fill in sender and subject");
+      return;
+    }
 
-        // Add the letter with the URL to the form data
+    const filesToUpload = [...fileSystemImages, ...cameraImages];
+    if (filesToUpload.length === 0 && !newIncomingLetter.file) {
+      alert("Please add at least one file or image");
+      return;
+    }
+
+    try {
+      setNewIncomingLetter((prev) => ({ ...prev, isUploading: true }));
+
+      const formDataobj = new FormData();
+      filesToUpload.forEach((file) => formDataobj.append("images", file));
+      const uploadResult =
+        filesToUpload.length > 0 ? await uploadImageFiles(formDataobj) : null;
+      let uploaded: any[] = [];
+      if (uploadResult) {
         const updatedLetters = [
-          ...formData.incomingLetters,
           {
-            id: Date.now().toString(),
-            sender: newIncomingLetter.sender,
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            recipient: newOutgoingLetter.recipient,
+            subject: newOutgoingLetter.subject,
+            priority: newOutgoingLetter.priority,
+            status: newOutgoingLetter.status,
+            fileUrl:
+              uploadResult && Array.isArray(uploadResult.fileURL)
+                ? uploadResult.fileURL
+                : [],
+            fileName: filesToUpload.map((file) => file.name).join(", "),
+          },
+        ];
+        uploaded = [...updatedLetters];
+      }
+      const fileForm = new FormData();
+      newOutgoingLetter.file?.forEach((file) => fileForm.append("files", file));
+      const fileRes = await uploadNonImageFiles(fileForm);
+
+      if (fileRes) {
+        const updatedLetters = [
+          {
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            recipient: newIncomingLetter.sender,
             subject: newIncomingLetter.subject,
             priority: newIncomingLetter.priority,
             status: newIncomingLetter.status,
-            fileUrl: url,
-            fileName: fileName,
+            fileUrl: fileRes.upload.map((url: any) => url.value.qrPDFURL),
+
+            fileName: "Outgoing Letters",
           },
         ];
-
-        updateFormData({ incomingLetters: updatedLetters });
-
-        // Reset the form
-        setNewIncomingLetter({
-          sender: "",
-          subject: "",
-          priority: "medium",
-          status: "unread",
-          file: null,
-          isUploading: false,
-        });
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload file. Please try again.");
+        uploaded = [...updatedLetters];
       }
+      console.log(formData);
+      updateFormData({
+        incomingLetters: [...formData.incomingLetters, ...uploaded],
+      });
+
+      setNewIncomingLetter({
+        sender: "",
+        subject: "",
+        priority: "medium",
+        status: "unread",
+        file: null,
+        isUploading: false,
+      });
+      setFileSystemImages([]);
+      setCameraImages([]);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setNewIncomingLetter((prev) => ({ ...prev, isUploading: false }));
     }
   };
 
@@ -189,25 +324,153 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
 
   const handleOutgoingFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setNewOutgoingLetter({ ...newOutgoingLetter, file: e.target.files[0] });
+      setNewOutgoingLetter({
+        ...newOutgoingLetter,
+        file: Array.from(e.target.files),
+      });
     }
   };
 
   const handleIncomingFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setNewIncomingLetter({ ...newIncomingLetter, file: e.target.files[0] });
+      setNewIncomingLetter({
+        ...newIncomingLetter,
+        file: Array.from(e.target.files),
+      });
     }
   };
 
-  // This would be implemented with a camera API in a real application
-  const handleCameraCapture = (type: "outgoing" | "incoming") => {
-    alert(
-      `Camera functionality would be implemented here to capture ${type} letter.`
-    );
-    // In a real implementation, you would:
-    // 1. Access the device camera
-    // 2. Allow capturing an image
-    // 3. Set the resulting file to the appropriate state
+  const handleFileSystemImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setFileSystemImages((prev) => [...prev, ...files]);
+    }
+  };
+  const startCamera = async () => {
+    if (navigator.mediaDevices.getUserMedia) {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+      if (videoRef.current) {
+        setIsCameraActive(true);
+
+        videoRef.current.srcObject = stream;
+      }
+    }
+  };
+  console.log(isCameraActive);
+  // const startCamera = async () => {
+  //   try {
+  //     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  //       const stream = await navigator.mediaDevices.getUserMedia({
+  //         video: true,
+  //         audio: false,
+  //       });
+
+  //       if (videoRef.current) {
+  //         videoRef.current.srcObject = stream;
+  //         videoRef.current.play().catch((error) => {
+  //           console.error("Error playing video stream:", error);
+  //         });
+  //         setIsCameraActive(true);
+  //       }
+  //     } else {
+  //       throw new Error("Camera API not supported in this browser");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error accessing camera:", error);
+  //     alert("Could not access camera. Please check permissions.");
+  //     setIsCameraActive(false);
+  //   }
+  // };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      const tracks = stream.getTracks();
+
+      tracks.forEach((track) => {
+        track.stop();
+      });
+
+      videoRef.current.srcObject = null;
+      setIsCameraActive(false);
+    }
+  };
+
+  // const captureImage = () => {
+  //   if (!isCameraActive || !videoRef.current || !canvasRef.current) {
+  //     alert("Please start the camera first");
+  //     return;
+  //   }
+
+  //   const context = canvasRef.current.getContext("2d");
+  //   if (context && videoRef.current) {
+  //     canvasRef.current.width = videoRef.current.videoWidth;
+  //     canvasRef.current.height = videoRef.current.videoHeight;
+
+  //     context.drawImage(
+  //       videoRef.current,
+  //       0,
+  //       0,
+  //       canvasRef.current.width,
+  //       canvasRef.current.height
+  //     );
+
+  //     canvasRef.current.toBlob(
+  //       (blob) => {
+  //         if (blob) {
+  //           const fileName = `capture-${Date.now()}.jpg`;
+  //           const file = new window.File([blob], fileName, {
+  //             type: "image/jpeg",
+  //             lastModified: Date.now(),
+  //           });
+
+  //           setCameraImages((prev) => [...prev, file]);
+  //         }
+  //       },
+  //       "image/jpeg",
+  //       0.95
+  //     );
+  //   }
+  // };
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const fileName = `capture-${Date.now()}.jpg`;
+              const file = new window.File([blob], fileName, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              });
+
+              setCameraImages((prev) => [...prev, file]);
+            }
+          },
+          "image/jpeg",
+          0.9
+        );
+      }
+    }
+  };
+
+  const removeImage = (index: number, isCameraImage: boolean) => {
+    if (isCameraImage) {
+      setCameraImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setFileSystemImages((prev) => prev.filter((_, i) => i !== index));
+    }
   };
 
   return (
@@ -306,48 +569,166 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Letter File</Label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
+                  <Label>Attachments</Label>
+                  <div className="flex flex-col gap-4">
+                    <div className="relative">
                       <Input
                         type="file"
                         id="outgoingFile"
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         onChange={handleOutgoingFileChange}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        accept="*/"
                       />
                       <Button
                         variant="outline"
                         className="w-full flex items-center justify-center"
                       >
-                        <Upload className="mr-2 h-4 w-4" /> Upload File
+                        <Upload className="mr-2 h-4 w-4" /> Upload Document
                       </Button>
+                      {newOutgoingLetter.file && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Selected:{" "}
+                          {newOutgoingLetter.file
+                            ? Array.from(newOutgoingLetter.file)
+                                .map((file) => file.name)
+                                .join(", ")
+                            : "No file selected"}
+                        </p>
+                      )}
                     </div>
 
-                    <Button
-                      variant="outline"
-                      onClick={() => handleCameraCapture("outgoing")}
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
+                    <div className="relative">
+                      <Input
+                        type="file"
+                        id="outgoingImages"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={handleFileSystemImageUpload}
+                        accept="image/*"
+                        multiple
+                      />
+                      <Button
+                        variant="outline"
+                        className="w-full flex items-center justify-center"
+                      >
+                        <Upload className="mr-2 h-4 w-4" /> Upload Images
+                      </Button>
+                      {fileSystemImages.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {fileSystemImages.map((img, index) => (
+                            <div key={`file-${index}`} className="relative">
+                              <Image
+                                width={80}
+                                height={80}
+                                src={URL.createObjectURL(img)}
+                                alt={`Uploaded ${index}`}
+                                className="w-20 h-20 object-cover rounded"
+                              />
+                              <button
+                                onClick={() => removeImage(index, false)}
+                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border rounded p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <Label>Camera Capture</Label>
+                        {isCameraActive ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={stopCamera}
+                          >
+                            Stop Camera
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={startCamera}
+                            disabled={isCameraActive}
+                          >
+                            {isCameraActive ? "Starting..." : "Start Camera"}
+                          </Button>
+                        )}
+                      </div>
+
+                      {isCameraActive && (
+                        <>
+                          <div className="relative">
+                            <video
+                              ref={videoRef}
+                              autoPlay
+                              playsInline
+                              muted
+                              className="w-full h-auto max-h-64 rounded border transform-x-[-1]"
+                            />
+                            <canvas
+                              ref={canvasRef}
+                              width="400"
+                              height="400"
+                              className="hidden"
+                            />
+                            {/* {!videoRef.current?.srcObject && (
+                              <div className="absolute inset-0 flex items-center justify-center text-white">
+                                Initializing camera...
+                              </div>
+                            )} */}
+                          </div>
+                          <Button
+                            onClick={captureImage}
+                            className="mt-2 w-full"
+                            variant="secondary"
+                            disabled={!videoRef.current?.srcObject}
+                          >
+                            <Camera className="mr-2 h-4 w-4" /> Capture Image
+                          </Button>
+                        </>
+                      )}
+
+                      {cameraImages.length > 0 && (
+                        <div className="mt-4">
+                          <Label>Captured Images</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {cameraImages.map((img, index) => (
+                              <div key={`camera-${index}`} className="relative">
+                                <Image
+                                  width={80}
+                                  height={80}
+                                  src={URL.createObjectURL(img)}
+                                  alt={`Capture ${index}`}
+                                  className="w-20 h-20 object-cover rounded"
+                                />
+                                <button
+                                  onClick={() => removeImage(index, true)}
+                                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {newOutgoingLetter.file && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Selected: {newOutgoingLetter.file.name}
-                    </p>
-                  )}
                 </div>
               </div>
 
-              {/* Update the button states to show uploading state */}
-              {/* For outgoing letters button: */}
               <Button
                 onClick={addOutgoingLetter}
                 className="mt-4"
                 disabled={
                   !newOutgoingLetter.recipient ||
                   !newOutgoingLetter.subject ||
-                  !newOutgoingLetter.file ||
+                  (fileSystemImages.length === 0 &&
+                    cameraImages.length === 0 &&
+                    !newOutgoingLetter.file) ||
                   newOutgoingLetter.isUploading
                 }
               >
@@ -365,9 +746,8 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
           {formData.outgoingLetters.length > 0 && (
             <div className="space-y-4 mt-6">
               <h4 className="font-medium">Outgoing Letters</h4>
-
-              {formData.outgoingLetters.map((letter) => (
-                <Card key={letter.id} className="overflow-hidden">
+              {formData.outgoingLetters.map((letter, index) => (
+                <Card key={index} className="overflow-hidden">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
@@ -495,47 +875,148 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Letter File</Label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
+                  <Label>Attachments</Label>
+                  <div className="flex flex-col gap-4">
+                    <div className="relative">
                       <Input
                         type="file"
                         id="incomingFile"
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         onChange={handleIncomingFileChange}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        accept=".pdf,.doc,.docx"
                       />
                       <Button
                         variant="outline"
                         className="w-full flex items-center justify-center"
                       >
-                        <Upload className="mr-2 h-4 w-4" /> Upload File
+                        <Upload className="mr-2 h-4 w-4" /> Upload Document
                       </Button>
+                      {newIncomingLetter.file && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Selected:{" "}
+                          {newIncomingLetter.file
+                            ?.map((file) => file.name)
+                            .join(", ")}
+                        </p>
+                      )}
                     </div>
 
-                    <Button
-                      variant="outline"
-                      onClick={() => handleCameraCapture("incoming")}
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
+                    <div className="relative">
+                      <Input
+                        type="file"
+                        id="incomingImages"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={handleFileSystemImageUpload}
+                        accept="image/*"
+                        multiple
+                      />
+                      <Button
+                        variant="outline"
+                        className="w-full flex items-center justify-center"
+                      >
+                        <Upload className="mr-2 h-4 w-4" /> Upload Images
+                      </Button>
+                      {fileSystemImages.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {fileSystemImages.map((img, index) => (
+                            <div key={`file-${index}`} className="relative">
+                              <Image
+                                width={80}
+                                height={80}
+                                src={URL.createObjectURL(img)}
+                                alt={`Uploaded ${index}`}
+                                className="w-20 h-20 object-cover rounded"
+                              />
+                              <button
+                                onClick={() => removeImage(index, false)}
+                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="border rounded p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <Label>Camera Capture</Label>
+                        {isCameraActive ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={stopCamera}
+                          >
+                            Stop Camera
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={startCamera}
+                          >
+                            Start Camera
+                          </Button>
+                        )}
+                      </div>
+
+                      {isCameraActive && (
+                        <>
+                          <video
+                            ref={videoRef}
+                            autoPlay
+                            muted
+                            className="w-full h-auto max-h-64 rounded border"
+                          />
+                          <Button
+                            onClick={captureImage}
+                            className="mt-2 w-full"
+                            variant="secondary"
+                          >
+                            <Camera className="mr-2 h-4 w-4" /> Capture Image
+                          </Button>
+                        </>
+                      )}
+
+                      {cameraImages.length > 0 && (
+                        <div className="mt-4">
+                          <Label>Captured Images</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {cameraImages.map((img, index) => (
+                              <div key={`camera-${index}`} className="relative">
+                                <Image
+                                  width={80}
+                                  height={80}
+                                  src={URL.createObjectURL(img)}
+                                  alt={`Capture ${index}`}
+                                  className="w-20 h-20 object-cover rounded"
+                                />
+                                <button
+                                  onClick={() => removeImage(index, true)}
+                                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {newIncomingLetter.file && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Selected: {newIncomingLetter.file.name}
-                    </p>
-                  )}
                 </div>
               </div>
 
-              {/* For incoming letters button: */}
               <Button
                 onClick={addIncomingLetter}
                 className="mt-4"
                 disabled={
                   !newIncomingLetter.sender ||
                   !newIncomingLetter.subject ||
-                  !newIncomingLetter.file ||
+                  (fileSystemImages.length === 0 &&
+                    cameraImages.length === 0 &&
+                    !newIncomingLetter.file) ||
                   newIncomingLetter.isUploading
                 }
               >
@@ -553,7 +1034,6 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
           {formData.incomingLetters.length > 0 && (
             <div className="space-y-4 mt-6">
               <h4 className="font-medium">Incoming Letters</h4>
-
               {formData.incomingLetters.map((letter) => (
                 <Card key={letter.id} className="overflow-hidden">
                   <CardContent className="p-4">

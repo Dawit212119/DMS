@@ -1,238 +1,351 @@
-"use client";
-
-import type React from "react";
-
-import { useState } from "react";
-import type { FormData } from "../project-form";
+import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, File, Plus, Trash2, Upload } from "lucide-react";
+import useImageUploader from "@/app/action/useImageuploader";
+import useFileUploader from "@/app/action/useFileuploader";
+import Image from "next/image";
+
+interface ExtendedFormData extends FormData {
+  documents: {
+    id: string;
+    title: string;
+    fileUrl: string;
+    fileName: string;
+  }[];
+}
 
 interface ProjectDocumentsProps {
-  formData: FormData;
-  updateFormData: (data: Partial<FormData>) => void;
+  formData: ExtendedFormData;
+  updateFormData: (data: Partial<ExtendedFormData>) => void;
+}
+
+interface DocumentInProgress {
+  documentName: string;
+  title: string;
+  file: File | null;
+  isUploading: boolean;
 }
 
 export default function ProjectDocuments({
   formData,
   updateFormData,
 }: ProjectDocumentsProps) {
-  const [newDocument, setNewDocument] = useState({
-    title: "",
-    file: null as File | null,
-    isUploading: false,
-  });
+  const [newDocuments, setNewDocuments] = useState<DocumentInProgress[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [nonImageFiles, setNonImageFiles] = useState<File[]>([]);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [canAddMoreFiles, setCanAddMoreFiles] = useState(true);
 
-  // This function would upload the file to your storage service
-  const uploadFile = async (
-    file: File
-  ): Promise<{ url: string; fileName: string }> => {
-    // In a real implementation, you would:
-    // 1. Create a FormData object
-    // 2. Append the file to it
-    // 3. Send it to your backend API
-    // 4. Get the URL back
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    // For now, we'll simulate this with a timeout
-    setNewDocument((prev) => ({ ...prev, isUploading: true }));
+  const { uploadFiles: uploadImageFiles } = useImageUploader();
+  const { uploadFiles: uploadNonImageFiles } = useFileUploader();
+  console.log(nonImageFiles);
+  useEffect(() => {
+    if (!cameraActive) return;
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // This would be the URL returned from your storage service
-        const mockUrl = `https://storage.example.com/${file.name}`;
-        resolve({ url: mockUrl, fileName: file.name });
-        setNewDocument((prev) => ({ ...prev, isUploading: false }));
-      }, 1000);
-    });
-  };
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      })
+      .catch((err) => {
+        console.error("Camera access denied:", err);
+        alert("Camera access denied. Please check your permissions.");
+      });
+  }, [cameraActive]);
 
-  const addDocument = async () => {
-    if (newDocument.title && newDocument.file) {
-      try {
-        // Upload the file and get the URL
-        const { url, fileName } = await uploadFile(newDocument.file);
+  const classifyFiles = (files: File[]) => {
+    const imageTypes = ["image/jpeg", "image/png", "image/jpg"];
+    const images: File[] = [];
+    const others: File[] = [];
 
-        // Add the document with the URL to the form data
-        const updatedDocuments = [
-          ...formData.documents,
-          {
-            id: Date.now().toString(),
-            title: newDocument.title,
-            fileUrl: url,
-            fileName: fileName,
-          },
-        ];
+    files.forEach((file) =>
+      imageTypes.includes(file.type) ? images.push(file) : others.push(file)
+    );
 
-        updateFormData({ documents: updatedDocuments });
+    setImageFiles((prev) => [...prev, ...images]);
+    setNonImageFiles((prev) => [...prev, ...others]);
 
-        // Reset the form
-        setNewDocument({
-          title: "",
-          file: null,
-          isUploading: false,
-        });
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload file. Please try again.");
-      }
-    }
-  };
+    const allDocs = [...images, ...others].map((file) => ({
+      documentName: "New Document",
+      title: file.name.split(".")[0],
+      file,
+      isUploading: false,
+    }));
 
-  const removeDocument = (id: string) => {
-    const updatedDocuments = formData.documents.filter((doc) => doc.id !== id);
-    updateFormData({ documents: updatedDocuments });
+    setNewDocuments((prev) => [...prev, ...allDocs]);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewDocument({ ...newDocument, file: e.target.files[0] });
+    if (e.target.files) classifyFiles(Array.from(e.target.files));
+  };
+  const handleStopCapture = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop()); // Stop previous stream
+    }
+  };
+  const handleCameraCapture = () => {
+    if (videoRef.current && canvasRef.current) {
+      const context = canvasRef.current.getContext("2d");
+      if (!context) return;
+      context.drawImage(videoRef.current, 0, 0, 400, 400);
+      canvasRef.current.toBlob((blob) => {
+        if (!blob) return;
+        const imgFile = new window.File([blob], `photo-${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+
+        setImageFiles((prev) => [...prev, imgFile]);
+        setNewDocuments((prev) => [
+          ...prev,
+          {
+            documentName: "Captured Image",
+            title: `Captured-${Date.now()}`,
+            file: imgFile,
+            isUploading: false,
+          },
+        ]);
+      }, "image/jpeg");
     }
   };
 
-  // This would be implemented with a camera API in a real application
-  const handleCameraCapture = () => {
-    alert(
-      "Camera functionality would be implemented here. This would allow capturing multiple pages and converting to PDF."
+  const handleTitleChange = (index: number, value: string) => {
+    setNewDocuments((prev) =>
+      prev.map((doc, i) => (i === index ? { ...doc, title: value } : doc))
     );
-    // In a real implementation, you would:
-    // 1. Access the device camera
-    // 2. Allow capturing multiple images
-    // 3. Convert images to PDF
-    // 4. Set the resulting file to newDocument.file
+  };
+
+  const handleDocumentNameChange = (index: number, value: string) => {
+    setNewDocuments((prev) =>
+      prev.map((doc, i) =>
+        i === index ? { ...doc, documentName: value } : doc
+      )
+    );
+  };
+
+  const removeNewDocument = (index: number) => {
+    const removed = newDocuments[index];
+    if (!removed.file) return;
+
+    setNewDocuments((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((f) => f !== removed.file));
+    setNonImageFiles((prev) => prev.filter((f) => f !== removed.file));
+  };
+
+  const removeDocument = (id: string) => {
+    const updated = formData.documents.filter((doc) => doc.id !== id);
+    updateFormData({ documents: updated });
+  };
+
+  const addDocument = async () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop()); // Stop previous stream
+    }
+    try {
+      setCanAddMoreFiles(false); // Prevent adding more files until the current ones are uploaded
+      setNewDocuments((prev) =>
+        prev.map((doc) => ({ ...doc, isUploading: true }))
+      );
+
+      const imgForm = new FormData();
+      imageFiles.forEach((img) => imgForm.append("images", img));
+      const imageRes = imageFiles.length
+        ? await uploadImageFiles(imgForm)
+        : null;
+
+      const fileForm = new FormData();
+      nonImageFiles.forEach((file) => fileForm.append("files", file));
+      const fileRes = nonImageFiles.length
+        ? await uploadNonImageFiles(fileForm)
+        : null;
+      let uploaded: any[] = [];
+
+      // Handle image uploads
+      if (imageRes) {
+        const imagename = newDocuments.filter((doc) =>
+          imageFiles.includes(doc.file!)
+        );
+        const uploadedImages = [
+          {
+            id: Date.now().toString(),
+            title: imagename[0], // You can customize title
+            fileUrl: imageRes?.fileURL || "",
+            fileName: imageFiles.map((file) => file.name).join(", "),
+          },
+        ];
+        uploaded = [...uploaded, ...uploadedImages];
+      }
+      // Handle file (non-image) uploads
+      if (fileRes?.success && Array.isArray(fileRes.upload)) {
+        const uploadedFiles = newDocuments
+          .filter((doc) => nonImageFiles.includes(doc.file!))
+          .map((doc, i) => ({
+            id: Date.now().toString() + i,
+            title: doc.title,
+            fileUrl: fileRes.upload[i]?.value?.qrPDFURL || "",
+            fileName: doc.file?.name || "",
+          }));
+
+        uploaded = [...uploaded, ...uploadedFiles];
+      }
+
+      updateFormData({
+        documents: [...formData.documents, ...uploaded],
+      });
+      console.log(formData);
+      // Clear temporary state
+      setNewDocuments([]);
+      setImageFiles([]);
+      setNonImageFiles([]);
+      setCanAddMoreFiles(true); // Allow adding more files now
+    } catch (err) {
+      alert("Upload failed.");
+      console.error(err);
+      setCanAddMoreFiles(true); // Re-enable adding files if upload fails
+    }
+  };
+
+  const handleAddAnother = () => {
+    document.getElementById("fileInput")?.click();
   };
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-2xl font-semibold bg-clip-text text-transparent bg-blue-green-gradient inline-block">
+      <div>
+        <h3 className="text-2xl font-semibold bg-clip-text text-transparent bg-blue-green-gradient">
           Project Documents
         </h3>
-        <p className="text-gray-600">
-          Upload important documents related to your construction project.
-        </p>
+        <p className="text-gray-600">Upload project-related documents.</p>
       </div>
 
       <Card className="border border-blue-100 overflow-hidden">
-        <div className="h-1 bg-blue-green-gradient w-full"></div>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="documentTitle" className="text-blue-700">
-                Document Title
-              </Label>
-              <Input
-                id="documentTitle"
-                value={newDocument.title}
-                onChange={(e) =>
-                  setNewDocument({ ...newDocument, title: e.target.value })
-                }
-                placeholder="Enter document title"
-                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-blue-700">Document File</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    type="file"
-                    id="documentFile"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                    disabled={newDocument.isUploading}
-                  />
-                  <Button
-                    variant="outline"
-                    className="w-full flex items-center justify-center border-blue-300 text-blue-600 hover:bg-blue-50"
-                    disabled={newDocument.isUploading}
-                  >
-                    <Upload className="mr-2 h-4 w-4" /> Upload File
-                  </Button>
-                </div>
-
+        <div className="h-1 bg-blue-green-gradient w-full" />
+        <CardContent className="p-6 space-y-4">
+          <div className="space-y-2">
+            <Label className="text-blue-700">Document Files</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  id="fileInput"
+                  type="file"
+                  multiple
+                  accept="*/"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={handleFileChange}
+                  disabled={newDocuments.some((d) => d.isUploading)}
+                />
                 <Button
                   variant="outline"
-                  onClick={handleCameraCapture}
-                  disabled={newDocument.isUploading}
-                  className="border-green-300 text-green-600 hover:bg-green-50"
+                  className="w-full"
+                  onClick={handleAddAnother}
+                  disabled={newDocuments.some((d) => d.isUploading)}
                 >
-                  <Camera className="h-4 w-4" />
+                  <Upload className="mr-2 h-4 w-4" /> Select Files
                 </Button>
               </div>
-              {newDocument.file && (
-                <p className="text-sm text-blue-600 mt-1 flex items-center">
-                  <File className="h-4 w-4 mr-1" /> {newDocument.file.name}
-                </p>
-              )}
             </div>
           </div>
 
-          <Button
-            onClick={addDocument}
-            className="mt-6 bg-blue-green-gradient hover:opacity-90 transition-opacity animate-gradient"
-            disabled={
-              !newDocument.title || !newDocument.file || newDocument.isUploading
-            }
-          >
-            {newDocument.isUploading ? (
-              <>Uploading...</>
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" /> Add Document
-              </>
-            )}
-          </Button>
+          {!cameraActive && (
+            <Button onClick={() => setCameraActive(true)} className="mt-4">
+              Start Camera
+            </Button>
+          )}
+
+          {cameraActive && (
+            <div className="space-y-3">
+              <video ref={videoRef} width="100%" height="300" autoPlay />
+              <canvas
+                ref={canvasRef}
+                width="400"
+                height="400"
+                className="hidden"
+              />
+              <div className="flex justify-between">
+                <Button
+                  className="bg-green-600 text-white"
+                  onClick={handleCameraCapture}
+                >
+                  📸 Capture Photo
+                </Button>
+                <Button
+                  className="bg-green-600 text-white"
+                  onClick={handleStopCapture}
+                >
+                  📸 stop
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {newDocuments.length > 0 && (
+            <div className="space-y-3">
+              {newDocuments.map((doc, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 p-3 border overflow-y-auto rounded-lg"
+                >
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      value={doc.documentName}
+                      onChange={(e) =>
+                        handleDocumentNameChange(idx, e.target.value)
+                      }
+                      placeholder="Document Name"
+                    />
+                    <Input
+                      value={doc.title}
+                      onChange={(e) => handleTitleChange(idx, e.target.value)}
+                      placeholder="Document title"
+                    />
+                    {doc.file && doc.file.type.startsWith("image/") ? (
+                      <Image
+                        src={URL.createObjectURL(doc.file)}
+                        alt="Captured"
+                        width={300}
+                        height={300}
+                        className="max-w-xs max-h-48 border rounded shadow"
+                      />
+                    ) : (
+                      <div>
+                        {doc.file?.name}
+                        <div className="text-xs text-gray-500">
+                          {doc.file?.size} bytes
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 justify-between items-center">
+                    <Button
+                      variant="link"
+                      onClick={() => removeNewDocument(idx)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {formData.documents.length > 0 && (
-        <div className="space-y-4 mt-8">
-          <h4 className="font-medium text-lg text-blue-700">Added Documents</h4>
-
-          <div className="grid grid-cols-1 gap-4">
-            {formData.documents.map((document) => (
-              <Card
-                key={document.id}
-                className="overflow-hidden border border-blue-100 hover:shadow-md transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="bg-blue-100 p-3 rounded-lg mr-4">
-                        <File className="h-8 w-8 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-blue-800">
-                          {document.title}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {document.fileName}
-                        </p>
-                        <p className="text-xs text-blue-500 truncate mt-1">
-                          {document.fileUrl}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeDocument(document.id)}
-                      className="border-red-300 text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="flex gap-3">
+        <Button
+          variant="outline"
+          disabled={!canAddMoreFiles}
+          onClick={addDocument}
+        >
+          <Upload className="mr-2 h-4 w-4" /> Upload Documents
+        </Button>
+      </div>
     </div>
   );
 }

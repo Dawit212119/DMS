@@ -15,6 +15,7 @@ const uploadFiles = async (
   req: MulterRequest,
   res: Response
 ): Promise<void> => {
+  console.log(req.files);
   if (!req.files) {
     res.status(400).json({ error: "No file uploaded" });
     return;
@@ -81,7 +82,7 @@ const uploadFiles = async (
           createdAt: new Date(),
         });
         console.log(docRef);
-        return docRef;
+        return { qrPDFURL: qrPDFURL, fileURL: fileURL };
       })
     );
 
@@ -95,8 +96,10 @@ const uploadFiles = async (
     return;
   }
 };
-
-const uploadImage = async (req: MulterRequest, res: Response) => {
+const uploadImage = async (
+  req: MulterRequest,
+  res: Response
+): Promise<void> => {
   if (
     req.files === undefined ||
     !Array.isArray(req.files) ||
@@ -106,26 +109,44 @@ const uploadImage = async (req: MulterRequest, res: Response) => {
     return;
   }
 
-  const filename = `${Date.now()}-${
-    Array.isArray(req.files)
-      ? req.files[0]?.fieldname
-      : Object.keys(req.files || {})[0]
-  }`;
+  const allowedMimeTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
 
+  for (const file of req.files as Express.Multer.File[]) {
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      res.status(400).json({ error: "Only image files are allowed" });
+      return;
+    }
+  }
+
+  const filename = `upload-${Date.now()}.pdf`;
   const fileRef = bucket.file(filename);
   const fileURL = getFirebasePublicUrl(bucket.name, filename);
-  const qrcode = await generateQRCode(fileURL);
-  const qrpdf = await createPDF(req.files as Express.Multer.File[], qrcode);
-  await fileRef.save(qrpdf, {
-    metadata: { contentType: "application/pdf" },
-  });
-  const doc = await db.collection("upload").add({
-    name: filename,
-    url: fileURL,
-    createdAt: new Date(),
-  });
-  console.log(fileURL);
-  res.json({ fileURL });
+
+  try {
+    const qrcode = await generateQRCode(fileURL);
+    const qrpdf = await createPDF(req.files as Express.Multer.File[], qrcode);
+
+    await fileRef.save(qrpdf, {
+      metadata: { contentType: "application/pdf" },
+    });
+
+    await db.collection("upload").add({
+      name: filename,
+      url: fileURL,
+      createdAt: new Date(),
+    });
+
+    console.log("Uploaded PDF URL:", fileURL);
+    res.json({ fileURL: fileURL, filename: filename });
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).json({ error: "Upload failed" });
+  }
 };
 
 export { uploadFiles, uploadImage };

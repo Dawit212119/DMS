@@ -1,9 +1,8 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
-import type { FormData } from "../project-form";
+import { useRef, useState } from "react";
+import type { FormData as ProjectFormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,14 +15,20 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, File, Plus, Trash2, Upload } from "lucide-react";
+import useFileUploader from "@/app/action/useFileuploader";
+import Image from "next/image";
+import useImageUploader from "@/app/action/useImageuploader";
 
 interface ReportsProps {
-  formData: FormData;
+  formData: ProjectFormData;
   updateFormData: (data: Partial<FormData>) => void;
 }
 
 export default function Reports({ formData, updateFormData }: ReportsProps) {
-  // Update the state to include isUploading
+  const { uploadFiles } = useFileUploader();
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [fileSystemImages, setFileSystemImages] = useState<File[]>([]);
+  const { uploadFiles: uploadImageFiles } = useImageUploader();
   const [newReport, setNewReport] = useState({
     title: "",
     publisher: "",
@@ -35,75 +40,109 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
       | "annually",
     version: "",
     status: "approved" as "approved" | "rejected",
-    file: null as File | null,
+    files: [] as File[],
     isUploading: false,
   });
 
-  // This function would upload the file to your storage service
-  const uploadFile = async (
-    file: File
-  ): Promise<{ url: string; fileName: string }> => {
-    // In a real implementation, you would:
-    // 1. Create a FormData object
-    // 2. Append the file to it
-    // 3. Send it to your backend API
-    // 4. Get the URL back
+  // const uploadFilesToServer = async (files: File[]) => {
+  //   try {
+  //     setNewReport((prev) => ({ ...prev, isUploading: true }));
+  //     const fileData=
+  //     const response = await uploadFiles(files);
+  //     return response.map(
+  //       (res: PromiseSettledResult<{ fileURL: string }>, index: number) => ({
+  //         url: res.status === "fulfilled" ? res.value.fileURL : "",
+  //         fileName: files[index].name,
+  //       })
+  //     );
+  //   } finally {
+  //     setNewReport((prev) => ({ ...prev, isUploading: false }));
+  //   }
+  // };
 
-    // For now, we'll simulate this with a timeout
-    setNewReport((prev) => ({ ...prev, isUploading: true }));
-
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // This would be the URL returned from your storage service
-        const mockUrl = `https://storage.example.com/${file.name}`;
-        resolve({ url: mockUrl, fileName: file.name });
-        setNewReport((prev) => ({ ...prev, isUploading: false }));
-      }, 1000);
-    });
-  };
-
-  // Update the addReport function
   const addReport = async () => {
     if (
       newReport.title &&
       newReport.publisher &&
       newReport.version &&
-      newReport.file
+      newReport.files.length > 0
     ) {
       try {
-        // Upload the file and get the URL
-        const { url, fileName } = await uploadFile(newReport.file);
+        // const uploadedFiles = await uploadFilesToServer(newReport.files);
 
-        // Add the report with the URL to the form data
-        const updatedReports = [
-          ...formData.reports,
-          {
-            id: Date.now().toString(),
-            title: newReport.title,
-            publisher: newReport.publisher,
-            reportType: newReport.reportType,
-            version: newReport.version,
-            status: newReport.status,
-            fileUrl: url,
-            fileName: fileName,
-          },
-        ];
+        interface UploadedFile {
+          url: string;
+          fileName: string;
+        }
 
-        updateFormData({ reports: updatedReports });
+        interface Report {
+          id: string;
+          title: string;
+          publisher: string;
+          reportType: "daily" | "weekly" | "monthly" | "quarterly" | "annually";
+          version: string;
+          status: "approved" | "rejected";
+          fileUrl: any;
+          fileName: string;
+        }
+        const fileData = new FormData();
+        newReport.files.forEach((file) => fileData.append("files", file));
+        const fileres = await uploadFiles(fileData);
+        let upload: any[] = [];
+        if (fileres) {
+          const updatedReports: Report[] = [
+            {
+              id: `${Date.now()}`,
+              title: newReport.title,
+              publisher: newReport.publisher,
+              reportType: newReport.reportType,
+              version: newReport.version,
+              status: newReport.status,
+              fileUrl: fileres.upload.map((url: any) => url.qrPDFURL),
+              fileName: fileres.fileName,
+            },
+          ];
+          upload = [...updatedReports];
+        }
+        const formDataobj = new FormData();
+        fileSystemImages.forEach((file) => formDataobj.append("images", file));
+        const uploadResult =
+          fileSystemImages.length > 0
+            ? await uploadImageFiles(formDataobj)
+            : null;
+        if (uploadResult) {
+          const updatedReports: Report[] = [
+            {
+              id: `${Date.now()}`,
+              title: newReport.title,
+              publisher: newReport.publisher,
+              reportType: newReport.reportType,
+              version: newReport.version,
+              status: newReport.status,
+              fileUrl: uploadResult.fileURL,
 
-        // Reset the form
+              fileName: fileSystemImages.map((file) => file.name).join(", "),
+            },
+          ];
+          upload = [...updatedReports];
+        }
+        console.log(formData);
+        console.log(fileres);
+        console.log(formDataobj);
+        updateFormData({ reports: upload });
+
         setNewReport({
           title: "",
           publisher: "",
           reportType: "daily",
           version: "",
           status: "approved",
-          file: null,
+          files: [],
           isUploading: false,
         });
       } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload file. Please try again.");
+        console.error("Error uploading files:", error);
+        alert("Failed to upload files. Please try again.");
       }
     }
   };
@@ -116,21 +155,85 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewReport({ ...newReport, file: e.target.files[0] });
+    if (e.target.files && e.target.files.length > 0) {
+      const filesArray = Array.from(e.target.files);
+      setNewReport((prev) => ({
+        ...prev,
+        files: [...prev.files, ...filesArray],
+      }));
     }
   };
 
-  // This would be implemented with a camera API in a real application
+  const removeSelectedFile = (index: number) => {
+    setNewReport((prev) => ({
+      ...prev,
+      files: prev.files.filter((_, i) => i !== index),
+    }));
+  };
+
   const handleCameraCapture = () => {
     alert(
       "Camera functionality would be implemented here to capture report documents."
     );
-    // In a real implementation, you would:
-    // 1. Access the device camera
-    // 2. Allow capturing multiple images
-    // 3. Convert images to PDF
-    // 4. Set the resulting file to newReport.file
+  };
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+      setIsCameraActive(true);
+    } catch (err) {
+      console.error("Camera error:", err);
+      alert("Unable to access camera");
+    }
+  };
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (video && canvas) {
+      const context = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new window.File(
+            [blob],
+            `camera-capture-${Date.now()}.png`,
+            {
+              type: "image/png",
+            }
+          );
+          setFileSystemImages((prev) => [...prev, file]);
+          stopCamera();
+        }
+      }, "image/png");
+    }
+  };
+  const handleFileSystemImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setFileSystemImages((prev) => [...prev, ...files]);
+    }
+  };
+  const removeImage = (index: number, isCameraImage: boolean) => {
+    setFileSystemImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -143,124 +246,211 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="reportTitle">Report Title</Label>
-              <Input
-                id="reportTitle"
-                value={newReport.title}
-                onChange={(e) =>
-                  setNewReport({ ...newReport, title: e.target.value })
-                }
-                placeholder="Enter report title"
-              />
-            </div>
+            {/* Form fields remain the same */}
+            {/* ... */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Title Input */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={newReport.title}
+                  onChange={(e) =>
+                    setNewReport((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  placeholder="Enter report title"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="publisher">Publisher</Label>
-              <Input
-                id="publisher"
-                value={newReport.publisher}
-                onChange={(e) =>
-                  setNewReport({ ...newReport, publisher: e.target.value })
-                }
-                placeholder="Enter publisher name"
-              />
-            </div>
+              {/* Publisher Input */}
+              <div className="space-y-2">
+                <Label htmlFor="publisher">Publisher</Label>
+                <Input
+                  id="publisher"
+                  value={newReport.publisher}
+                  onChange={(e) =>
+                    setNewReport((prev) => ({
+                      ...prev,
+                      publisher: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter publisher name"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="reportType">Report Type</Label>
-              <Select
-                value={newReport.reportType}
-                onValueChange={(value) =>
-                  setNewReport({
-                    ...newReport,
-                    reportType: value as
-                      | "daily"
-                      | "weekly"
-                      | "monthly"
-                      | "quarterly"
-                      | "annually",
-                  })
-                }
-              >
-                <SelectTrigger id="reportType">
-                  <SelectValue placeholder="Select report type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="quarterly">Quarterly</SelectItem>
-                  <SelectItem value="annually">Annually</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Report Type Select */}
+              <div className="space-y-2">
+                <Label htmlFor="reportType">Report Type</Label>
+                <Select
+                  value={newReport.reportType}
+                  onValueChange={(value) =>
+                    setNewReport((prev) => ({
+                      ...prev,
+                      reportType: value as typeof newReport.reportType,
+                    }))
+                  }
+                >
+                  <SelectTrigger id="reportType">
+                    <SelectValue placeholder="Select report type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                    <SelectItem value="annually">Annually</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="version">Version</Label>
-              <Input
-                id="version"
-                value={newReport.version}
-                onChange={(e) =>
-                  setNewReport({ ...newReport, version: e.target.value })
-                }
-                placeholder="Enter version (e.g., 1.0)"
-              />
-            </div>
+              {/* Version Input */}
+              <div className="space-y-2">
+                <Label htmlFor="version">Version</Label>
+                <Input
+                  id="version"
+                  value={newReport.version}
+                  onChange={(e) =>
+                    setNewReport((prev) => ({
+                      ...prev,
+                      version: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter version"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="reportStatus">Status</Label>
-              <Select
-                value={newReport.status}
-                onValueChange={(value) =>
-                  setNewReport({
-                    ...newReport,
-                    status: value as "approved" | "rejected",
-                  })
-                }
-              >
-                <SelectTrigger id="reportStatus">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Status Select */}
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={newReport.status}
+                  onValueChange={(value) =>
+                    setNewReport((prev) => ({
+                      ...prev,
+                      status: value as typeof newReport.status,
+                    }))
+                  }
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label>Report File</Label>
+              <Label>Report Files</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Input
                     type="file"
-                    id="reportFile"
+                    id="reportFiles"
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx"
+                    accept="*/"
+                    multiple
                   />
                   <Button
                     variant="outline"
                     className="w-full flex items-center justify-center"
                   >
-                    <Upload className="mr-2 h-4 w-4" /> Upload File
+                    <Upload className="mr-2 h-4 w-4" /> Upload Files
                   </Button>
                 </div>
+                <div className="relative">
+                  <Input
+                    type="file"
+                    id="outgoingImages"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={handleFileSystemImageUpload}
+                    accept="image/*"
+                    multiple
+                  />
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Upload className="mr-2 h-4 w-4" /> Upload Images
+                  </Button>
+                  {fileSystemImages.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {fileSystemImages.map((img, index) => (
+                        <div key={`file-${index}`} className="relative">
+                          <Image
+                            width={80}
+                            height={80}
+                            src={URL.createObjectURL(img)}
+                            alt={`Uploaded ${index}`}
+                            className="w-20 h-20 object-cover rounded"
+                          />
+                          <button
+                            onClick={() => removeImage(index, false)}
+                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                <Button variant="outline" onClick={handleCameraCapture}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    startCamera();
+                    setTimeout(() => capturePhoto(), 2000); // Capture after 2 seconds
+                  }}
+                >
                   <Camera className="h-4 w-4" />
                 </Button>
               </div>
-              {newReport.file && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Selected: {newReport.file.name}
-                </p>
+              {isCameraActive && (
+                <div className="mt-4">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    className="border transform scale-x-[-1]" // Flip horizontally
+                    width="300"
+                    height="300"
+                  />
+                  <canvas
+                    ref={canvasRef}
+                    className="hidden"
+                    width="300"
+                    height="300"
+                  />
+                </div>
+              )}
+
+              {newReport.files.length > 0 && (
+                <div className="mt-2 space-y-2">
+                  {newReport.files.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                    >
+                      <span className="text-sm truncate max-w-xs">
+                        {file.name}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSelectedFile(index)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
 
-          {/* Update the button state to show uploading state */}
           <Button
             onClick={addReport}
             className="mt-4"
@@ -268,7 +458,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
               !newReport.title ||
               !newReport.publisher ||
               !newReport.version ||
-              !newReport.file ||
+              newReport.files.length === 0 ||
               newReport.isUploading
             }
           >
@@ -315,6 +505,22 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                             report.status.slice(1)}
                         </span>
                       </div>
+                      <a
+                        href={
+                          Array.isArray(report.fileUrl)
+                            ? typeof report.fileUrl[0] === "string"
+                              ? report.fileUrl[0]
+                              : URL.createObjectURL(report.fileUrl[0])
+                            : typeof report.fileUrl === "string"
+                            ? report.fileUrl
+                            : URL.createObjectURL(report.fileUrl)
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-500 hover:underline mt-1 block"
+                      >
+                        {report.fileName}
+                      </a>
                     </div>
                   </div>
 

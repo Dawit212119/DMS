@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 type UploadResult = {
-  pdfUrl?: string | null;
+  fileURL: string;
 };
 const useImageUploader = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -16,7 +16,7 @@ const useImageUploader = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000/upload/report`,
+        `http://localhost:8000/upload/images`,
         file,
         {
           headers: {

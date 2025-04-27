@@ -41,12 +41,12 @@ export default function DocumentsStep() {
 
   const documents = getDocumentsByType("document");
   const { uploadFiles: UploadFile } = useFileUploader();
+  const { uploadFiles, error } = useImageUploader();
 
   // Add these state variables and refs inside the DocumentsStep component
   const [cameraActive, setCameraActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { uploadFiles, error } = useImageUploader();
   // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {

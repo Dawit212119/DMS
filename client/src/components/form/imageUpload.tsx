@@ -70,7 +70,7 @@ const ImageUploader = () => {
     //   body: formData,
     // });
     console.log(res);
-    setPdfUrl(res?.pdfUrl ?? null);
+    setPdfUrl(res?.fileURL);
   };
 
   return (

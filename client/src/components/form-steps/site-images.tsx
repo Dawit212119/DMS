@@ -1,8 +1,4 @@
-"use client";
-
-import type React from "react";
-
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { FormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,7 +11,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, ImageIcon, Plus, Trash2, Upload } from "lucide-react";
+import {
+  Camera,
+  FileText,
+  ImageIcon,
+  Plus,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import useImageUploader from "@/app/action/useImageuploader";
+import { toast } from "sonner";
+import Image from "next/image";
+
+// Types
+
+type ImageCategory =
+  | "foundation"
+  | "structural"
+  | "electrical"
+  | "plumbing"
+  | "exterior"
+  | "aerial";
+
+interface SiteImageInProgress {
+  title: string;
+  location: string;
+  category: ImageCategory;
+  files: File[];
+  isUploading: boolean;
+}
 
 interface SiteImagesProps {
   formData: FormData;
@@ -26,292 +50,330 @@ export default function SiteImages({
   formData,
   updateFormData,
 }: SiteImagesProps) {
-  const [newImage, setNewImage] = useState({
-    title: "",
-    location: "",
-    category: "foundation" as
-      | "foundation"
-      | "structural"
-      | "electrical"
-      | "plumbing"
-      | "exterior"
-      | "aerial",
-    file: null as File | null,
-    isUploading: false,
-  });
+  const [newImages, setNewImages] = useState<SiteImageInProgress[]>([
+    {
+      title: "",
+      location: "",
+      category: "foundation",
+      files: [],
+      isUploading: false,
+    },
+  ]);
 
-  // This function would upload the file to your storage service
-  const uploadFile = async (
-    file: File
-  ): Promise<{ url: string; fileName: string }> => {
-    // In a real implementation, you would:
-    // 1. Create a FormData object
-    // 2. Append the file to it
-    // 3. Send it to your backend API
-    // 4. Get the URL back
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // For now, we'll simulate this with a timeout
-    setNewImage((prev) => ({ ...prev, isUploading: true }));
+  const { uploadFiles } = useImageUploader();
 
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // This would be the URL returned from your storage service
-        const mockUrl = `https://storage.example.com/${file.name}`;
-        resolve({ url: mockUrl, fileName: file.name });
-        setNewImage((prev) => ({ ...prev, isUploading: false }));
-      }, 1000);
+  const handleGroupUpload = async (index: number) => {
+    const current = newImages[index];
+
+    if (!current.files.length) {
+      toast.error("Please add images before uploading.");
+      return;
+    }
+
+    const uploadData = new FormData();
+    current.files.forEach((file) => {
+      uploadData.append("images", file);
     });
-  };
 
-  const addImage = async () => {
-    if (newImage.title && newImage.location && newImage.file) {
-      try {
-        // Upload the file and get the URL
-        const { url, fileName } = await uploadFile(newImage.file);
+    try {
+      setNewImages((prev) =>
+        prev.map((img, i) =>
+          i === index ? { ...img, isUploading: true } : img
+        )
+      );
 
-        // Add the image with the URL to the form data
-        const updatedImages = [
-          ...formData.siteImages,
-          {
-            id: Date.now().toString(),
-            title: newImage.title,
-            location: newImage.location,
-            category: newImage.category,
-            imageUrl: url,
-            fileName: fileName,
-          },
-        ];
+      const res = await uploadFiles(uploadData);
 
-        updateFormData({ siteImages: updatedImages });
+      if (!res.fileURL) {
+        throw new Error("Failed to generate PDF");
+      }
 
-        // Reset the form
-        setNewImage({
+      const uploadedImage = {
+        id: `img-${Date.now()}`,
+        title: current.title,
+        location: current.location,
+        category: current.category,
+        imageUrl: res.fileURL, // Assuming the fileURL is the image URL
+        fileName: current.files[0]?.name || "unknown", // Use the first file's name or a default
+      };
+
+      updateFormData({
+        siteImages: [...formData.siteImages, uploadedImage],
+      });
+      console.log(formData);
+      toast.success("PDF generated and linked successfully");
+
+      setNewImages([
+        {
           title: "",
           location: "",
           category: "foundation",
-          file: null,
+          files: [],
           isUploading: false,
-        });
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload file. Please try again.");
+        },
+      ]);
+    } catch (error) {
+      console.error("Upload error", error);
+      toast.error("Upload failed");
+    } finally {
+      setNewImages((prev) =>
+        prev.map((img, i) =>
+          i === index ? { ...img, isUploading: false } : img
+        )
+      );
+    }
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    if (e.target.files?.length) {
+      const files = Array.from(e.target.files);
+      setNewImages((prev) =>
+        prev.map((img, i) =>
+          i === index
+            ? {
+                ...img,
+                files: [...img.files, ...files],
+                title: img.title || files[0].name.split(".")[0],
+              }
+            : img
+        )
+      );
+      toast.success(`${files.length} image(s) added`);
+    }
+  };
+
+  const handleDeleteImage = (index: number, fileIndex: number) => {
+    setNewImages((prev) =>
+      prev.map((img, i) =>
+        i === index
+          ? {
+              ...img,
+              files: img.files.filter((_, idx) => idx !== fileIndex),
+            }
+          : img
+      )
+    );
+    toast.success("Image deleted");
+  };
+
+  const startCamera = async () => {
+    if (navigator.mediaDevices.getUserMedia) {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    }
+  };
+
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current && activeImageIndex !== null) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const newFile = new File([blob], `capture-${Date.now()}.jpg`, {
+                type: "image/jpeg",
+              });
+
+              setNewImages((prev) =>
+                prev.map((img, i) =>
+                  i === activeImageIndex
+                    ? {
+                        ...img,
+                        files: [...img.files, newFile],
+                        title:
+                          img.title ||
+                          `Photo ${new Date().toLocaleTimeString()}`,
+                      }
+                    : img
+                )
+              );
+            }
+          },
+          "image/jpeg",
+          0.9
+        );
       }
     }
   };
 
-  const removeImage = (id: string) => {
-    const updatedImages = formData.siteImages.filter(
-      (image) => image.id !== id
-    );
-    updateFormData({ siteImages: updatedImages });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setNewImage({ ...newImage, file: e.target.files[0] });
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
     }
+    setIsCameraActive(false);
+    setActiveImageIndex(null);
+    setCameraError(null);
   };
 
-  // This would be implemented with a camera API in a real application
-  const handleCameraCapture = () => {
-    alert(
-      "Camera functionality would be implemented here to capture site images."
-    );
-    // In a real implementation, you would:
-    // 1. Access the device camera
-    // 2. Allow capturing an image
-    // 3. Set the resulting file to newImage.file
-  };
+  const isUploadComplete =
+    newImages.length === 1 && newImages[0].files.length === 0;
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-2xl font-semibold bg-clip-text text-transparent bg-blue-green-gradient inline-block">
-          Site Images
-        </h3>
-        <p className="text-gray-600">
-          Upload images from your construction site.
-        </p>
-      </div>
-
-      <Card className="border border-blue-100 overflow-hidden">
-        <div className="h-1 bg-blue-green-gradient w-full"></div>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="imageTitle" className="text-blue-700">
-                Image Title
-              </Label>
+      {newImages.map((img, index) => (
+        <Card key={index} className="p-4">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
-                id="imageTitle"
-                value={newImage.title}
+                placeholder="Title"
+                value={img.title}
                 onChange={(e) =>
-                  setNewImage({ ...newImage, title: e.target.value })
+                  setNewImages((prev) =>
+                    prev.map((item, i) =>
+                      i === index ? { ...item, title: e.target.value } : item
+                    )
+                  )
                 }
-                placeholder="Enter image title"
-                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="imageLocation" className="text-blue-700">
-                Location
-              </Label>
               <Input
-                id="imageLocation"
-                value={newImage.location}
+                placeholder="Location"
+                value={img.location}
                 onChange={(e) =>
-                  setNewImage({ ...newImage, location: e.target.value })
+                  setNewImages((prev) =>
+                    prev.map((item, i) =>
+                      i === index ? { ...item, location: e.target.value } : item
+                    )
+                  )
                 }
-                placeholder="Enter location within site"
-                className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="imageCategory" className="text-blue-700">
-                Category
-              </Label>
               <Select
-                value={newImage.category}
-                onValueChange={(value) =>
-                  setNewImage({
-                    ...newImage,
-                    category: value as
-                      | "foundation"
-                      | "structural"
-                      | "electrical"
-                      | "plumbing"
-                      | "exterior"
-                      | "aerial",
-                  })
+                value={img.category}
+                onValueChange={(value: ImageCategory) =>
+                  setNewImages((prev) =>
+                    prev.map((item, i) =>
+                      i === index ? { ...item, category: value } : item
+                    )
+                  )
                 }
               >
-                <SelectTrigger
-                  id="imageCategory"
-                  className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                >
-                  <SelectValue placeholder="Select category" />
+                <SelectTrigger>
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="foundation">Foundation</SelectItem>
-                  <SelectItem value="structural">Structural</SelectItem>
-                  <SelectItem value="electrical">Electrical</SelectItem>
-                  <SelectItem value="plumbing">Plumbing</SelectItem>
-                  <SelectItem value="exterior">Exterior</SelectItem>
-                  <SelectItem value="aerial">Aerial</SelectItem>
+                  {[
+                    "foundation",
+                    "structural",
+                    "electrical",
+                    "plumbing",
+                    "exterior",
+                    "aerial",
+                  ].map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-blue-700">Image File</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    type="file"
-                    id="imageFile"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    disabled={newImage.isUploading}
+            <div className="flex items-center gap-4">
+              <Input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, index)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  setIsCameraActive(true);
+                  startCamera();
+                  setActiveImageIndex(index);
+                }}
+              >
+                <Camera />
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleGroupUpload(index)}
+                disabled={img.isUploading}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {img.isUploading ? "Uploading..." : "Upload Group"}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {img.files.map((file, i) => (
+                <div key={i} className="relative w-full h-32">
+                  <Image
+                    src={URL.createObjectURL(file)}
+                    alt={`Preview ${i}`}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded"
                   />
                   <Button
-                    variant="outline"
-                    className="w-full flex items-center justify-center border-blue-300 text-blue-600 hover:bg-blue-50"
-                    disabled={newImage.isUploading}
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDeleteImage(index, i)}
+                    className="absolute top-0 right-0"
                   >
-                    <Upload className="mr-2 h-4 w-4" /> Upload Image
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-
-                <Button
-                  variant="outline"
-                  onClick={handleCameraCapture}
-                  disabled={newImage.isUploading}
-                  className="border-green-300 text-green-600 hover:bg-green-50"
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
-              </div>
-              {newImage.file && (
-                <p className="text-sm text-blue-600 mt-1 flex items-center">
-                  <ImageIcon className="h-4 w-4 mr-1" /> {newImage.file.name}
-                </p>
-              )}
+              ))}
             </div>
-          </div>
+          </CardContent>
+        </Card>
+      ))}
 
-          <Button
-            onClick={addImage}
-            className="mt-6 bg-blue-green-gradient hover:opacity-90 transition-opacity animate-gradient"
-            disabled={
-              !newImage.title ||
-              !newImage.location ||
-              !newImage.file ||
-              newImage.isUploading
-            }
-          >
-            {newImage.isUploading ? (
-              <>Uploading...</>
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" /> Add Image
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {formData.siteImages.length > 0 && (
-        <div className="space-y-4 mt-8">
-          <h4 className="font-medium text-lg text-blue-700">Added Images</h4>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {formData.siteImages.map((image) => (
-              <Card
-                key={image.id}
-                className="overflow-hidden border border-blue-100 hover:shadow-md transition-shadow"
-              >
-                <div className="aspect-video bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-                  <div className="w-full h-full relative">
-                    <ImageIcon className="h-12 w-12 absolute inset-0 m-auto text-blue-300" />
-                    {/* In a real app, you would display the image here */}
-                    {/* <img src={image.imageUrl || "/placeholder.svg"} alt={image.title} className="w-full h-full object-cover" /> */}
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <div>
-                    <h5 className="font-medium text-blue-800 truncate">
-                      {image.title}
-                    </h5>
-                    <p className="text-sm text-gray-600 truncate">
-                      {image.location}
-                    </p>
-                    <p className="text-xs text-blue-500 truncate mt-1">
-                      {image.imageUrl}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs px-2 py-1 bg-blue-green-gradient text-white rounded-full">
-                        {image.category.charAt(0).toUpperCase() +
-                          image.category.slice(1)}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeImage(image.id)}
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      {isCameraActive && (
+        <div className="space-y-2">
+          <video
+            ref={videoRef}
+            autoPlay
+            className="w-full max-w-md mx-auto rounded shadow"
+          />
+          <canvas ref={canvasRef} className="hidden" />
+          <div className="flex gap-4 justify-center">
+            <Button onClick={captureImage}>Capture</Button>
+            <Button variant="outline" onClick={stopCamera}>
+              Cancel
+            </Button>
           </div>
         </div>
       )}
+
+      <Button
+        type="button"
+        onClick={() => {
+          setNewImages((prev) => [
+            ...prev,
+            {
+              title: "",
+              location: "",
+              category: "foundation",
+              files: [],
+              isUploading: false,
+            },
+          ]);
+        }}
+        disabled={!isUploadComplete}
+      >
+        <Plus className="mr-2 h-4 w-4" /> Add Image Group
+      </Button>
     </div>
   );
 }

@@ -69,8 +69,11 @@ export default function TeamInfo({ formData, updateFormData }: TeamInfoProps) {
           <Input
             id="totalWorkers"
             type="number"
+            min="0"
             value={formData.totalWorkers}
-            onChange={(e) => updateFormData({ totalWorkers: e.target.value })}
+            onChange={(e) =>
+              updateFormData({ totalWorkers: Number(e.target.value) })
+            }
             placeholder="Enter total number of workers"
             required
           />

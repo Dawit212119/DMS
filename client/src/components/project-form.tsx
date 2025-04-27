@@ -34,7 +34,7 @@ export type FormData = {
   siteManager: string;
   civilManager: string;
   architecturalLead: string;
-  totalWorkers: string;
+  totalWorkers: number;
 
   // Milestones
   milestones: Array<{
@@ -86,7 +86,7 @@ export type FormData = {
     subject: string;
     priority: "high" | "medium" | "low";
     status: "draft" | "sent";
-    fileUrl: string;
+    fileUrl: File[];
     fileName: string;
   }>;
   incomingLetters: Array<{
@@ -95,7 +95,7 @@ export type FormData = {
     subject: string;
     priority: "high" | "medium" | "low";
     status: "read" | "unread";
-    fileUrl: string;
+    fileUrl: File[];
     fileName: string;
   }>;
 
@@ -107,7 +107,7 @@ export type FormData = {
     reportType: "daily" | "weekly" | "monthly" | "quarterly" | "annually";
     version: string;
     status: "approved" | "rejected";
-    fileUrl: string;
+    fileUrl: File[];
     fileName: string;
   }>;
 };
@@ -124,7 +124,7 @@ const initialFormData: FormData = {
   siteManager: "",
   civilManager: "",
   architecturalLead: "",
-  totalWorkers: "",
+  totalWorkers: 0,
   milestones: [],
   checklist: [],
   documents: [],

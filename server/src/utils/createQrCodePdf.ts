@@ -43,7 +43,7 @@ const createPDF = async (
 
       // 8️⃣ Add QR Code ONLY on the FIRST PAGE
       if (index === 0) {
-        pdfDoc.image(qrcode, 450, 720, { width: 100, height: 100 });
+        pdfDoc.image(qrcode, 300, 30, { width: 100, height: 100 });
       }
     });
 
