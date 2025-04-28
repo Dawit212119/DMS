@@ -111,10 +111,11 @@ import PDFKit, { file } from "pdfkit";
 import { fileURLToPath } from "url";
 import uploadRouter from "./route/upload.js";
 import getRouter from "./route/Filesroute.js";
-import rootRoute from "./route/root.js";
 import { PrismaClient } from "@prisma/client";
 import { errorMiddleware } from "./exceptions/errorMiddleware";
 import project from "./route/project.js";
+import authRoute from "./route/root.js";
+
 dotenv.config();
 
 const app = express();
@@ -144,12 +145,9 @@ const __dirname = dirname(__filename);
 // const db = getFirestore();
 app.use(cors());
 app.use(express.json());
-app.get("/", (req, res) => {
-  res.send("Welcome to the home page!");
-});
+app.use("/api", authRoute);
 app.use("/upload", uploadRouter);
 app.use("/files", getRouter);
-app.use("/api", rootRoute);
 app.use("/project", project);
 
 // Middleware

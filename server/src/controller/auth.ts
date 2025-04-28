@@ -1,4 +1,4 @@
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { BadRequestException } from "../exceptions/badRequest.js";
 import { NotFoundException } from "../exceptions/notFound.js";
 import { ErrorCodes } from "../exceptions/root.js";
@@ -46,17 +46,17 @@ export const login = async (
     where: { email },
   });
   if (!user) {
-    next(new NotFoundException("User not found!", ErrorCodes.USER_NOT_FOUND));
-    return;
+    return next(
+      new NotFoundException("User not found!", ErrorCodes.USER_NOT_FOUND)
+    );
   }
   if (!compareSync(password, user.password)) {
-    next(
+    return next(
       new BadRequestException(
         "Invalid email or password!",
         ErrorCodes.INVALID_VALIDATION
       )
     );
-    return;
   }
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not defined");
@@ -67,7 +67,7 @@ export const login = async (
     },
     process.env.JWT_SECRET
   );
-  res.json(user);
+  res.json({ user, token });
 };
 export const me = (req: Request, res: Response, next: NextFunction) => {
   res.json(req.user);
