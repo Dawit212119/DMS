@@ -15,6 +15,7 @@ import ProjectDocuments from "./form-steps/project-documents";
 import Letters from "./form-steps/letters";
 import Reports from "./form-steps/reports";
 import ReviewForm from "./form-steps/review-form";
+import { toast } from "sonner";
 
 // FormData type remains the same as in the previous version
 export type FormData = {
@@ -195,10 +196,20 @@ export default function ProjectForm() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const res = await fetch("http://localhost:8000/project", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+    if (res.ok) {
+      toast("Project submitted successfully!");
+    }
     // This is where you would handle the form submission to your backend
     console.log("Form submitted:", formData);
-    alert("Form submitted successfully!");
+
     // Reset form after submission
     setFormData(initialFormData);
     setCurrentStep(1);
