@@ -1,90 +1,19 @@
+"use client";
+
 import ProjectChecklist, { ChecklistItem } from "./checklistTable";
+import { RootState } from "@/state/store";
+import { Project } from "@/state/project/projectSlice";
+import { useSelector } from "react-redux";
 
 // Sample data for a single project
-const annualReportTasks: ChecklistItem[] = [
-  {
-    id: "1",
-    task: "Review Q3 Financial Report",
-    assignedTo: "John Smith",
-    dueDate: new Date("2023-11-20"),
-    priority: "High",
-    completed: false,
-  },
-  {
-    id: "2",
-    task: "Collect Q4 Financial Data",
-    assignedTo: "Emma Johnson",
-    dueDate: new Date("2023-11-15"),
-    priority: "Medium",
-    completed: true,
-  },
-  {
-    id: "3",
-    task: "Update Executive Summary",
-    assignedTo: "Michael Brown",
-    dueDate: new Date("2023-11-10"),
-    priority: "High",
-    completed: false,
-  },
-  {
-    id: "4",
-    task: "Prepare Shareholder Presentation",
-    assignedTo: "Sarah Davis",
-    dueDate: new Date("2023-11-05"),
-    priority: "Medium",
-    completed: true,
-  },
-  {
-    id: "5",
-    task: "Finalize Annual Budget Forecast",
-    assignedTo: "David Wilson",
-    dueDate: new Date("2023-11-30"),
-    priority: "Low",
-    completed: false,
-  },
-  {
-    id: "6",
-    task: "Review Compliance Documentation",
-    assignedTo: "Lisa Anderson",
-    dueDate: new Date("2023-11-16"),
-    priority: "Medium",
-    completed: false,
-  },
-  {
-    id: "7",
-    task: "Update Risk Assessment Section",
-    assignedTo: "Robert Taylor",
-    dueDate: new Date("2023-11-18"),
-    priority: "Medium",
-    completed: true,
-  },
-  {
-    id: "8",
-    task: "Prepare Annual Budget Forecast",
-    assignedTo: "Jennifer White",
-    dueDate: new Date("2023-12-15"),
-    priority: "High",
-    completed: false,
-  },
-  {
-    id: "9",
-    task: "Collect Department Performance Metrics",
-    assignedTo: "John Smith",
-    dueDate: new Date("2023-11-16"),
-    priority: "Low",
-    completed: true,
-  },
-  {
-    id: "10",
-    task: "Review Monthly Expense Reports",
-    assignedTo: "Emma Johnson",
-    dueDate: new Date("2023-11-25"),
-    priority: "Medium",
-    completed: false,
-  },
-];
-
 export default function ProjectChecklistPage() {
+  const { currentProject, status, error } = useSelector((state: RootState) => {
+    return state.project as {
+      currentProject: Project;
+      status: string;
+      error: string | null;
+    };
+  });
   return (
     <main className="container mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-6">Project Management</h1>
@@ -126,8 +55,8 @@ export default function ProjectChecklistPage() {
       </div>
 
       <ProjectChecklist
-        projectName="Annual Financial Report"
-        items={annualReportTasks}
+        projectName={currentProject.projectName}
+        items={currentProject.checkList}
       />
     </main>
   );

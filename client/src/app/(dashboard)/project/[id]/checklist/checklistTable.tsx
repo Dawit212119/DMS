@@ -42,16 +42,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-
-// Define the type for our checklist item
-export type ChecklistItem = {
-  id: string;
-  task: string;
-  assignedTo: string;
-  dueDate: Date;
-  priority: "Low" | "Medium" | "High";
-  completed: boolean;
-};
+import { CheckList as ChecklistItem } from "@/state/project/projectSlice";
 
 // Priority badge component with appropriate colors
 const PriorityBadge = ({
@@ -66,7 +57,15 @@ const PriorityBadge = ({
   };
 
   return (
-    <Badge className={priorityStyles[priority]} variant="outline">
+    <Badge
+      className={
+        priorityStyles[
+          (priority.charAt(0).toUpperCase() +
+            priority.slice(1)) as keyof typeof priorityStyles
+        ]
+      }
+      variant="outline"
+    >
       {priority}
     </Badge>
   );

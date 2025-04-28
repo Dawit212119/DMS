@@ -70,7 +70,7 @@ interface UpcomingMilstone {
   projectId: string;
 }
 
-interface CheckList {
+export interface CheckList {
   id: string;
   task: Status;
   assignedTo: string;
