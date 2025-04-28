@@ -6,6 +6,7 @@ import { prismaClient } from "../prisma.js";
 import { SignUpSchema } from "../schema/user.js";
 import { compareSync, hashSync } from "bcrypt";
 import { NextFunction, Request, Response } from "express";
+import { generateTokenAndSetCookie } from "../lib/generateToken.js";
 export const signup = async (
   req: Request,
   res: Response,
@@ -42,9 +43,11 @@ export const login = async (
   next: NextFunction
 ) => {
   const { email, password } = req.body;
+  console.log(email, password);
   let user = await prismaClient.user.findFirst({
     where: { email },
   });
+  console.log(user);
   if (!user) {
     return next(
       new NotFoundException("User not found!", ErrorCodes.USER_NOT_FOUND)
@@ -61,13 +64,8 @@ export const login = async (
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not defined");
   }
-  const token = jwt.sign(
-    {
-      userId: user.id,
-    },
-    process.env.JWT_SECRET
-  );
-  res.json({ user, token });
+  generateTokenAndSetCookie(user.id, res);
+  res.send(user);
 };
 export const me = (req: Request, res: Response, next: NextFunction) => {
   res.json(req.user);
