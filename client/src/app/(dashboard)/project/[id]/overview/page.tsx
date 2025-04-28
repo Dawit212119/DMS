@@ -31,8 +31,6 @@ export default function ProjectOverview() {
     status,
     error,
   } = useSelector((state: RootState) => {
-    console.log("state:", state);
-    console.log("project:", state.project);
     return state.project as {
       currentProject: Project;
       status: string;
@@ -61,7 +59,7 @@ export default function ProjectOverview() {
   // Calculate days remaining
   const calculateDaysRemaining = () => {
     const today = new Date();
-    const completionDate = new Date(projectData.estimatedCompletion);
+    const completionDate = new Date(projectData.dueDate);
     const diffTime = completionDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -74,9 +72,11 @@ export default function ProjectOverview() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              {projectData.name}
+              {projectData.projectName}
             </h1>
-            <p className="text-muted-foreground mt-1">{projectData.client}</p>
+            <p className="text-muted-foreground mt-1">
+              {projectData.clientName}
+            </p>
           </div>
         </div>
 
@@ -104,12 +104,23 @@ export default function ProjectOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(projectData.budget.spent)}
+                {formatCurrency(
+                  projectData.budget.reduce((total, b) => total + b.spent, 0)
+                )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                of {formatCurrency(projectData.budget.total)} (
+                of{" "}
+                {formatCurrency(
+                  projectData.budget.reduce((total, b) => total + b.total, 0)
+                )}{" "}
+                (
                 {Math.round(
-                  (projectData.budget.spent / projectData.budget.total) * 100
+                  (projectData.budget.reduce((total, b) => total + b.spent, 0) /
+                    projectData.budget.reduce(
+                      (total, b) => total + b.total,
+                      0
+                    )) *
+                    100
                 )}
                 %)
               </p>
@@ -125,7 +136,7 @@ export default function ProjectOverview() {
                 {formatDate(projectData.startDate)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                to {formatDate(projectData.estimatedCompletion)}
+                to {formatDate(projectData.dueDate)}
               </p>
             </CardContent>
           </Card>
@@ -136,7 +147,10 @@ export default function ProjectOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {projectData.team.totalWorkers}
+                {projectData.team.reduce(
+                  (total, member) => total + member.totalWorker,
+                  0
+                )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 workers on site
@@ -163,25 +177,41 @@ export default function ProjectOverview() {
                     <span className="text-muted-foreground">
                       Project Manager:
                     </span>
-                    <span>{projectData.team.projectManager}</span>
+                    <span>
+                      {projectData.team
+                        ? projectData.team[0].projectManger
+                        : "None"}
+                    </span>
                   </li>
                   <li className="flex justify-between">
                     <span className="text-muted-foreground">
                       Site Engineer:
                     </span>
-                    <span>{projectData.team.siteEngineer}</span>
+                    <span>
+                      {projectData.team
+                        ? projectData.team[0].siteManger
+                        : "None"}
+                    </span>
                   </li>
                   <li className="flex justify-between">
                     <span className="text-muted-foreground">
                       Civil Engineer:
                     </span>
-                    <span>{projectData.team.civilEngineer}</span>
+                    <span>
+                      {projectData.team
+                        ? projectData.team[0].civilManger
+                        : "None"}
+                    </span>
                   </li>
                   <li className="flex justify-between">
                     <span className="text-muted-foreground">
                       Architectural Lead:
                     </span>
-                    <span>{projectData.team.architecturalLead}</span>
+                    <span>
+                      {projectData.team
+                        ? projectData.team[0].architecturalLoad
+                        : "None"}
+                    </span>
                   </li>
                 </ul>
               </div>
