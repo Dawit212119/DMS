@@ -30,6 +30,83 @@ interface documentProps {
   projectId?: Project["id"];
   date: Documents["date"];
 }
+
+export const getProjects = async (req: Request, res: Response) => {
+  try {
+    console.log("present");
+    // Parse pagination parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination metadata
+    const totalProjects = await prismaClient.project.count();
+
+    // Fetch projects with all relations
+    const projects = await prismaClient.project.findMany({
+      skip,
+      take: pageSize,
+      include: {
+        budget: true,
+        team: true,
+        upcomingMilstone: true,
+        checkList: true,
+        documents: true,
+        theIncomingLetter: true,
+        theOutgoingLetter: true,
+        report: true,
+        constructionSiteImage: {
+          take: 1, // Only get first image for thumbnail
+          orderBy: {
+            date: "desc",
+          },
+        },
+      },
+      orderBy: {
+        startDate: "desc",
+      },
+    });
+    // console.log(projects);
+    // Format dates and construct response
+    const formattedProjects = projects.map((project) => ({
+      id: project.id,
+      projectName: project.projectName,
+      clientName: project.clientName,
+      location: project.location,
+      startDate: project.startDate.toISOString().split("T")[0],
+      dueDate: project.dueDate.toISOString().split("T")[0],
+      progress: project.progress,
+      thumbnail:
+        project.constructionSiteImage[0]?.imagesrc ||
+        "/default-construction.jpg",
+      budget: project.budget,
+      team: project.team,
+    }));
+    console.log("formated: ", formattedProjects);
+    return res.status(200).json({
+      success: true,
+      data: {
+        projects: formattedProjects,
+        pagination: {
+          totalItems: totalProjects,
+          totalPages: Math.ceil(totalProjects / pageSize),
+          currentPage: page,
+          pageSize,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch projects",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  } finally {
+    await prismaClient.$disconnect();
+  }
+};
+
 export async function Projects(req: Request, res: Response) {
   try {
     if (!req.body) {

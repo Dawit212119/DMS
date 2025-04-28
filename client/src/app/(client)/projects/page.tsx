@@ -1,56 +1,89 @@
+"use client";
+
 import ProjectCard from "@/components/project-card";
-
-// This would typically come from your database
-const projects = [
-  {
-    id: "1",
-    name: "New Office Building",
-    client: "Acme Corporation",
-    location: "Downtown, New York",
-    startDate: "2023-06-15",
-    endDate: "2024-08-30",
-    imageUrl: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "2",
-    name: "Residential Complex Phase 2",
-    client: "Horizon Developers",
-    location: "Westside, Chicago",
-    startDate: "2023-04-10",
-    endDate: "2024-05-20",
-    imageUrl: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "3",
-    name: "Highway Bridge Renovation",
-    client: "State Transportation Dept",
-    location: "River Crossing, Portland",
-    startDate: "2023-01-05",
-    endDate: "2023-11-15",
-    imageUrl: "/placeholder.svg?height=200&width=400",
-  },
-];
-
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { AppDispatch } from "@/state/store";
+import { useDispatch } from "react-redux";
+import { RootState } from "@/state/store";
+import { fetchProjects } from "@/state/project/projectSlice";
 export default function ProjectsPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { projects, status, error } = useSelector((state: RootState) => {
+    return state.project as {
+      projects: Array<{
+        id: string;
+        projectName: string;
+        clientName: string;
+        location: string;
+        startDate: string;
+        dueDate: string;
+        progress: number;
+      }>;
+      status: string;
+      error: string | null;
+    };
+  });
+
+  useEffect(() => {
+    dispatch(fetchProjects(1)); // Fetch first page of projects
+  }, [dispatch]);
+
+  if (status === "loading") {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Projects</h1>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-gray-200 rounded-lg p-4 animate-pulse h-64"
+            ></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "failed") {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Projects</h1>
+        </div>
+        <div className="text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Projects</h1>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.id}
-            id={project.id}
-            name={project.name}
-            client={project.client}
-            location={project.location}
-            startDate={project.startDate}
-            endDate={project.endDate}
-            imageUrl={project.imageUrl}
-          />
-        ))}
-      </div>
+      {projects.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No projects found</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              id={project.id}
+              name={project.projectName}
+              client={project.clientName}
+              location={project.location}
+              startDate={new Date(project.startDate).toLocaleDateString()}
+              endDate={new Date(project.dueDate).toLocaleDateString()}
+              imageUrl="/placeholder.svg?height=200&width=400"
+              progress={project.progress}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

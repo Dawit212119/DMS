@@ -142,7 +142,7 @@ const __dirname = dirname(__filename);
 
 // const bucket = getStorage().bucket();
 // const db = getFirestore();
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors());
 app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Welcome to the home page!");
