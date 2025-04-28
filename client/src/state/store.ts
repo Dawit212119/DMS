@@ -2,6 +2,7 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 // import { persistStore, persistReducer } from "redux-persist";
 // import storage from "redux-persist/lib/storage"; // Defaults to localStorage for web
 import authApi from "./features/authApi";
+import projectReducer from "./project/projectSlice";
 
 // Configuration for Redux Persist
 // const persistConfig = {
@@ -23,6 +24,7 @@ import authApi from "./features/authApi";
 export const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,
+    project: projectReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(authApi.middleware),
