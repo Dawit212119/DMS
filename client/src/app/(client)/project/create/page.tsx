@@ -1,6 +1,26 @@
+"use client";
 import ProjectForm from "@/components/project-form";
-
+import { useGetMeQuery } from "@/state/features/authApi";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 export default function Home() {
+  const router = useRouter();
+  const { data: user, isLoading } = useGetMeQuery();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/sign-in"); // ✅ Safe inside useEffect
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8">
       <div className="container mx-auto px-4">

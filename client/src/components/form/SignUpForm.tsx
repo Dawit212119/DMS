@@ -16,7 +16,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, Loader2 } from "lucide-react";
+import { User, Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -35,7 +35,7 @@ const FormSchema = z
     password: z
       .string()
       .min(1, "Password is required")
-      .min(8, "Password must have than 8 characters"),
+      .min(6, "Password must have than 8 characters"),
     confirmPassword: z.string().min(1, "Password confirmation is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -63,13 +63,13 @@ const SignUpForm = () => {
     setError(null);
 
     try {
-      const response = await fetch("/api/user", {
+      const response = await fetch("http://localhost:8000/api/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: values.username,
+          name: values.username,
           email: values.email,
           password: values.password,
         }),
@@ -95,8 +95,11 @@ const SignUpForm = () => {
     <div className="">
       <Card className="w-full max-w-lg border-blue-600/20 bg-white shadow-lg px-8">
         <CardHeader className="space-y-1 text-center pb-2 pt-4">
-          <CardTitle className="text-xl font-bold text-gray-900">
-            Create Account
+          <CardTitle className="text-2xl font-bold text-gray-900 flex gap-2 items-center">
+            <Link href={"/"}>
+              <ArrowLeft />
+            </Link>
+            <span>Create Account</span>
           </CardTitle>
           <CardDescription className="text-gray-600">
             Enter your information to create an account
