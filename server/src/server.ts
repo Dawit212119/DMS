@@ -12,7 +12,12 @@ import authRoute from "./route/auth.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Frontend URL
+    credentials: true, // Allow cookies to be sent
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", authRoute);

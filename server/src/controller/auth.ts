@@ -43,11 +43,11 @@ export const login = async (
   next: NextFunction
 ) => {
   const { email, password } = req.body;
-  console.log(email, password);
+
   let user = await prismaClient.user.findFirst({
     where: { email },
   });
-  console.log(user);
+
   if (!user) {
     return next(
       new NotFoundException("User not found!", ErrorCodes.USER_NOT_FOUND)
@@ -69,4 +69,12 @@ export const login = async (
 };
 export const me = (req: Request, res: Response, next: NextFunction) => {
   res.json(req.user);
+};
+export const logOut = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  res.cookie("jwt", "", { maxAge: 0 });
+  res.status(200).json({ message: "Logged out Successfully" });
 };

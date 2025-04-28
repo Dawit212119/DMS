@@ -5,12 +5,13 @@ import {
   UpdateProject,
   getProjects,
 } from "../controller/projects";
+import authMiddleware from "../middelware/auth";
 
 const router = express.Router();
 
-router.post("/", Projects);
+router.post("/", authMiddleware, Projects);
 router.get("/:id", GetProject);
-router.put("/:id", UpdateProject);
+router.put("/:id", authMiddleware, UpdateProject);
 router.delete("/:id");
 router.get("/", getProjects);
 export default router;

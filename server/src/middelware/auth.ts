@@ -10,6 +10,7 @@ const authMiddleware = async (
   next: NextFunction
 ) => {
   const token = req.cookies.jwt;
+  console.log(token);
   if (!token) {
     return next(
       new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED)
@@ -34,6 +35,7 @@ const authMiddleware = async (
       );
     }
     req.user = user;
+    console.log(user);
     next();
   } catch (error) {
     return next(

@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response, Request, NextFunction } from "express";
 import z, { ZodError } from "zod";
 import {
   CheckListSchema,
@@ -116,15 +116,16 @@ export async function Projects(req: Request, res: Response) {
       });
       return;
     }
-    console.log(req.body);
-    const validatedProjectData = ProjectSchema.parse(req.body?.project);
 
+    const validatedProjectData = ProjectSchema.parse(req.body?.project);
+    const userId = req.user?.id ?? undefined;
     const { projectName, clientName, location, startDate, dueDate, progress } =
       validatedProjectData;
 
     const project = await prismaClient.project.create({
       data: {
         projectName,
+        userId,
         clientName,
         location,
         startDate,

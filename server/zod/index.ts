@@ -12,7 +12,7 @@ import type { Prisma } from '@prisma/client';
 
 export const UserScalarFieldEnumSchema = z.enum(['id','name','email','password','createdAt','updatedAt']);
 
-export const ProjectScalarFieldEnumSchema = z.enum(['id','projectName','clientName','location','startDate','dueDate','progress']);
+export const ProjectScalarFieldEnumSchema = z.enum(['id','userId','projectName','clientName','location','startDate','dueDate','progress']);
 
 export const BudgetScalarFieldEnumSchema = z.enum(['id','total','spent','projectId']);
 
@@ -89,6 +89,7 @@ export type User = z.infer<typeof UserSchema>
 
 export const ProjectSchema = z.object({
   id: z.string(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -248,8 +249,20 @@ export type ConstructionSiteImage = z.infer<typeof ConstructionSiteImageSchema>
 // USER
 //------------------------------------------------------
 
+export const UserIncludeSchema: z.ZodType<Prisma.UserInclude> = z.object({
+}).strict()
+
 export const UserArgsSchema: z.ZodType<Prisma.UserDefaultArgs> = z.object({
   select: z.lazy(() => UserSelectSchema).optional(),
+  include: z.lazy(() => UserIncludeSchema).optional(),
+}).strict();
+
+export const UserCountOutputTypeArgsSchema: z.ZodType<Prisma.UserCountOutputTypeDefaultArgs> = z.object({
+  select: z.lazy(() => UserCountOutputTypeSelectSchema).nullish(),
+}).strict();
+
+export const UserCountOutputTypeSelectSchema: z.ZodType<Prisma.UserCountOutputTypeSelect> = z.object({
+  projects: z.boolean().optional(),
 }).strict();
 
 export const UserSelectSchema: z.ZodType<Prisma.UserSelect> = z.object({
@@ -259,6 +272,8 @@ export const UserSelectSchema: z.ZodType<Prisma.UserSelect> = z.object({
   password: z.boolean().optional(),
   createdAt: z.boolean().optional(),
   updatedAt: z.boolean().optional(),
+  projects: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
+  _count: z.union([z.boolean(),z.lazy(() => UserCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
 // PROJECT
@@ -289,12 +304,14 @@ export const ProjectCountOutputTypeSelectSchema: z.ZodType<Prisma.ProjectCountOu
 
 export const ProjectSelectSchema: z.ZodType<Prisma.ProjectSelect> = z.object({
   id: z.boolean().optional(),
+  userId: z.boolean().optional(),
   projectName: z.boolean().optional(),
   clientName: z.boolean().optional(),
   location: z.boolean().optional(),
   startDate: z.boolean().optional(),
   dueDate: z.boolean().optional(),
   progress: z.boolean().optional(),
+  user: z.union([z.boolean(),z.lazy(() => UserArgsSchema)]).optional(),
   budget: z.union([z.boolean(),z.lazy(() => BudgetArgsSchema)]).optional(),
   team: z.union([z.boolean(),z.lazy(() => TeamArgsSchema)]).optional(),
   upcomingMilstone: z.union([z.boolean(),z.lazy(() => UpcomingMilstoneArgsSchema)]).optional(),
@@ -518,6 +535,7 @@ export const UserWhereInputSchema: z.ZodType<Prisma.UserWhereInput> = z.object({
   password: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projects: z.lazy(() => ProjectListRelationFilterSchema).optional()
 }).strict();
 
 export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWithRelationInput> = z.object({
@@ -526,7 +544,8 @@ export const UserOrderByWithRelationInputSchema: z.ZodType<Prisma.UserOrderByWit
   email: z.lazy(() => SortOrderSchema).optional(),
   password: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
-  updatedAt: z.lazy(() => SortOrderSchema).optional()
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  projects: z.lazy(() => ProjectOrderByRelationAggregateInputSchema).optional()
 }).strict();
 
 export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> = z.union([
@@ -551,6 +570,7 @@ export const UserWhereUniqueInputSchema: z.ZodType<Prisma.UserWhereUniqueInput> 
   password: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projects: z.lazy(() => ProjectListRelationFilterSchema).optional()
 }).strict());
 
 export const UserOrderByWithAggregationInputSchema: z.ZodType<Prisma.UserOrderByWithAggregationInput> = z.object({
@@ -582,12 +602,14 @@ export const ProjectWhereInputSchema: z.ZodType<Prisma.ProjectWhereInput> = z.ob
   OR: z.lazy(() => ProjectWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ProjectWhereInputSchema),z.lazy(() => ProjectWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   projectName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   clientName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   startDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   progress: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  user: z.union([ z.lazy(() => UserScalarRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional(),
   budget: z.lazy(() => BudgetListRelationFilterSchema).optional(),
   team: z.lazy(() => TeamListRelationFilterSchema).optional(),
   upcomingMilstone: z.union([ z.lazy(() => UpcomingMilstoneNullableScalarRelationFilterSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional().nullable(),
@@ -601,12 +623,14 @@ export const ProjectWhereInputSchema: z.ZodType<Prisma.ProjectWhereInput> = z.ob
 
 export const ProjectOrderByWithRelationInputSchema: z.ZodType<Prisma.ProjectOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
   projectName: z.lazy(() => SortOrderSchema).optional(),
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
   startDate: z.lazy(() => SortOrderSchema).optional(),
   dueDate: z.lazy(() => SortOrderSchema).optional(),
   progress: z.lazy(() => SortOrderSchema).optional(),
+  user: z.lazy(() => UserOrderByWithRelationInputSchema).optional(),
   budget: z.lazy(() => BudgetOrderByRelationAggregateInputSchema).optional(),
   team: z.lazy(() => TeamOrderByRelationAggregateInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneOrderByWithRelationInputSchema).optional(),
@@ -626,12 +650,14 @@ export const ProjectWhereUniqueInputSchema: z.ZodType<Prisma.ProjectWhereUniqueI
   AND: z.union([ z.lazy(() => ProjectWhereInputSchema),z.lazy(() => ProjectWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => ProjectWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ProjectWhereInputSchema),z.lazy(() => ProjectWhereInputSchema).array() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   projectName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   clientName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   startDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   progress: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
+  user: z.union([ z.lazy(() => UserScalarRelationFilterSchema),z.lazy(() => UserWhereInputSchema) ]).optional(),
   budget: z.lazy(() => BudgetListRelationFilterSchema).optional(),
   team: z.lazy(() => TeamListRelationFilterSchema).optional(),
   upcomingMilstone: z.union([ z.lazy(() => UpcomingMilstoneNullableScalarRelationFilterSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional().nullable(),
@@ -645,6 +671,7 @@ export const ProjectWhereUniqueInputSchema: z.ZodType<Prisma.ProjectWhereUniqueI
 
 export const ProjectOrderByWithAggregationInputSchema: z.ZodType<Prisma.ProjectOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
   projectName: z.lazy(() => SortOrderSchema).optional(),
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
@@ -663,6 +690,7 @@ export const ProjectScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Proje
   OR: z.lazy(() => ProjectScalarWhereWithAggregatesInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ProjectScalarWhereWithAggregatesInputSchema),z.lazy(() => ProjectScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   projectName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   clientName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   location: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
@@ -1292,7 +1320,8 @@ export const UserCreateInputSchema: z.ZodType<Prisma.UserCreateInput> = z.object
   email: z.string(),
   password: z.string(),
   createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional()
+  updatedAt: z.coerce.date().optional(),
+  projects: z.lazy(() => ProjectCreateNestedManyWithoutUserInputSchema).optional()
 }).strict();
 
 export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreateInput> = z.object({
@@ -1301,7 +1330,8 @@ export const UserUncheckedCreateInputSchema: z.ZodType<Prisma.UserUncheckedCreat
   email: z.string(),
   password: z.string(),
   createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional()
+  updatedAt: z.coerce.date().optional(),
+  projects: z.lazy(() => ProjectUncheckedCreateNestedManyWithoutUserInputSchema).optional()
 }).strict();
 
 export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.object({
@@ -1310,6 +1340,7 @@ export const UserUpdateInputSchema: z.ZodType<Prisma.UserUpdateInput> = z.object
   password: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  projects: z.lazy(() => ProjectUpdateManyWithoutUserNestedInputSchema).optional()
 }).strict();
 
 export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdateInput> = z.object({
@@ -1318,6 +1349,7 @@ export const UserUncheckedUpdateInputSchema: z.ZodType<Prisma.UserUncheckedUpdat
   password: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  projects: z.lazy(() => ProjectUncheckedUpdateManyWithoutUserNestedInputSchema).optional()
 }).strict();
 
 export const UserCreateManyInputSchema: z.ZodType<Prisma.UserCreateManyInput> = z.object({
@@ -1353,6 +1385,7 @@ export const ProjectCreateInputSchema: z.ZodType<Prisma.ProjectCreateInput> = z.
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
@@ -1366,6 +1399,7 @@ export const ProjectCreateInputSchema: z.ZodType<Prisma.ProjectCreateInput> = z.
 
 export const ProjectUncheckedCreateInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -1390,6 +1424,7 @@ export const ProjectUpdateInputSchema: z.ZodType<Prisma.ProjectUpdateInput> = z.
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
@@ -1402,6 +1437,7 @@ export const ProjectUpdateInputSchema: z.ZodType<Prisma.ProjectUpdateInput> = z.
 }).strict();
 
 export const ProjectUncheckedUpdateInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -1421,6 +1457,7 @@ export const ProjectUncheckedUpdateInputSchema: z.ZodType<Prisma.ProjectUnchecke
 
 export const ProjectCreateManyInputSchema: z.ZodType<Prisma.ProjectCreateManyInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -1439,6 +1476,7 @@ export const ProjectUpdateManyMutationInputSchema: z.ZodType<Prisma.ProjectUpdat
 }).strict();
 
 export const ProjectUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateManyInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -2044,6 +2082,16 @@ export const DateTimeFilterSchema: z.ZodType<Prisma.DateTimeFilter> = z.object({
   not: z.union([ z.coerce.date(),z.lazy(() => NestedDateTimeFilterSchema) ]).optional(),
 }).strict();
 
+export const ProjectListRelationFilterSchema: z.ZodType<Prisma.ProjectListRelationFilter> = z.object({
+  every: z.lazy(() => ProjectWhereInputSchema).optional(),
+  some: z.lazy(() => ProjectWhereInputSchema).optional(),
+  none: z.lazy(() => ProjectWhereInputSchema).optional()
+}).strict();
+
+export const ProjectOrderByRelationAggregateInputSchema: z.ZodType<Prisma.ProjectOrderByRelationAggregateInput> = z.object({
+  _count: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
 export const UserCountOrderByAggregateInputSchema: z.ZodType<Prisma.UserCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   name: z.lazy(() => SortOrderSchema).optional(),
@@ -2112,6 +2160,11 @@ export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.object({
   gt: z.number().optional(),
   gte: z.number().optional(),
   not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
+}).strict();
+
+export const UserScalarRelationFilterSchema: z.ZodType<Prisma.UserScalarRelationFilter> = z.object({
+  is: z.lazy(() => UserWhereInputSchema).optional(),
+  isNot: z.lazy(() => UserWhereInputSchema).optional()
 }).strict();
 
 export const BudgetListRelationFilterSchema: z.ZodType<Prisma.BudgetListRelationFilter> = z.object({
@@ -2201,6 +2254,7 @@ export const ConstructionSiteImageOrderByRelationAggregateInputSchema: z.ZodType
 
 export const ProjectCountOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
   projectName: z.lazy(() => SortOrderSchema).optional(),
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
@@ -2215,6 +2269,7 @@ export const ProjectAvgOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectAvgO
 
 export const ProjectMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
   projectName: z.lazy(() => SortOrderSchema).optional(),
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
@@ -2225,6 +2280,7 @@ export const ProjectMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMaxO
 
 export const ProjectMinOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
   projectName: z.lazy(() => SortOrderSchema).optional(),
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
@@ -2699,12 +2755,60 @@ export const EnumcategoryWithAggregatesFilterSchema: z.ZodType<Prisma.Enumcatego
   _max: z.lazy(() => NestedEnumcategoryFilterSchema).optional()
 }).strict();
 
+export const ProjectCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.ProjectCreateNestedManyWithoutUserInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutUserInputSchema),z.lazy(() => ProjectCreateWithoutUserInputSchema).array(),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema),z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ProjectCreateManyUserInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
+export const ProjectUncheckedCreateNestedManyWithoutUserInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutUserInputSchema),z.lazy(() => ProjectCreateWithoutUserInputSchema).array(),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema),z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ProjectCreateManyUserInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+}).strict();
+
 export const StringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.StringFieldUpdateOperationsInput> = z.object({
   set: z.string().optional()
 }).strict();
 
 export const DateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.DateTimeFieldUpdateOperationsInput> = z.object({
   set: z.coerce.date().optional()
+}).strict();
+
+export const ProjectUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.ProjectUpdateManyWithoutUserNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutUserInputSchema),z.lazy(() => ProjectCreateWithoutUserInputSchema).array(),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema),z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => ProjectUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => ProjectUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ProjectCreateManyUserInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => ProjectUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => ProjectUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => ProjectUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => ProjectScalarWhereInputSchema),z.lazy(() => ProjectScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const ProjectUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutUserInputSchema),z.lazy(() => ProjectCreateWithoutUserInputSchema).array(),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema),z.lazy(() => ProjectCreateOrConnectWithoutUserInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => ProjectUpsertWithWhereUniqueWithoutUserInputSchema),z.lazy(() => ProjectUpsertWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ProjectCreateManyUserInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => ProjectWhereUniqueInputSchema),z.lazy(() => ProjectWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => ProjectUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => ProjectUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => ProjectUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => ProjectScalarWhereInputSchema),z.lazy(() => ProjectScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const UserCreateNestedOneWithoutProjectsInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutProjectsInput> = z.object({
+  create: z.union([ z.lazy(() => UserCreateWithoutProjectsInputSchema),z.lazy(() => UserUncheckedCreateWithoutProjectsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutProjectsInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional()
 }).strict();
 
 export const BudgetCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.BudgetCreateNestedManyWithoutProjectInput> = z.object({
@@ -2837,6 +2941,14 @@ export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdat
   decrement: z.number().optional(),
   multiply: z.number().optional(),
   divide: z.number().optional()
+}).strict();
+
+export const UserUpdateOneRequiredWithoutProjectsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput> = z.object({
+  create: z.union([ z.lazy(() => UserCreateWithoutProjectsInputSchema),z.lazy(() => UserUncheckedCreateWithoutProjectsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutProjectsInputSchema).optional(),
+  upsert: z.lazy(() => UserUpsertWithoutProjectsInputSchema).optional(),
+  connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => UserUpdateToOneWithWhereWithoutProjectsInputSchema),z.lazy(() => UserUpdateWithoutProjectsInputSchema),z.lazy(() => UserUncheckedUpdateWithoutProjectsInputSchema) ]).optional(),
 }).strict();
 
 export const BudgetUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.BudgetUpdateManyWithoutProjectNestedInput> = z.object({
@@ -3491,6 +3603,106 @@ export const NestedEnumcategoryWithAggregatesFilterSchema: z.ZodType<Prisma.Nest
   _max: z.lazy(() => NestedEnumcategoryFilterSchema).optional()
 }).strict();
 
+export const ProjectCreateWithoutUserInputSchema: z.ZodType<Prisma.ProjectCreateWithoutUserInput> = z.object({
+  id: z.string().optional(),
+  projectName: z.string(),
+  clientName: z.string(),
+  location: z.string(),
+  startDate: z.coerce.date().optional(),
+  dueDate: z.coerce.date().optional(),
+  progress: z.number().int(),
+  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
+  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
+  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
+  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+}).strict();
+
+export const ProjectUncheckedCreateWithoutUserInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutUserInput> = z.object({
+  id: z.string().optional(),
+  projectName: z.string(),
+  clientName: z.string(),
+  location: z.string(),
+  startDate: z.coerce.date().optional(),
+  dueDate: z.coerce.date().optional(),
+  progress: z.number().int(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+}).strict();
+
+export const ProjectCreateOrConnectWithoutUserInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutUserInput> = z.object({
+  where: z.lazy(() => ProjectWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema) ]),
+}).strict();
+
+export const ProjectCreateManyUserInputEnvelopeSchema: z.ZodType<Prisma.ProjectCreateManyUserInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => ProjectCreateManyUserInputSchema),z.lazy(() => ProjectCreateManyUserInputSchema).array() ]),
+}).strict();
+
+export const ProjectUpsertWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ProjectUpsertWithWhereUniqueWithoutUserInput> = z.object({
+  where: z.lazy(() => ProjectWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => ProjectUpdateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutUserInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUserInputSchema) ]),
+}).strict();
+
+export const ProjectUpdateWithWhereUniqueWithoutUserInputSchema: z.ZodType<Prisma.ProjectUpdateWithWhereUniqueWithoutUserInput> = z.object({
+  where: z.lazy(() => ProjectWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => ProjectUpdateWithoutUserInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutUserInputSchema) ]),
+}).strict();
+
+export const ProjectUpdateManyWithWhereWithoutUserInputSchema: z.ZodType<Prisma.ProjectUpdateManyWithWhereWithoutUserInput> = z.object({
+  where: z.lazy(() => ProjectScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => ProjectUpdateManyMutationInputSchema),z.lazy(() => ProjectUncheckedUpdateManyWithoutUserInputSchema) ]),
+}).strict();
+
+export const ProjectScalarWhereInputSchema: z.ZodType<Prisma.ProjectScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => ProjectScalarWhereInputSchema),z.lazy(() => ProjectScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => ProjectScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => ProjectScalarWhereInputSchema),z.lazy(() => ProjectScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  projectName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  clientName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  startDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  progress: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+}).strict();
+
+export const UserCreateWithoutProjectsInputSchema: z.ZodType<Prisma.UserCreateWithoutProjectsInput> = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  email: z.string(),
+  password: z.string(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const UserUncheckedCreateWithoutProjectsInputSchema: z.ZodType<Prisma.UserUncheckedCreateWithoutProjectsInput> = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  email: z.string(),
+  password: z.string(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const UserCreateOrConnectWithoutProjectsInputSchema: z.ZodType<Prisma.UserCreateOrConnectWithoutProjectsInput> = z.object({
+  where: z.lazy(() => UserWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => UserCreateWithoutProjectsInputSchema),z.lazy(() => UserUncheckedCreateWithoutProjectsInputSchema) ]),
+}).strict();
+
 export const BudgetCreateWithoutProjectInputSchema: z.ZodType<Prisma.BudgetCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
   total: z.number(),
@@ -3724,6 +3936,33 @@ export const ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema: z.Zo
 
 export const ConstructionSiteImageCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.ConstructionSiteImageCreateManyProjectInputEnvelope> = z.object({
   data: z.union([ z.lazy(() => ConstructionSiteImageCreateManyProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateManyProjectInputSchema).array() ]),
+}).strict();
+
+export const UserUpsertWithoutProjectsInputSchema: z.ZodType<Prisma.UserUpsertWithoutProjectsInput> = z.object({
+  update: z.union([ z.lazy(() => UserUpdateWithoutProjectsInputSchema),z.lazy(() => UserUncheckedUpdateWithoutProjectsInputSchema) ]),
+  create: z.union([ z.lazy(() => UserCreateWithoutProjectsInputSchema),z.lazy(() => UserUncheckedCreateWithoutProjectsInputSchema) ]),
+  where: z.lazy(() => UserWhereInputSchema).optional()
+}).strict();
+
+export const UserUpdateToOneWithWhereWithoutProjectsInputSchema: z.ZodType<Prisma.UserUpdateToOneWithWhereWithoutProjectsInput> = z.object({
+  where: z.lazy(() => UserWhereInputSchema).optional(),
+  data: z.union([ z.lazy(() => UserUpdateWithoutProjectsInputSchema),z.lazy(() => UserUncheckedUpdateWithoutProjectsInputSchema) ]),
+}).strict();
+
+export const UserUpdateWithoutProjectsInputSchema: z.ZodType<Prisma.UserUpdateWithoutProjectsInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  password: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const UserUncheckedUpdateWithoutProjectsInputSchema: z.ZodType<Prisma.UserUncheckedUpdateWithoutProjectsInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  email: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  password: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const BudgetUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpsertWithWhereUniqueWithoutProjectInput> = z.object({
@@ -3989,6 +4228,7 @@ export const ProjectCreateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectCrea
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
   checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
@@ -4001,6 +4241,7 @@ export const ProjectCreateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectCrea
 
 export const ProjectUncheckedCreateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutBudgetInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4040,6 +4281,7 @@ export const ProjectUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUpda
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
   checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
@@ -4051,6 +4293,7 @@ export const ProjectUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUpda
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutBudgetInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4075,6 +4318,7 @@ export const ProjectCreateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectCreate
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
   checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
@@ -4087,6 +4331,7 @@ export const ProjectCreateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectCreate
 
 export const ProjectUncheckedCreateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutTeamInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4126,6 +4371,7 @@ export const ProjectUpdateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUpdate
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
   checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
@@ -4137,6 +4383,7 @@ export const ProjectUpdateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUpdate
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutTeamInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4161,6 +4408,7 @@ export const ProjectCreateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.P
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
@@ -4173,6 +4421,7 @@ export const ProjectCreateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.P
 
 export const ProjectUncheckedCreateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutUpcomingMilstoneInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4212,6 +4461,7 @@ export const ProjectUpdateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.P
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
@@ -4223,6 +4473,7 @@ export const ProjectUpdateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.P
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutUpcomingMilstoneInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4247,6 +4498,7 @@ export const ProjectCreateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectC
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
@@ -4259,6 +4511,7 @@ export const ProjectCreateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectC
 
 export const ProjectUncheckedCreateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutCheckListInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4298,6 +4551,7 @@ export const ProjectUpdateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectU
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
@@ -4309,6 +4563,7 @@ export const ProjectUpdateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectU
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutCheckListInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4333,6 +4588,7 @@ export const ProjectCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectC
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
@@ -4345,6 +4601,7 @@ export const ProjectCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectC
 
 export const ProjectUncheckedCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutDocumentsInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4384,6 +4641,7 @@ export const ProjectUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectU
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
@@ -4395,6 +4653,7 @@ export const ProjectUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectU
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutDocumentsInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4419,6 +4678,7 @@ export const ProjectCreateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
@@ -4431,6 +4691,7 @@ export const ProjectCreateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.
 
 export const ProjectUncheckedCreateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutTheIncomingLetterInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4470,6 +4731,7 @@ export const ProjectUpdateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
@@ -4481,6 +4743,7 @@ export const ProjectUpdateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutTheIncomingLetterInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4505,6 +4768,7 @@ export const ProjectCreateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
@@ -4517,6 +4781,7 @@ export const ProjectCreateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.
 
 export const ProjectUncheckedCreateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutTheOutgoingLetterInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4556,6 +4821,7 @@ export const ProjectUpdateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
@@ -4567,6 +4833,7 @@ export const ProjectUpdateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutTheOutgoingLetterInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4591,6 +4858,7 @@ export const ProjectCreateWithoutReportInputSchema: z.ZodType<Prisma.ProjectCrea
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
@@ -4603,6 +4871,7 @@ export const ProjectCreateWithoutReportInputSchema: z.ZodType<Prisma.ProjectCrea
 
 export const ProjectUncheckedCreateWithoutReportInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutReportInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4642,6 +4911,7 @@ export const ProjectUpdateWithoutReportInputSchema: z.ZodType<Prisma.ProjectUpda
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
@@ -4653,6 +4923,7 @@ export const ProjectUpdateWithoutReportInputSchema: z.ZodType<Prisma.ProjectUpda
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutReportInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutReportInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4677,6 +4948,7 @@ export const ProjectCreateWithoutConstructionSiteImageInputSchema: z.ZodType<Pri
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   progress: z.number().int(),
+  user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
   budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
   team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
@@ -4689,6 +4961,7 @@ export const ProjectCreateWithoutConstructionSiteImageInputSchema: z.ZodType<Pri
 
 export const ProjectUncheckedCreateWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutConstructionSiteImageInput> = z.object({
   id: z.string().optional(),
+  userId: z.string(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
@@ -4728,6 +5001,7 @@ export const ProjectUpdateWithoutConstructionSiteImageInputSchema: z.ZodType<Pri
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  user: z.lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema).optional(),
   budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
   team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
   upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
@@ -4739,6 +5013,7 @@ export const ProjectUpdateWithoutConstructionSiteImageInputSchema: z.ZodType<Pri
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutConstructionSiteImageInput> = z.object({
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
@@ -4753,6 +5028,61 @@ export const ProjectUncheckedUpdateWithoutConstructionSiteImageInputSchema: z.Zo
   theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
   theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
   report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+}).strict();
+
+export const ProjectCreateManyUserInputSchema: z.ZodType<Prisma.ProjectCreateManyUserInput> = z.object({
+  id: z.string().optional(),
+  projectName: z.string(),
+  clientName: z.string(),
+  location: z.string(),
+  startDate: z.coerce.date().optional(),
+  dueDate: z.coerce.date().optional(),
+  progress: z.number().int()
+}).strict();
+
+export const ProjectUpdateWithoutUserInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutUserInput> = z.object({
+  projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
+  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
+  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
+  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+}).strict();
+
+export const ProjectUncheckedUpdateWithoutUserInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutUserInput> = z.object({
+  projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+}).strict();
+
+export const ProjectUncheckedUpdateManyWithoutUserInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateManyWithoutUserInput> = z.object({
+  projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const BudgetCreateManyProjectInputSchema: z.ZodType<Prisma.BudgetCreateManyProjectInput> = z.object({
@@ -5025,6 +5355,7 @@ export const ConstructionSiteImageUncheckedUpdateManyWithoutProjectInputSchema: 
 
 export const UserFindFirstArgsSchema: z.ZodType<Prisma.UserFindFirstArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereInputSchema.optional(),
   orderBy: z.union([ UserOrderByWithRelationInputSchema.array(),UserOrderByWithRelationInputSchema ]).optional(),
   cursor: UserWhereUniqueInputSchema.optional(),
@@ -5035,6 +5366,7 @@ export const UserFindFirstArgsSchema: z.ZodType<Prisma.UserFindFirstArgs> = z.ob
 
 export const UserFindFirstOrThrowArgsSchema: z.ZodType<Prisma.UserFindFirstOrThrowArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereInputSchema.optional(),
   orderBy: z.union([ UserOrderByWithRelationInputSchema.array(),UserOrderByWithRelationInputSchema ]).optional(),
   cursor: UserWhereUniqueInputSchema.optional(),
@@ -5045,6 +5377,7 @@ export const UserFindFirstOrThrowArgsSchema: z.ZodType<Prisma.UserFindFirstOrThr
 
 export const UserFindManyArgsSchema: z.ZodType<Prisma.UserFindManyArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereInputSchema.optional(),
   orderBy: z.union([ UserOrderByWithRelationInputSchema.array(),UserOrderByWithRelationInputSchema ]).optional(),
   cursor: UserWhereUniqueInputSchema.optional(),
@@ -5072,11 +5405,13 @@ export const UserGroupByArgsSchema: z.ZodType<Prisma.UserGroupByArgs> = z.object
 
 export const UserFindUniqueArgsSchema: z.ZodType<Prisma.UserFindUniqueArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
 }).strict() ;
 
 export const UserFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.UserFindUniqueOrThrowArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
 }).strict() ;
 
@@ -5702,11 +6037,13 @@ export const ConstructionSiteImageFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.
 
 export const UserCreateArgsSchema: z.ZodType<Prisma.UserCreateArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   data: z.union([ UserCreateInputSchema,UserUncheckedCreateInputSchema ]),
 }).strict() ;
 
 export const UserUpsertArgsSchema: z.ZodType<Prisma.UserUpsertArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
   create: z.union([ UserCreateInputSchema,UserUncheckedCreateInputSchema ]),
   update: z.union([ UserUpdateInputSchema,UserUncheckedUpdateInputSchema ]),
@@ -5718,11 +6055,13 @@ export const UserCreateManyArgsSchema: z.ZodType<Prisma.UserCreateManyArgs> = z.
 
 export const UserDeleteArgsSchema: z.ZodType<Prisma.UserDeleteArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   where: UserWhereUniqueInputSchema,
 }).strict() ;
 
 export const UserUpdateArgsSchema: z.ZodType<Prisma.UserUpdateArgs> = z.object({
   select: UserSelectSchema.optional(),
+  include: UserIncludeSchema.optional(),
   data: z.union([ UserUpdateInputSchema,UserUncheckedUpdateInputSchema ]),
   where: UserWhereUniqueInputSchema,
 }).strict() ;
