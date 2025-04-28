@@ -134,7 +134,7 @@ interface ConstructionSiteImage {
 }
 
 // Main Project interface with all relations
-interface Project {
+export interface Project {
   id: string;
   projectName: string;
   clientName: string;
@@ -156,7 +156,7 @@ interface Project {
 // ==================== REDUX STATE ====================
 interface ProjectState {
   projects: Project[];
-  currentProject: Project | null;
+  currentProject: Project | null | string;
   totalPages: number;
   currentPage: number;
   status: "idle" | "loading" | "succeeded" | "failed";
@@ -264,6 +264,7 @@ const projectSlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchProjects.fulfilled, (state, action) => {
+        console.log(action.payload?.totalPages);
         state.status = "succeeded";
         state.projects = action.payload?.data.projects || [];
         state.totalPages = action.payload?.totalPages || 1;

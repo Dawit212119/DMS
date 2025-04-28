@@ -21,6 +21,7 @@ import projectReducer from "./project/projectSlice";
 
 // Create the store
 
+console.log(projectReducer);
 export const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,

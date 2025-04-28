@@ -10,6 +10,8 @@ import { fetchProjects } from "@/state/project/projectSlice";
 export default function ProjectsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { projects, status, error } = useSelector((state: RootState) => {
+    console.log("state:", state);
+    console.log("project:", state.project);
     return state.project as {
       projects: Array<{
         id: string;
