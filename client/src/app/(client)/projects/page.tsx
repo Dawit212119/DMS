@@ -36,7 +36,7 @@ export default function ProjectsPage() {
           <h1 className="text-2xl font-bold">Projects</h1>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(4)].map((_, i) => (
             <div
               key={i}
               className="bg-gray-200 rounded-lg p-4 animate-pulse h-64"
@@ -63,7 +63,7 @@ export default function ProjectsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Projects</h1>
       </div>
-      {projects.length === 0 ? (
+      {!projects ? (
         <div className="text-center py-12">
           <p className="text-gray-500">No projects found</p>
         </div>

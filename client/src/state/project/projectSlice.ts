@@ -177,7 +177,7 @@ export const fetchProjects = createAsyncThunk(
   "project/fetchProjects",
   async (page: number = 1, { rejectWithValue }) => {
     try {
-      const response = await fetch(`https://www.google.com/`);
+      const response = await fetch(`http://localhost:8000/project?page=1`);
       console.log(response);
 
       if (!response.ok) {

@@ -36,7 +36,7 @@ export const getProjects = async (req: Request, res: Response) => {
     console.log("present");
     // Parse pagination parameters
     const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const pageSize = parseInt(req.query.pageSize as string) || 6;
     const skip = (page - 1) * pageSize;
 
     // Get total count for pagination metadata
