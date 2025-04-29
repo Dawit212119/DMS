@@ -27,15 +27,16 @@ export type FormData = {
   endDate: string;
 
   // Budget Info
-  totalBudget: string;
-  amountSpent: string;
+  budget: { totalBudget: string; amountSpent: string };
 
   // Team Info
-  projectManager: string;
-  siteManager: string;
-  civilManager: string;
-  architecturalLead: string;
-  totalWorkers: number;
+  team: {
+    projectManager: string;
+    siteManager: string;
+    civilManager: string;
+    architecturalLead: string;
+    totalWorkers: number;
+  };
 
   // Milestones
   milestones: Array<{
@@ -119,13 +120,17 @@ const initialFormData: FormData = {
   location: "",
   startDate: "",
   endDate: "",
-  totalBudget: "",
-  amountSpent: "",
-  projectManager: "",
-  siteManager: "",
-  civilManager: "",
-  architecturalLead: "",
-  totalWorkers: 0,
+  budget: {
+    totalBudget: "",
+    amountSpent: "",
+  },
+  team: {
+    projectManager: "",
+    siteManager: "",
+    civilManager: "",
+    architecturalLead: "",
+    totalWorkers: 0,
+  },
   milestones: [],
   checklist: [],
   documents: [],
@@ -207,8 +212,10 @@ export default function ProjectForm() {
     if (res.ok) {
       toast("Project submitted successfully!");
     }
+    const data = await res.json();
     // This is where you would handle the form submission to your backend
     console.log("Form submitted:", formData);
+    console.log("From backend:", data);
 
     // Reset form after submission
     setFormData(initialFormData);

@@ -12,25 +12,25 @@ import type { Prisma } from '@prisma/client';
 
 export const UserScalarFieldEnumSchema = z.enum(['id','name','email','password','createdAt','updatedAt']);
 
-export const ProjectScalarFieldEnumSchema = z.enum(['id','projectName','clientName','location','startDate','dueDate','progress']);
+export const ProjectScalarFieldEnumSchema = z.enum(['id','projectName','clientName','location','startDate','endDate','createdAt','updatedAt']);
 
 export const BudgetScalarFieldEnumSchema = z.enum(['id','total','spent','projectId']);
 
-export const TeamScalarFieldEnumSchema = z.enum(['id','projectManger','siteManger','civilManger','architecturalLoad','totalWorker','projectId']);
+export const TeamScalarFieldEnumSchema = z.enum(['id','projectManager','siteManager','civilManager','architecturalLead','totalWorkers','projectId']);
 
-export const UpcomingMilstoneScalarFieldEnumSchema = z.enum(['id','title','date','status','projectId']);
+export const MilestoneScalarFieldEnumSchema = z.enum(['id','name','date','status','projectId']);
 
-export const CheckListScalarFieldEnumSchema = z.enum(['id','task','assignedTo','dueData','priority','completed','projectId']);
+export const ChecklistItemScalarFieldEnumSchema = z.enum(['id','task','assignedTo','dueDate','status','priority','milestoneId','projectId']);
 
-export const DocumentsScalarFieldEnumSchema = z.enum(['id','name','date','projectId','downloadedUrl']);
+export const DocumentScalarFieldEnumSchema = z.enum(['id','title','fileUrl','fileName','date','projectId']);
 
-export const TheIncomingLetterScalarFieldEnumSchema = z.enum(['id','sender','subject','priority','status','projectId','createdAt','downloadedUrl','updatedAt']);
+export const SiteImageScalarFieldEnumSchema = z.enum(['id','title','location','category','imageUrl','fileName','date','projectId']);
 
-export const TheOutgoingLetterScalarFieldEnumSchema = z.enum(['id','recipent','subject','status','priority','createdAt','downloadedUrl','projectId']);
+export const OutgoingLetterScalarFieldEnumSchema = z.enum(['id','recipient','subject','priority','status','fileUrl','fileName','createdAt','projectId']);
 
-export const ReportScalarFieldEnumSchema = z.enum(['id','publisher','status','uploadedDate','lastModified','version','downloadedUrl','reportType','projectId']);
+export const IncomingLetterScalarFieldEnumSchema = z.enum(['id','sender','subject','priority','status','fileUrl','fileName','createdAt','projectId']);
 
-export const ConstructionSiteImageScalarFieldEnumSchema = z.enum(['id','title','imagesrc','location','date','category','projectId']);
+export const ReportScalarFieldEnumSchema = z.enum(['id','title','publisher','reportType','version','status','fileUrl','fileName','uploadedDate','projectId']);
 
 export const SortOrderSchema = z.enum(['asc','desc']);
 
@@ -44,25 +44,25 @@ export const PrioritySchema = z.enum(['high','medium','low']);
 
 export type PriorityType = `${z.infer<typeof PrioritySchema>}`
 
+export const CategorySchema = z.enum(['foundation','structural','electrical','plumbing','exterior','aerial']);
+
+export type CategoryType = `${z.infer<typeof CategorySchema>}`
+
+export const OutgoingStatusSchema = z.enum(['draft','sent']);
+
+export type OutgoingStatusType = `${z.infer<typeof OutgoingStatusSchema>}`
+
 export const IncomingStatusSchema = z.enum(['read','unread']);
 
 export type IncomingStatusType = `${z.infer<typeof IncomingStatusSchema>}`
 
-export const OutgoingStatusSchema = z.enum(['sent','draft']);
+export const ReportStatusSchema = z.enum(['approved','rejected']);
 
-export type OutgoingStatusType = `${z.infer<typeof OutgoingStatusSchema>}`
+export type ReportStatusType = `${z.infer<typeof ReportStatusSchema>}`
 
-export const reportStatusSchema = z.enum(['approved','rejected']);
+export const ReportTypeSchema = z.enum(['daily','weekly','monthly','quarterly','annually']);
 
-export type reportStatusType = `${z.infer<typeof reportStatusSchema>}`
-
-export const reportTypeSchema = z.enum(['daily','weekly','monthly','annually','quarterly']);
-
-export type reportTypeType = `${z.infer<typeof reportTypeSchema>}`
-
-export const categorySchema = z.enum(['foundation','structural','electrical','plumbing','exterior','aerial']);
-
-export type categoryType = `${z.infer<typeof categorySchema>}`
+export type ReportTypeType = `${z.infer<typeof ReportTypeSchema>}`
 
 /////////////////////////////////////////
 // MODELS
@@ -93,8 +93,9 @@ export const ProjectSchema = z.object({
   clientName: z.string(),
   location: z.string(),
   startDate: z.coerce.date(),
-  dueDate: z.coerce.date(),
-  progress: z.number().int(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 })
 
 export type Project = z.infer<typeof ProjectSchema>
@@ -118,128 +119,133 @@ export type Budget = z.infer<typeof BudgetSchema>
 
 export const TeamSchema = z.object({
   id: z.string(),
-  projectManger: z.string(),
-  siteManger: z.string(),
-  civilManger: z.string(),
-  architecturalLoad: z.string(),
-  totalWorker: z.number().int(),
+  projectManager: z.string(),
+  siteManager: z.string(),
+  civilManager: z.string(),
+  architecturalLead: z.string(),
+  totalWorkers: z.number().int(),
   projectId: z.string(),
 })
 
 export type Team = z.infer<typeof TeamSchema>
 
 /////////////////////////////////////////
-// UPCOMING MILSTONE SCHEMA
+// MILESTONE SCHEMA
 /////////////////////////////////////////
 
-export const UpcomingMilstoneSchema = z.object({
+export const MilestoneSchema = z.object({
   status: StatusSchema,
-  id: z.string(),
-  title: z.string(),
-  date: z.coerce.date(),
-  projectId: z.string(),
-})
-
-export type UpcomingMilstone = z.infer<typeof UpcomingMilstoneSchema>
-
-/////////////////////////////////////////
-// CHECK LIST SCHEMA
-/////////////////////////////////////////
-
-export const CheckListSchema = z.object({
-  task: StatusSchema,
-  priority: PrioritySchema,
-  id: z.string(),
-  assignedTo: z.string(),
-  dueData: z.coerce.date(),
-  completed: z.boolean(),
-  projectId: z.string(),
-})
-
-export type CheckList = z.infer<typeof CheckListSchema>
-
-/////////////////////////////////////////
-// DOCUMENTS SCHEMA
-/////////////////////////////////////////
-
-export const DocumentsSchema = z.object({
   id: z.string(),
   name: z.string(),
   date: z.coerce.date(),
   projectId: z.string(),
-  downloadedUrl: z.string(),
 })
 
-export type Documents = z.infer<typeof DocumentsSchema>
+export type Milestone = z.infer<typeof MilestoneSchema>
 
 /////////////////////////////////////////
-// THE INCOMING LETTER SCHEMA
+// CHECKLIST ITEM SCHEMA
 /////////////////////////////////////////
 
-export const TheIncomingLetterSchema = z.object({
+export const ChecklistItemSchema = z.object({
+  status: StatusSchema,
+  priority: PrioritySchema,
+  id: z.string(),
+  task: z.string(),
+  assignedTo: z.string(),
+  dueDate: z.coerce.date(),
+  milestoneId: z.string(),
+  projectId: z.string(),
+})
+
+export type ChecklistItem = z.infer<typeof ChecklistItemSchema>
+
+/////////////////////////////////////////
+// DOCUMENT SCHEMA
+/////////////////////////////////////////
+
+export const DocumentSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date(),
+  projectId: z.string(),
+})
+
+export type Document = z.infer<typeof DocumentSchema>
+
+/////////////////////////////////////////
+// SITE IMAGE SCHEMA
+/////////////////////////////////////////
+
+export const SiteImageSchema = z.object({
+  category: CategorySchema,
+  id: z.string(),
+  title: z.string(),
+  location: z.string(),
+  imageUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date(),
+  projectId: z.string(),
+})
+
+export type SiteImage = z.infer<typeof SiteImageSchema>
+
+/////////////////////////////////////////
+// OUTGOING LETTER SCHEMA
+/////////////////////////////////////////
+
+export const OutgoingLetterSchema = z.object({
+  priority: PrioritySchema,
+  status: OutgoingStatusSchema,
+  id: z.string(),
+  recipient: z.string(),
+  subject: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date(),
+  projectId: z.string(),
+})
+
+export type OutgoingLetter = z.infer<typeof OutgoingLetterSchema>
+
+/////////////////////////////////////////
+// INCOMING LETTER SCHEMA
+/////////////////////////////////////////
+
+export const IncomingLetterSchema = z.object({
   priority: PrioritySchema,
   status: IncomingStatusSchema,
   id: z.string(),
   sender: z.string(),
   subject: z.string(),
-  projectId: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
   createdAt: z.coerce.date(),
-  downloadedUrl: z.string(),
-  updatedAt: z.coerce.date(),
-})
-
-export type TheIncomingLetter = z.infer<typeof TheIncomingLetterSchema>
-
-/////////////////////////////////////////
-// THE OUTGOING LETTER SCHEMA
-/////////////////////////////////////////
-
-export const TheOutgoingLetterSchema = z.object({
-  status: OutgoingStatusSchema,
-  priority: PrioritySchema,
-  id: z.string(),
-  recipent: z.string(),
-  subject: z.string(),
-  createdAt: z.coerce.date(),
-  downloadedUrl: z.string(),
   projectId: z.string(),
 })
 
-export type TheOutgoingLetter = z.infer<typeof TheOutgoingLetterSchema>
+export type IncomingLetter = z.infer<typeof IncomingLetterSchema>
 
 /////////////////////////////////////////
 // REPORT SCHEMA
 /////////////////////////////////////////
 
 export const ReportSchema = z.object({
-  status: reportStatusSchema,
-  reportType: reportTypeSchema,
+  reportType: ReportTypeSchema,
+  status: ReportStatusSchema,
   id: z.string(),
+  title: z.string(),
   publisher: z.string(),
-  uploadedDate: z.coerce.date(),
-  lastModified: z.coerce.date(),
   version: z.string(),
-  downloadedUrl: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  uploadedDate: z.coerce.date(),
   projectId: z.string(),
 })
 
 export type Report = z.infer<typeof ReportSchema>
-
-/////////////////////////////////////////
-// CONSTRUCTION SITE IMAGE SCHEMA
-/////////////////////////////////////////
-
-export const ConstructionSiteImageSchema = z.object({
-  category: categorySchema,
-  id: z.string(),
-  title: z.string(),
-  imagesrc: z.string(),
-  location: z.string(),
-  date: z.coerce.date(),
-  projectId: z.string(),
-})
-
-export type ConstructionSiteImage = z.infer<typeof ConstructionSiteImageSchema>
 
 /////////////////////////////////////////
 // SELECT & INCLUDE
@@ -277,14 +283,13 @@ export const ProjectCountOutputTypeArgsSchema: z.ZodType<Prisma.ProjectCountOutp
 }).strict();
 
 export const ProjectCountOutputTypeSelectSchema: z.ZodType<Prisma.ProjectCountOutputTypeSelect> = z.object({
-  budget: z.boolean().optional(),
-  team: z.boolean().optional(),
-  checkList: z.boolean().optional(),
+  milestones: z.boolean().optional(),
+  checklist: z.boolean().optional(),
   documents: z.boolean().optional(),
-  theIncomingLetter: z.boolean().optional(),
-  theOutgoingLetter: z.boolean().optional(),
-  report: z.boolean().optional(),
-  constructionSiteImage: z.boolean().optional(),
+  outgoingLetters: z.boolean().optional(),
+  incomingLetters: z.boolean().optional(),
+  reports: z.boolean().optional(),
+  siteImages: z.boolean().optional(),
 }).strict();
 
 export const ProjectSelectSchema: z.ZodType<Prisma.ProjectSelect> = z.object({
@@ -293,17 +298,18 @@ export const ProjectSelectSchema: z.ZodType<Prisma.ProjectSelect> = z.object({
   clientName: z.boolean().optional(),
   location: z.boolean().optional(),
   startDate: z.boolean().optional(),
-  dueDate: z.boolean().optional(),
-  progress: z.boolean().optional(),
+  endDate: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  updatedAt: z.boolean().optional(),
   budget: z.union([z.boolean(),z.lazy(() => BudgetArgsSchema)]).optional(),
   team: z.union([z.boolean(),z.lazy(() => TeamArgsSchema)]).optional(),
-  upcomingMilstone: z.union([z.boolean(),z.lazy(() => UpcomingMilstoneArgsSchema)]).optional(),
-  checkList: z.union([z.boolean(),z.lazy(() => CheckListArgsSchema)]).optional(),
-  documents: z.union([z.boolean(),z.lazy(() => DocumentsArgsSchema)]).optional(),
-  theIncomingLetter: z.union([z.boolean(),z.lazy(() => TheIncomingLetterArgsSchema)]).optional(),
-  theOutgoingLetter: z.union([z.boolean(),z.lazy(() => TheOutgoingLetterArgsSchema)]).optional(),
-  report: z.union([z.boolean(),z.lazy(() => ReportArgsSchema)]).optional(),
-  constructionSiteImage: z.union([z.boolean(),z.lazy(() => ConstructionSiteImageArgsSchema)]).optional(),
+  milestones: z.union([z.boolean(),z.lazy(() => MilestoneArgsSchema)]).optional(),
+  checklist: z.union([z.boolean(),z.lazy(() => ChecklistItemArgsSchema)]).optional(),
+  documents: z.union([z.boolean(),z.lazy(() => DocumentArgsSchema)]).optional(),
+  outgoingLetters: z.union([z.boolean(),z.lazy(() => OutgoingLetterArgsSchema)]).optional(),
+  incomingLetters: z.union([z.boolean(),z.lazy(() => IncomingLetterArgsSchema)]).optional(),
+  reports: z.union([z.boolean(),z.lazy(() => ReportArgsSchema)]).optional(),
+  siteImages: z.union([z.boolean(),z.lazy(() => SiteImageArgsSchema)]).optional(),
   _count: z.union([z.boolean(),z.lazy(() => ProjectCountOutputTypeArgsSchema)]).optional(),
 }).strict()
 
@@ -339,120 +345,146 @@ export const TeamArgsSchema: z.ZodType<Prisma.TeamDefaultArgs> = z.object({
 
 export const TeamSelectSchema: z.ZodType<Prisma.TeamSelect> = z.object({
   id: z.boolean().optional(),
-  projectManger: z.boolean().optional(),
-  siteManger: z.boolean().optional(),
-  civilManger: z.boolean().optional(),
-  architecturalLoad: z.boolean().optional(),
-  totalWorker: z.boolean().optional(),
+  projectManager: z.boolean().optional(),
+  siteManager: z.boolean().optional(),
+  civilManager: z.boolean().optional(),
+  architecturalLead: z.boolean().optional(),
+  totalWorkers: z.boolean().optional(),
   projectId: z.boolean().optional(),
   project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
 }).strict()
 
-// UPCOMING MILSTONE
+// MILESTONE
 //------------------------------------------------------
 
-export const UpcomingMilstoneIncludeSchema: z.ZodType<Prisma.UpcomingMilstoneInclude> = z.object({
+export const MilestoneIncludeSchema: z.ZodType<Prisma.MilestoneInclude> = z.object({
 }).strict()
 
-export const UpcomingMilstoneArgsSchema: z.ZodType<Prisma.UpcomingMilstoneDefaultArgs> = z.object({
-  select: z.lazy(() => UpcomingMilstoneSelectSchema).optional(),
-  include: z.lazy(() => UpcomingMilstoneIncludeSchema).optional(),
+export const MilestoneArgsSchema: z.ZodType<Prisma.MilestoneDefaultArgs> = z.object({
+  select: z.lazy(() => MilestoneSelectSchema).optional(),
+  include: z.lazy(() => MilestoneIncludeSchema).optional(),
 }).strict();
 
-export const UpcomingMilstoneSelectSchema: z.ZodType<Prisma.UpcomingMilstoneSelect> = z.object({
+export const MilestoneSelectSchema: z.ZodType<Prisma.MilestoneSelect> = z.object({
   id: z.boolean().optional(),
-  title: z.boolean().optional(),
+  name: z.boolean().optional(),
   date: z.boolean().optional(),
   status: z.boolean().optional(),
   projectId: z.boolean().optional(),
   project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
 }).strict()
 
-// CHECK LIST
+// CHECKLIST ITEM
 //------------------------------------------------------
 
-export const CheckListIncludeSchema: z.ZodType<Prisma.CheckListInclude> = z.object({
+export const ChecklistItemIncludeSchema: z.ZodType<Prisma.ChecklistItemInclude> = z.object({
 }).strict()
 
-export const CheckListArgsSchema: z.ZodType<Prisma.CheckListDefaultArgs> = z.object({
-  select: z.lazy(() => CheckListSelectSchema).optional(),
-  include: z.lazy(() => CheckListIncludeSchema).optional(),
+export const ChecklistItemArgsSchema: z.ZodType<Prisma.ChecklistItemDefaultArgs> = z.object({
+  select: z.lazy(() => ChecklistItemSelectSchema).optional(),
+  include: z.lazy(() => ChecklistItemIncludeSchema).optional(),
 }).strict();
 
-export const CheckListSelectSchema: z.ZodType<Prisma.CheckListSelect> = z.object({
+export const ChecklistItemSelectSchema: z.ZodType<Prisma.ChecklistItemSelect> = z.object({
   id: z.boolean().optional(),
   task: z.boolean().optional(),
   assignedTo: z.boolean().optional(),
-  dueData: z.boolean().optional(),
+  dueDate: z.boolean().optional(),
+  status: z.boolean().optional(),
   priority: z.boolean().optional(),
-  completed: z.boolean().optional(),
+  milestoneId: z.boolean().optional(),
   projectId: z.boolean().optional(),
   project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
 }).strict()
 
-// DOCUMENTS
+// DOCUMENT
 //------------------------------------------------------
 
-export const DocumentsIncludeSchema: z.ZodType<Prisma.DocumentsInclude> = z.object({
+export const DocumentIncludeSchema: z.ZodType<Prisma.DocumentInclude> = z.object({
 }).strict()
 
-export const DocumentsArgsSchema: z.ZodType<Prisma.DocumentsDefaultArgs> = z.object({
-  select: z.lazy(() => DocumentsSelectSchema).optional(),
-  include: z.lazy(() => DocumentsIncludeSchema).optional(),
+export const DocumentArgsSchema: z.ZodType<Prisma.DocumentDefaultArgs> = z.object({
+  select: z.lazy(() => DocumentSelectSchema).optional(),
+  include: z.lazy(() => DocumentIncludeSchema).optional(),
 }).strict();
 
-export const DocumentsSelectSchema: z.ZodType<Prisma.DocumentsSelect> = z.object({
+export const DocumentSelectSchema: z.ZodType<Prisma.DocumentSelect> = z.object({
   id: z.boolean().optional(),
-  name: z.boolean().optional(),
+  title: z.boolean().optional(),
+  fileUrl: z.boolean().optional(),
+  fileName: z.boolean().optional(),
   date: z.boolean().optional(),
   projectId: z.boolean().optional(),
-  downloadedUrl: z.boolean().optional(),
   project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
 }).strict()
 
-// THE INCOMING LETTER
+// SITE IMAGE
 //------------------------------------------------------
 
-export const TheIncomingLetterIncludeSchema: z.ZodType<Prisma.TheIncomingLetterInclude> = z.object({
+export const SiteImageIncludeSchema: z.ZodType<Prisma.SiteImageInclude> = z.object({
 }).strict()
 
-export const TheIncomingLetterArgsSchema: z.ZodType<Prisma.TheIncomingLetterDefaultArgs> = z.object({
-  select: z.lazy(() => TheIncomingLetterSelectSchema).optional(),
-  include: z.lazy(() => TheIncomingLetterIncludeSchema).optional(),
+export const SiteImageArgsSchema: z.ZodType<Prisma.SiteImageDefaultArgs> = z.object({
+  select: z.lazy(() => SiteImageSelectSchema).optional(),
+  include: z.lazy(() => SiteImageIncludeSchema).optional(),
 }).strict();
 
-export const TheIncomingLetterSelectSchema: z.ZodType<Prisma.TheIncomingLetterSelect> = z.object({
+export const SiteImageSelectSchema: z.ZodType<Prisma.SiteImageSelect> = z.object({
+  id: z.boolean().optional(),
+  title: z.boolean().optional(),
+  location: z.boolean().optional(),
+  category: z.boolean().optional(),
+  imageUrl: z.boolean().optional(),
+  fileName: z.boolean().optional(),
+  date: z.boolean().optional(),
+  projectId: z.boolean().optional(),
+  project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
+}).strict()
+
+// OUTGOING LETTER
+//------------------------------------------------------
+
+export const OutgoingLetterIncludeSchema: z.ZodType<Prisma.OutgoingLetterInclude> = z.object({
+}).strict()
+
+export const OutgoingLetterArgsSchema: z.ZodType<Prisma.OutgoingLetterDefaultArgs> = z.object({
+  select: z.lazy(() => OutgoingLetterSelectSchema).optional(),
+  include: z.lazy(() => OutgoingLetterIncludeSchema).optional(),
+}).strict();
+
+export const OutgoingLetterSelectSchema: z.ZodType<Prisma.OutgoingLetterSelect> = z.object({
+  id: z.boolean().optional(),
+  recipient: z.boolean().optional(),
+  subject: z.boolean().optional(),
+  priority: z.boolean().optional(),
+  status: z.boolean().optional(),
+  fileUrl: z.boolean().optional(),
+  fileName: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  projectId: z.boolean().optional(),
+  project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
+}).strict()
+
+// INCOMING LETTER
+//------------------------------------------------------
+
+export const IncomingLetterIncludeSchema: z.ZodType<Prisma.IncomingLetterInclude> = z.object({
+}).strict()
+
+export const IncomingLetterArgsSchema: z.ZodType<Prisma.IncomingLetterDefaultArgs> = z.object({
+  select: z.lazy(() => IncomingLetterSelectSchema).optional(),
+  include: z.lazy(() => IncomingLetterIncludeSchema).optional(),
+}).strict();
+
+export const IncomingLetterSelectSchema: z.ZodType<Prisma.IncomingLetterSelect> = z.object({
   id: z.boolean().optional(),
   sender: z.boolean().optional(),
   subject: z.boolean().optional(),
   priority: z.boolean().optional(),
   status: z.boolean().optional(),
-  projectId: z.boolean().optional(),
+  fileUrl: z.boolean().optional(),
+  fileName: z.boolean().optional(),
   createdAt: z.boolean().optional(),
-  downloadedUrl: z.boolean().optional(),
-  updatedAt: z.boolean().optional(),
-  project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
-}).strict()
-
-// THE OUTGOING LETTER
-//------------------------------------------------------
-
-export const TheOutgoingLetterIncludeSchema: z.ZodType<Prisma.TheOutgoingLetterInclude> = z.object({
-}).strict()
-
-export const TheOutgoingLetterArgsSchema: z.ZodType<Prisma.TheOutgoingLetterDefaultArgs> = z.object({
-  select: z.lazy(() => TheOutgoingLetterSelectSchema).optional(),
-  include: z.lazy(() => TheOutgoingLetterIncludeSchema).optional(),
-}).strict();
-
-export const TheOutgoingLetterSelectSchema: z.ZodType<Prisma.TheOutgoingLetterSelect> = z.object({
-  id: z.boolean().optional(),
-  recipent: z.boolean().optional(),
-  subject: z.boolean().optional(),
-  status: z.boolean().optional(),
-  priority: z.boolean().optional(),
-  createdAt: z.boolean().optional(),
-  downloadedUrl: z.boolean().optional(),
   projectId: z.boolean().optional(),
   project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
 }).strict()
@@ -470,35 +502,14 @@ export const ReportArgsSchema: z.ZodType<Prisma.ReportDefaultArgs> = z.object({
 
 export const ReportSelectSchema: z.ZodType<Prisma.ReportSelect> = z.object({
   id: z.boolean().optional(),
-  publisher: z.boolean().optional(),
-  status: z.boolean().optional(),
-  uploadedDate: z.boolean().optional(),
-  lastModified: z.boolean().optional(),
-  version: z.boolean().optional(),
-  downloadedUrl: z.boolean().optional(),
-  reportType: z.boolean().optional(),
-  projectId: z.boolean().optional(),
-  project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
-}).strict()
-
-// CONSTRUCTION SITE IMAGE
-//------------------------------------------------------
-
-export const ConstructionSiteImageIncludeSchema: z.ZodType<Prisma.ConstructionSiteImageInclude> = z.object({
-}).strict()
-
-export const ConstructionSiteImageArgsSchema: z.ZodType<Prisma.ConstructionSiteImageDefaultArgs> = z.object({
-  select: z.lazy(() => ConstructionSiteImageSelectSchema).optional(),
-  include: z.lazy(() => ConstructionSiteImageIncludeSchema).optional(),
-}).strict();
-
-export const ConstructionSiteImageSelectSchema: z.ZodType<Prisma.ConstructionSiteImageSelect> = z.object({
-  id: z.boolean().optional(),
   title: z.boolean().optional(),
-  imagesrc: z.boolean().optional(),
-  location: z.boolean().optional(),
-  date: z.boolean().optional(),
-  category: z.boolean().optional(),
+  publisher: z.boolean().optional(),
+  reportType: z.boolean().optional(),
+  version: z.boolean().optional(),
+  status: z.boolean().optional(),
+  fileUrl: z.boolean().optional(),
+  fileName: z.boolean().optional(),
+  uploadedDate: z.boolean().optional(),
   projectId: z.boolean().optional(),
   project: z.union([z.boolean(),z.lazy(() => ProjectArgsSchema)]).optional(),
 }).strict()
@@ -586,17 +597,18 @@ export const ProjectWhereInputSchema: z.ZodType<Prisma.ProjectWhereInput> = z.ob
   clientName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   startDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  progress: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  budget: z.lazy(() => BudgetListRelationFilterSchema).optional(),
-  team: z.lazy(() => TeamListRelationFilterSchema).optional(),
-  upcomingMilstone: z.union([ z.lazy(() => UpcomingMilstoneNullableScalarRelationFilterSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional().nullable(),
-  checkList: z.lazy(() => CheckListListRelationFilterSchema).optional(),
-  documents: z.lazy(() => DocumentsListRelationFilterSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterListRelationFilterSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterListRelationFilterSchema).optional(),
-  report: z.lazy(() => ReportListRelationFilterSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageListRelationFilterSchema).optional()
+  endDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  budget: z.union([ z.lazy(() => BudgetNullableScalarRelationFilterSchema),z.lazy(() => BudgetWhereInputSchema) ]).optional().nullable(),
+  team: z.union([ z.lazy(() => TeamNullableScalarRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional().nullable(),
+  milestones: z.lazy(() => MilestoneListRelationFilterSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemListRelationFilterSchema).optional(),
+  documents: z.lazy(() => DocumentListRelationFilterSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterListRelationFilterSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterListRelationFilterSchema).optional(),
+  reports: z.lazy(() => ReportListRelationFilterSchema).optional(),
+  siteImages: z.lazy(() => SiteImageListRelationFilterSchema).optional()
 }).strict();
 
 export const ProjectOrderByWithRelationInputSchema: z.ZodType<Prisma.ProjectOrderByWithRelationInput> = z.object({
@@ -605,17 +617,18 @@ export const ProjectOrderByWithRelationInputSchema: z.ZodType<Prisma.ProjectOrde
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
   startDate: z.lazy(() => SortOrderSchema).optional(),
-  dueDate: z.lazy(() => SortOrderSchema).optional(),
-  progress: z.lazy(() => SortOrderSchema).optional(),
-  budget: z.lazy(() => BudgetOrderByRelationAggregateInputSchema).optional(),
-  team: z.lazy(() => TeamOrderByRelationAggregateInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneOrderByWithRelationInputSchema).optional(),
-  checkList: z.lazy(() => CheckListOrderByRelationAggregateInputSchema).optional(),
-  documents: z.lazy(() => DocumentsOrderByRelationAggregateInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterOrderByRelationAggregateInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterOrderByRelationAggregateInputSchema).optional(),
-  report: z.lazy(() => ReportOrderByRelationAggregateInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageOrderByRelationAggregateInputSchema).optional()
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  budget: z.lazy(() => BudgetOrderByWithRelationInputSchema).optional(),
+  team: z.lazy(() => TeamOrderByWithRelationInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneOrderByRelationAggregateInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemOrderByRelationAggregateInputSchema).optional(),
+  documents: z.lazy(() => DocumentOrderByRelationAggregateInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterOrderByRelationAggregateInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterOrderByRelationAggregateInputSchema).optional(),
+  reports: z.lazy(() => ReportOrderByRelationAggregateInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageOrderByRelationAggregateInputSchema).optional()
 }).strict();
 
 export const ProjectWhereUniqueInputSchema: z.ZodType<Prisma.ProjectWhereUniqueInput> = z.object({
@@ -630,17 +643,18 @@ export const ProjectWhereUniqueInputSchema: z.ZodType<Prisma.ProjectWhereUniqueI
   clientName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   startDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  progress: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
-  budget: z.lazy(() => BudgetListRelationFilterSchema).optional(),
-  team: z.lazy(() => TeamListRelationFilterSchema).optional(),
-  upcomingMilstone: z.union([ z.lazy(() => UpcomingMilstoneNullableScalarRelationFilterSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional().nullable(),
-  checkList: z.lazy(() => CheckListListRelationFilterSchema).optional(),
-  documents: z.lazy(() => DocumentsListRelationFilterSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterListRelationFilterSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterListRelationFilterSchema).optional(),
-  report: z.lazy(() => ReportListRelationFilterSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageListRelationFilterSchema).optional()
+  endDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  budget: z.union([ z.lazy(() => BudgetNullableScalarRelationFilterSchema),z.lazy(() => BudgetWhereInputSchema) ]).optional().nullable(),
+  team: z.union([ z.lazy(() => TeamNullableScalarRelationFilterSchema),z.lazy(() => TeamWhereInputSchema) ]).optional().nullable(),
+  milestones: z.lazy(() => MilestoneListRelationFilterSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemListRelationFilterSchema).optional(),
+  documents: z.lazy(() => DocumentListRelationFilterSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterListRelationFilterSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterListRelationFilterSchema).optional(),
+  reports: z.lazy(() => ReportListRelationFilterSchema).optional(),
+  siteImages: z.lazy(() => SiteImageListRelationFilterSchema).optional()
 }).strict());
 
 export const ProjectOrderByWithAggregationInputSchema: z.ZodType<Prisma.ProjectOrderByWithAggregationInput> = z.object({
@@ -649,13 +663,12 @@ export const ProjectOrderByWithAggregationInputSchema: z.ZodType<Prisma.ProjectO
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
   startDate: z.lazy(() => SortOrderSchema).optional(),
-  dueDate: z.lazy(() => SortOrderSchema).optional(),
-  progress: z.lazy(() => SortOrderSchema).optional(),
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => ProjectCountOrderByAggregateInputSchema).optional(),
-  _avg: z.lazy(() => ProjectAvgOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => ProjectMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => ProjectMinOrderByAggregateInputSchema).optional(),
-  _sum: z.lazy(() => ProjectSumOrderByAggregateInputSchema).optional()
+  _min: z.lazy(() => ProjectMinOrderByAggregateInputSchema).optional()
 }).strict();
 
 export const ProjectScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.ProjectScalarWhereWithAggregatesInput> = z.object({
@@ -667,8 +680,9 @@ export const ProjectScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Proje
   clientName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   location: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   startDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  dueDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  progress: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  endDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
 }).strict();
 
 export const BudgetWhereInputSchema: z.ZodType<Prisma.BudgetWhereInput> = z.object({
@@ -690,17 +704,26 @@ export const BudgetOrderByWithRelationInputSchema: z.ZodType<Prisma.BudgetOrderB
   project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const BudgetWhereUniqueInputSchema: z.ZodType<Prisma.BudgetWhereUniqueInput> = z.object({
-  id: z.string()
-})
+export const BudgetWhereUniqueInputSchema: z.ZodType<Prisma.BudgetWhereUniqueInput> = z.union([
+  z.object({
+    id: z.string(),
+    projectId: z.string()
+  }),
+  z.object({
+    id: z.string(),
+  }),
+  z.object({
+    projectId: z.string(),
+  }),
+])
 .and(z.object({
   id: z.string().optional(),
+  projectId: z.string().optional(),
   AND: z.union([ z.lazy(() => BudgetWhereInputSchema),z.lazy(() => BudgetWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => BudgetWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => BudgetWhereInputSchema),z.lazy(() => BudgetWhereInputSchema).array() ]).optional(),
   total: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
   spent: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict());
 
@@ -731,93 +754,27 @@ export const TeamWhereInputSchema: z.ZodType<Prisma.TeamWhereInput> = z.object({
   OR: z.lazy(() => TeamWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => TeamWhereInputSchema),z.lazy(() => TeamWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  projectManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  siteManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  civilManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  architecturalLoad: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  totalWorker: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
+  projectManager: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  siteManager: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  civilManager: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  architecturalLead: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  totalWorkers: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict();
 
 export const TeamOrderByWithRelationInputSchema: z.ZodType<Prisma.TeamOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  projectManger: z.lazy(() => SortOrderSchema).optional(),
-  siteManger: z.lazy(() => SortOrderSchema).optional(),
-  civilManger: z.lazy(() => SortOrderSchema).optional(),
-  architecturalLoad: z.lazy(() => SortOrderSchema).optional(),
-  totalWorker: z.lazy(() => SortOrderSchema).optional(),
+  projectManager: z.lazy(() => SortOrderSchema).optional(),
+  siteManager: z.lazy(() => SortOrderSchema).optional(),
+  civilManager: z.lazy(() => SortOrderSchema).optional(),
+  architecturalLead: z.lazy(() => SortOrderSchema).optional(),
+  totalWorkers: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
   project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const TeamWhereUniqueInputSchema: z.ZodType<Prisma.TeamWhereUniqueInput> = z.object({
-  id: z.string()
-})
-.and(z.object({
-  id: z.string().optional(),
-  AND: z.union([ z.lazy(() => TeamWhereInputSchema),z.lazy(() => TeamWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TeamWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TeamWhereInputSchema),z.lazy(() => TeamWhereInputSchema).array() ]).optional(),
-  projectManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  siteManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  civilManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  architecturalLoad: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  totalWorker: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
-}).strict());
-
-export const TeamOrderByWithAggregationInputSchema: z.ZodType<Prisma.TeamOrderByWithAggregationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  projectManger: z.lazy(() => SortOrderSchema).optional(),
-  siteManger: z.lazy(() => SortOrderSchema).optional(),
-  civilManger: z.lazy(() => SortOrderSchema).optional(),
-  architecturalLoad: z.lazy(() => SortOrderSchema).optional(),
-  totalWorker: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  _count: z.lazy(() => TeamCountOrderByAggregateInputSchema).optional(),
-  _avg: z.lazy(() => TeamAvgOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => TeamMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => TeamMinOrderByAggregateInputSchema).optional(),
-  _sum: z.lazy(() => TeamSumOrderByAggregateInputSchema).optional()
-}).strict();
-
-export const TeamScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.TeamScalarWhereWithAggregatesInput> = z.object({
-  AND: z.union([ z.lazy(() => TeamScalarWhereWithAggregatesInputSchema),z.lazy(() => TeamScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TeamScalarWhereWithAggregatesInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TeamScalarWhereWithAggregatesInputSchema),z.lazy(() => TeamScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  projectManger: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  siteManger: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  civilManger: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  architecturalLoad: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  totalWorker: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-}).strict();
-
-export const UpcomingMilstoneWhereInputSchema: z.ZodType<Prisma.UpcomingMilstoneWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => UpcomingMilstoneWhereInputSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => UpcomingMilstoneWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => UpcomingMilstoneWhereInputSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
-}).strict();
-
-export const UpcomingMilstoneOrderByWithRelationInputSchema: z.ZodType<Prisma.UpcomingMilstoneOrderByWithRelationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
-}).strict();
-
-export const UpcomingMilstoneWhereUniqueInputSchema: z.ZodType<Prisma.UpcomingMilstoneWhereUniqueInput> = z.union([
+export const TeamWhereUniqueInputSchema: z.ZodType<Prisma.TeamWhereUniqueInput> = z.union([
   z.object({
     id: z.string(),
     projectId: z.string()
@@ -832,311 +789,465 @@ export const UpcomingMilstoneWhereUniqueInputSchema: z.ZodType<Prisma.UpcomingMi
 .and(z.object({
   id: z.string().optional(),
   projectId: z.string().optional(),
-  AND: z.union([ z.lazy(() => UpcomingMilstoneWhereInputSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => UpcomingMilstoneWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => UpcomingMilstoneWhereInputSchema),z.lazy(() => UpcomingMilstoneWhereInputSchema).array() ]).optional(),
-  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
+  AND: z.union([ z.lazy(() => TeamWhereInputSchema),z.lazy(() => TeamWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => TeamWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => TeamWhereInputSchema),z.lazy(() => TeamWhereInputSchema).array() ]).optional(),
+  projectManager: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  siteManager: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  civilManager: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  architecturalLead: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  totalWorkers: z.union([ z.lazy(() => IntFilterSchema),z.number().int() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict());
 
-export const UpcomingMilstoneOrderByWithAggregationInputSchema: z.ZodType<Prisma.UpcomingMilstoneOrderByWithAggregationInput> = z.object({
+export const TeamOrderByWithAggregationInputSchema: z.ZodType<Prisma.TeamOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
+  projectManager: z.lazy(() => SortOrderSchema).optional(),
+  siteManager: z.lazy(() => SortOrderSchema).optional(),
+  civilManager: z.lazy(() => SortOrderSchema).optional(),
+  architecturalLead: z.lazy(() => SortOrderSchema).optional(),
+  totalWorkers: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => TeamCountOrderByAggregateInputSchema).optional(),
+  _avg: z.lazy(() => TeamAvgOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => TeamMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => TeamMinOrderByAggregateInputSchema).optional(),
+  _sum: z.lazy(() => TeamSumOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const TeamScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.TeamScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => TeamScalarWhereWithAggregatesInputSchema),z.lazy(() => TeamScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => TeamScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => TeamScalarWhereWithAggregatesInputSchema),z.lazy(() => TeamScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  projectManager: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  siteManager: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  civilManager: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  architecturalLead: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  totalWorkers: z.union([ z.lazy(() => IntWithAggregatesFilterSchema),z.number() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const MilestoneWhereInputSchema: z.ZodType<Prisma.MilestoneWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => MilestoneWhereInputSchema),z.lazy(() => MilestoneWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => MilestoneWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => MilestoneWhereInputSchema),z.lazy(() => MilestoneWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
+}).strict();
+
+export const MilestoneOrderByWithRelationInputSchema: z.ZodType<Prisma.MilestoneOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
   date: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
-  _count: z.lazy(() => UpcomingMilstoneCountOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => UpcomingMilstoneMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => UpcomingMilstoneMinOrderByAggregateInputSchema).optional()
+  project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const UpcomingMilstoneScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.UpcomingMilstoneScalarWhereWithAggregatesInput> = z.object({
-  AND: z.union([ z.lazy(() => UpcomingMilstoneScalarWhereWithAggregatesInputSchema),z.lazy(() => UpcomingMilstoneScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  OR: z.lazy(() => UpcomingMilstoneScalarWhereWithAggregatesInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => UpcomingMilstoneScalarWhereWithAggregatesInputSchema),z.lazy(() => UpcomingMilstoneScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+export const MilestoneWhereUniqueInputSchema: z.ZodType<Prisma.MilestoneWhereUniqueInput> = z.object({
+  id: z.string()
+})
+.and(z.object({
+  id: z.string().optional(),
+  AND: z.union([ z.lazy(() => MilestoneWhereInputSchema),z.lazy(() => MilestoneWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => MilestoneWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => MilestoneWhereInputSchema),z.lazy(() => MilestoneWhereInputSchema).array() ]).optional(),
+  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
+}).strict());
+
+export const MilestoneOrderByWithAggregationInputSchema: z.ZodType<Prisma.MilestoneOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => MilestoneCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => MilestoneMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => MilestoneMinOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const MilestoneScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.MilestoneScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => MilestoneScalarWhereWithAggregatesInputSchema),z.lazy(() => MilestoneScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => MilestoneScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => MilestoneScalarWhereWithAggregatesInputSchema),z.lazy(() => MilestoneScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  title: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   date: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
   status: z.union([ z.lazy(() => EnumStatusWithAggregatesFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
   projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
-export const CheckListWhereInputSchema: z.ZodType<Prisma.CheckListWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => CheckListWhereInputSchema),z.lazy(() => CheckListWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => CheckListWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => CheckListWhereInputSchema),z.lazy(() => CheckListWhereInputSchema).array() ]).optional(),
+export const ChecklistItemWhereInputSchema: z.ZodType<Prisma.ChecklistItemWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => ChecklistItemWhereInputSchema),z.lazy(() => ChecklistItemWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => ChecklistItemWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => ChecklistItemWhereInputSchema),z.lazy(() => ChecklistItemWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  task: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
+  task: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   assignedTo: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  dueData: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
   priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  completed: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  milestoneId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict();
 
-export const CheckListOrderByWithRelationInputSchema: z.ZodType<Prisma.CheckListOrderByWithRelationInput> = z.object({
+export const ChecklistItemOrderByWithRelationInputSchema: z.ZodType<Prisma.ChecklistItemOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   task: z.lazy(() => SortOrderSchema).optional(),
   assignedTo: z.lazy(() => SortOrderSchema).optional(),
-  dueData: z.lazy(() => SortOrderSchema).optional(),
+  dueDate: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
-  completed: z.lazy(() => SortOrderSchema).optional(),
+  milestoneId: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
   project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const CheckListWhereUniqueInputSchema: z.ZodType<Prisma.CheckListWhereUniqueInput> = z.object({
+export const ChecklistItemWhereUniqueInputSchema: z.ZodType<Prisma.ChecklistItemWhereUniqueInput> = z.object({
   id: z.string()
 })
 .and(z.object({
   id: z.string().optional(),
-  AND: z.union([ z.lazy(() => CheckListWhereInputSchema),z.lazy(() => CheckListWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => CheckListWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => CheckListWhereInputSchema),z.lazy(() => CheckListWhereInputSchema).array() ]).optional(),
-  task: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
+  AND: z.union([ z.lazy(() => ChecklistItemWhereInputSchema),z.lazy(() => ChecklistItemWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => ChecklistItemWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => ChecklistItemWhereInputSchema),z.lazy(() => ChecklistItemWhereInputSchema).array() ]).optional(),
+  task: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   assignedTo: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  dueData: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
   priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  completed: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
+  milestoneId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict());
 
-export const CheckListOrderByWithAggregationInputSchema: z.ZodType<Prisma.CheckListOrderByWithAggregationInput> = z.object({
+export const ChecklistItemOrderByWithAggregationInputSchema: z.ZodType<Prisma.ChecklistItemOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   task: z.lazy(() => SortOrderSchema).optional(),
   assignedTo: z.lazy(() => SortOrderSchema).optional(),
-  dueData: z.lazy(() => SortOrderSchema).optional(),
+  dueDate: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
-  completed: z.lazy(() => SortOrderSchema).optional(),
+  milestoneId: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
-  _count: z.lazy(() => CheckListCountOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => CheckListMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => CheckListMinOrderByAggregateInputSchema).optional()
+  _count: z.lazy(() => ChecklistItemCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => ChecklistItemMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => ChecklistItemMinOrderByAggregateInputSchema).optional()
 }).strict();
 
-export const CheckListScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.CheckListScalarWhereWithAggregatesInput> = z.object({
-  AND: z.union([ z.lazy(() => CheckListScalarWhereWithAggregatesInputSchema),z.lazy(() => CheckListScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  OR: z.lazy(() => CheckListScalarWhereWithAggregatesInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => CheckListScalarWhereWithAggregatesInputSchema),z.lazy(() => CheckListScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+export const ChecklistItemScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.ChecklistItemScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => ChecklistItemScalarWhereWithAggregatesInputSchema),z.lazy(() => ChecklistItemScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => ChecklistItemScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => ChecklistItemScalarWhereWithAggregatesInputSchema),z.lazy(() => ChecklistItemScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  task: z.union([ z.lazy(() => EnumStatusWithAggregatesFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
+  task: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   assignedTo: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  dueData: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  dueDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  status: z.union([ z.lazy(() => EnumStatusWithAggregatesFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
   priority: z.union([ z.lazy(() => EnumPriorityWithAggregatesFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  completed: z.union([ z.lazy(() => BoolWithAggregatesFilterSchema),z.boolean() ]).optional(),
+  milestoneId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
-export const DocumentsWhereInputSchema: z.ZodType<Prisma.DocumentsWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => DocumentsWhereInputSchema),z.lazy(() => DocumentsWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => DocumentsWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => DocumentsWhereInputSchema),z.lazy(() => DocumentsWhereInputSchema).array() ]).optional(),
+export const DocumentWhereInputSchema: z.ZodType<Prisma.DocumentWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict();
 
-export const DocumentsOrderByWithRelationInputSchema: z.ZodType<Prisma.DocumentsOrderByWithRelationInput> = z.object({
+export const DocumentOrderByWithRelationInputSchema: z.ZodType<Prisma.DocumentOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  name: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
   date: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const DocumentsWhereUniqueInputSchema: z.ZodType<Prisma.DocumentsWhereUniqueInput> = z.object({
+export const DocumentWhereUniqueInputSchema: z.ZodType<Prisma.DocumentWhereUniqueInput> = z.object({
   id: z.string()
 })
 .and(z.object({
   id: z.string().optional(),
-  AND: z.union([ z.lazy(() => DocumentsWhereInputSchema),z.lazy(() => DocumentsWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => DocumentsWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => DocumentsWhereInputSchema),z.lazy(() => DocumentsWhereInputSchema).array() ]).optional(),
-  name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  AND: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentWhereInputSchema),z.lazy(() => DocumentWhereInputSchema).array() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict());
 
-export const DocumentsOrderByWithAggregationInputSchema: z.ZodType<Prisma.DocumentsOrderByWithAggregationInput> = z.object({
+export const DocumentOrderByWithAggregationInputSchema: z.ZodType<Prisma.DocumentOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  name: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
   date: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  _count: z.lazy(() => DocumentsCountOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => DocumentsMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => DocumentsMinOrderByAggregateInputSchema).optional()
+  _count: z.lazy(() => DocumentCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => DocumentMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => DocumentMinOrderByAggregateInputSchema).optional()
 }).strict();
 
-export const DocumentsScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.DocumentsScalarWhereWithAggregatesInput> = z.object({
-  AND: z.union([ z.lazy(() => DocumentsScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentsScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  OR: z.lazy(() => DocumentsScalarWhereWithAggregatesInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => DocumentsScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentsScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+export const DocumentScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.DocumentScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema),z.lazy(() => DocumentScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  name: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  title: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   date: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
   projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
-export const TheIncomingLetterWhereInputSchema: z.ZodType<Prisma.TheIncomingLetterWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => TheIncomingLetterWhereInputSchema),z.lazy(() => TheIncomingLetterWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheIncomingLetterWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheIncomingLetterWhereInputSchema),z.lazy(() => TheIncomingLetterWhereInputSchema).array() ]).optional(),
+export const SiteImageWhereInputSchema: z.ZodType<Prisma.SiteImageWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => SiteImageWhereInputSchema),z.lazy(() => SiteImageWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => SiteImageWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => SiteImageWhereInputSchema),z.lazy(() => SiteImageWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  category: z.union([ z.lazy(() => EnumCategoryFilterSchema),z.lazy(() => CategorySchema) ]).optional(),
+  imageUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
+}).strict();
+
+export const SiteImageOrderByWithRelationInputSchema: z.ZodType<Prisma.SiteImageOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  location: z.lazy(() => SortOrderSchema).optional(),
+  category: z.lazy(() => SortOrderSchema).optional(),
+  imageUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional(),
+  project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
+}).strict();
+
+export const SiteImageWhereUniqueInputSchema: z.ZodType<Prisma.SiteImageWhereUniqueInput> = z.object({
+  id: z.string()
+})
+.and(z.object({
+  id: z.string().optional(),
+  AND: z.union([ z.lazy(() => SiteImageWhereInputSchema),z.lazy(() => SiteImageWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => SiteImageWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => SiteImageWhereInputSchema),z.lazy(() => SiteImageWhereInputSchema).array() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  category: z.union([ z.lazy(() => EnumCategoryFilterSchema),z.lazy(() => CategorySchema) ]).optional(),
+  imageUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
+}).strict());
+
+export const SiteImageOrderByWithAggregationInputSchema: z.ZodType<Prisma.SiteImageOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  location: z.lazy(() => SortOrderSchema).optional(),
+  category: z.lazy(() => SortOrderSchema).optional(),
+  imageUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => SiteImageCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => SiteImageMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => SiteImageMinOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const SiteImageScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.SiteImageScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => SiteImageScalarWhereWithAggregatesInputSchema),z.lazy(() => SiteImageScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => SiteImageScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => SiteImageScalarWhereWithAggregatesInputSchema),z.lazy(() => SiteImageScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  title: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  location: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  category: z.union([ z.lazy(() => EnumCategoryWithAggregatesFilterSchema),z.lazy(() => CategorySchema) ]).optional(),
+  imageUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  date: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const OutgoingLetterWhereInputSchema: z.ZodType<Prisma.OutgoingLetterWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => OutgoingLetterWhereInputSchema),z.lazy(() => OutgoingLetterWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => OutgoingLetterWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => OutgoingLetterWhereInputSchema),z.lazy(() => OutgoingLetterWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  recipient: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
+  status: z.union([ z.lazy(() => EnumOutgoingStatusFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
+}).strict();
+
+export const OutgoingLetterOrderByWithRelationInputSchema: z.ZodType<Prisma.OutgoingLetterOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  recipient: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional(),
+  project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
+}).strict();
+
+export const OutgoingLetterWhereUniqueInputSchema: z.ZodType<Prisma.OutgoingLetterWhereUniqueInput> = z.object({
+  id: z.string()
+})
+.and(z.object({
+  id: z.string().optional(),
+  AND: z.union([ z.lazy(() => OutgoingLetterWhereInputSchema),z.lazy(() => OutgoingLetterWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => OutgoingLetterWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => OutgoingLetterWhereInputSchema),z.lazy(() => OutgoingLetterWhereInputSchema).array() ]).optional(),
+  recipient: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
+  status: z.union([ z.lazy(() => EnumOutgoingStatusFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
+}).strict());
+
+export const OutgoingLetterOrderByWithAggregationInputSchema: z.ZodType<Prisma.OutgoingLetterOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  recipient: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => OutgoingLetterCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => OutgoingLetterMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => OutgoingLetterMinOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const OutgoingLetterScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.OutgoingLetterScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => OutgoingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => OutgoingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => OutgoingLetterScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => OutgoingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => OutgoingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  recipient: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  subject: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  priority: z.union([ z.lazy(() => EnumPriorityWithAggregatesFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
+  status: z.union([ z.lazy(() => EnumOutgoingStatusWithAggregatesFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const IncomingLetterWhereInputSchema: z.ZodType<Prisma.IncomingLetterWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => IncomingLetterWhereInputSchema),z.lazy(() => IncomingLetterWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => IncomingLetterWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => IncomingLetterWhereInputSchema),z.lazy(() => IncomingLetterWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   sender: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
   status: z.union([ z.lazy(() => EnumIncomingStatusFilterSchema),z.lazy(() => IncomingStatusSchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict();
 
-export const TheIncomingLetterOrderByWithRelationInputSchema: z.ZodType<Prisma.TheIncomingLetterOrderByWithRelationInput> = z.object({
+export const IncomingLetterOrderByWithRelationInputSchema: z.ZodType<Prisma.IncomingLetterOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   sender: z.lazy(() => SortOrderSchema).optional(),
   subject: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional(),
   project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
 }).strict();
 
-export const TheIncomingLetterWhereUniqueInputSchema: z.ZodType<Prisma.TheIncomingLetterWhereUniqueInput> = z.object({
+export const IncomingLetterWhereUniqueInputSchema: z.ZodType<Prisma.IncomingLetterWhereUniqueInput> = z.object({
   id: z.string()
 })
 .and(z.object({
   id: z.string().optional(),
-  AND: z.union([ z.lazy(() => TheIncomingLetterWhereInputSchema),z.lazy(() => TheIncomingLetterWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheIncomingLetterWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheIncomingLetterWhereInputSchema),z.lazy(() => TheIncomingLetterWhereInputSchema).array() ]).optional(),
+  AND: z.union([ z.lazy(() => IncomingLetterWhereInputSchema),z.lazy(() => IncomingLetterWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => IncomingLetterWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => IncomingLetterWhereInputSchema),z.lazy(() => IncomingLetterWhereInputSchema).array() ]).optional(),
   sender: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
   status: z.union([ z.lazy(() => EnumIncomingStatusFilterSchema),z.lazy(() => IncomingStatusSchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict());
 
-export const TheIncomingLetterOrderByWithAggregationInputSchema: z.ZodType<Prisma.TheIncomingLetterOrderByWithAggregationInput> = z.object({
+export const IncomingLetterOrderByWithAggregationInputSchema: z.ZodType<Prisma.IncomingLetterOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   sender: z.lazy(() => SortOrderSchema).optional(),
   subject: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  updatedAt: z.lazy(() => SortOrderSchema).optional(),
-  _count: z.lazy(() => TheIncomingLetterCountOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => TheIncomingLetterMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => TheIncomingLetterMinOrderByAggregateInputSchema).optional()
+  projectId: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => IncomingLetterCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => IncomingLetterMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => IncomingLetterMinOrderByAggregateInputSchema).optional()
 }).strict();
 
-export const TheIncomingLetterScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.TheIncomingLetterScalarWhereWithAggregatesInput> = z.object({
-  AND: z.union([ z.lazy(() => TheIncomingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => TheIncomingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheIncomingLetterScalarWhereWithAggregatesInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheIncomingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => TheIncomingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+export const IncomingLetterScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.IncomingLetterScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => IncomingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => IncomingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => IncomingLetterScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => IncomingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => IncomingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   sender: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   subject: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   priority: z.union([ z.lazy(() => EnumPriorityWithAggregatesFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
   status: z.union([ z.lazy(() => EnumIncomingStatusWithAggregatesFilterSchema),z.lazy(() => IncomingStatusSchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterWhereInputSchema: z.ZodType<Prisma.TheOutgoingLetterWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => TheOutgoingLetterWhereInputSchema),z.lazy(() => TheOutgoingLetterWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheOutgoingLetterWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheOutgoingLetterWhereInputSchema),z.lazy(() => TheOutgoingLetterWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  recipent: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumOutgoingStatusFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterOrderByWithRelationInputSchema: z.ZodType<Prisma.TheOutgoingLetterOrderByWithRelationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  recipent: z.lazy(() => SortOrderSchema).optional(),
-  subject: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  priority: z.lazy(() => SortOrderSchema).optional(),
-  createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
-}).strict();
-
-export const TheOutgoingLetterWhereUniqueInputSchema: z.ZodType<Prisma.TheOutgoingLetterWhereUniqueInput> = z.object({
-  id: z.string()
-})
-.and(z.object({
-  id: z.string().optional(),
-  AND: z.union([ z.lazy(() => TheOutgoingLetterWhereInputSchema),z.lazy(() => TheOutgoingLetterWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheOutgoingLetterWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheOutgoingLetterWhereInputSchema),z.lazy(() => TheOutgoingLetterWhereInputSchema).array() ]).optional(),
-  recipent: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumOutgoingStatusFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
-}).strict());
-
-export const TheOutgoingLetterOrderByWithAggregationInputSchema: z.ZodType<Prisma.TheOutgoingLetterOrderByWithAggregationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  recipent: z.lazy(() => SortOrderSchema).optional(),
-  subject: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  priority: z.lazy(() => SortOrderSchema).optional(),
-  createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  _count: z.lazy(() => TheOutgoingLetterCountOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => TheOutgoingLetterMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => TheOutgoingLetterMinOrderByAggregateInputSchema).optional()
-}).strict();
-
-export const TheOutgoingLetterScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.TheOutgoingLetterScalarWhereWithAggregatesInput> = z.object({
-  AND: z.union([ z.lazy(() => TheOutgoingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => TheOutgoingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheOutgoingLetterScalarWhereWithAggregatesInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheOutgoingLetterScalarWhereWithAggregatesInputSchema),z.lazy(() => TheOutgoingLetterScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  recipent: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  subject: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumOutgoingStatusWithAggregatesFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => EnumPriorityWithAggregatesFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
@@ -1145,26 +1256,28 @@ export const ReportWhereInputSchema: z.ZodType<Prisma.ReportWhereInput> = z.obje
   OR: z.lazy(() => ReportWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ReportWhereInputSchema),z.lazy(() => ReportWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   publisher: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumreportStatusFilterSchema),z.lazy(() => reportStatusSchema) ]).optional(),
-  uploadedDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  lastModified: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  reportType: z.union([ z.lazy(() => EnumReportTypeFilterSchema),z.lazy(() => ReportTypeSchema) ]).optional(),
   version: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  reportType: z.union([ z.lazy(() => EnumreportTypeFilterSchema),z.lazy(() => reportTypeSchema) ]).optional(),
+  status: z.union([ z.lazy(() => EnumReportStatusFilterSchema),z.lazy(() => ReportStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  uploadedDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict();
 
 export const ReportOrderByWithRelationInputSchema: z.ZodType<Prisma.ReportOrderByWithRelationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
   publisher: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
-  lastModified: z.lazy(() => SortOrderSchema).optional(),
-  version: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   reportType: z.lazy(() => SortOrderSchema).optional(),
+  version: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
   project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
 }).strict();
@@ -1177,26 +1290,28 @@ export const ReportWhereUniqueInputSchema: z.ZodType<Prisma.ReportWhereUniqueInp
   AND: z.union([ z.lazy(() => ReportWhereInputSchema),z.lazy(() => ReportWhereInputSchema).array() ]).optional(),
   OR: z.lazy(() => ReportWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ReportWhereInputSchema),z.lazy(() => ReportWhereInputSchema).array() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   publisher: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumreportStatusFilterSchema),z.lazy(() => reportStatusSchema) ]).optional(),
-  uploadedDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  lastModified: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  reportType: z.union([ z.lazy(() => EnumReportTypeFilterSchema),z.lazy(() => ReportTypeSchema) ]).optional(),
   version: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  reportType: z.union([ z.lazy(() => EnumreportTypeFilterSchema),z.lazy(() => reportTypeSchema) ]).optional(),
+  status: z.union([ z.lazy(() => EnumReportStatusFilterSchema),z.lazy(() => ReportStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  uploadedDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
 }).strict());
 
 export const ReportOrderByWithAggregationInputSchema: z.ZodType<Prisma.ReportOrderByWithAggregationInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
   publisher: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
-  lastModified: z.lazy(() => SortOrderSchema).optional(),
-  version: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   reportType: z.lazy(() => SortOrderSchema).optional(),
+  version: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional(),
   _count: z.lazy(() => ReportCountOrderByAggregateInputSchema).optional(),
   _max: z.lazy(() => ReportMaxOrderByAggregateInputSchema).optional(),
@@ -1208,81 +1323,14 @@ export const ReportScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Report
   OR: z.lazy(() => ReportScalarWhereWithAggregatesInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ReportScalarWhereWithAggregatesInputSchema),z.lazy(() => ReportScalarWhereWithAggregatesInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  publisher: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumreportStatusWithAggregatesFilterSchema),z.lazy(() => reportStatusSchema) ]).optional(),
-  uploadedDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  lastModified: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  version: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  reportType: z.union([ z.lazy(() => EnumreportTypeWithAggregatesFilterSchema),z.lazy(() => reportTypeSchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-}).strict();
-
-export const ConstructionSiteImageWhereInputSchema: z.ZodType<Prisma.ConstructionSiteImageWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => ConstructionSiteImageWhereInputSchema),z.lazy(() => ConstructionSiteImageWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => ConstructionSiteImageWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => ConstructionSiteImageWhereInputSchema),z.lazy(() => ConstructionSiteImageWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  imagesrc: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  category: z.union([ z.lazy(() => EnumcategoryFilterSchema),z.lazy(() => categorySchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
-}).strict();
-
-export const ConstructionSiteImageOrderByWithRelationInputSchema: z.ZodType<Prisma.ConstructionSiteImageOrderByWithRelationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
-  imagesrc: z.lazy(() => SortOrderSchema).optional(),
-  location: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  category: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional()
-}).strict();
-
-export const ConstructionSiteImageWhereUniqueInputSchema: z.ZodType<Prisma.ConstructionSiteImageWhereUniqueInput> = z.object({
-  id: z.string()
-})
-.and(z.object({
-  id: z.string().optional(),
-  AND: z.union([ z.lazy(() => ConstructionSiteImageWhereInputSchema),z.lazy(() => ConstructionSiteImageWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => ConstructionSiteImageWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => ConstructionSiteImageWhereInputSchema),z.lazy(() => ConstructionSiteImageWhereInputSchema).array() ]).optional(),
-  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  imagesrc: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  category: z.union([ z.lazy(() => EnumcategoryFilterSchema),z.lazy(() => categorySchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  project: z.union([ z.lazy(() => ProjectScalarRelationFilterSchema),z.lazy(() => ProjectWhereInputSchema) ]).optional(),
-}).strict());
-
-export const ConstructionSiteImageOrderByWithAggregationInputSchema: z.ZodType<Prisma.ConstructionSiteImageOrderByWithAggregationInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
-  imagesrc: z.lazy(() => SortOrderSchema).optional(),
-  location: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  category: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  _count: z.lazy(() => ConstructionSiteImageCountOrderByAggregateInputSchema).optional(),
-  _max: z.lazy(() => ConstructionSiteImageMaxOrderByAggregateInputSchema).optional(),
-  _min: z.lazy(() => ConstructionSiteImageMinOrderByAggregateInputSchema).optional()
-}).strict();
-
-export const ConstructionSiteImageScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.ConstructionSiteImageScalarWhereWithAggregatesInput> = z.object({
-  AND: z.union([ z.lazy(() => ConstructionSiteImageScalarWhereWithAggregatesInputSchema),z.lazy(() => ConstructionSiteImageScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  OR: z.lazy(() => ConstructionSiteImageScalarWhereWithAggregatesInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => ConstructionSiteImageScalarWhereWithAggregatesInputSchema),z.lazy(() => ConstructionSiteImageScalarWhereWithAggregatesInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   title: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  imagesrc: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  location: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
-  date: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
-  category: z.union([ z.lazy(() => EnumcategoryWithAggregatesFilterSchema),z.lazy(() => categorySchema) ]).optional(),
+  publisher: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  reportType: z.union([ z.lazy(() => EnumReportTypeWithAggregatesFilterSchema),z.lazy(() => ReportTypeSchema) ]).optional(),
+  version: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  status: z.union([ z.lazy(() => EnumReportStatusWithAggregatesFilterSchema),z.lazy(() => ReportStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  uploadedDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
   projectId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
 }).strict();
 
@@ -1350,18 +1398,19 @@ export const ProjectCreateInputSchema: z.ZodType<Prisma.ProjectCreateInput> = z.
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedCreateInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateInput> = z.object({
@@ -1369,18 +1418,19 @@ export const ProjectUncheckedCreateInputSchema: z.ZodType<Prisma.ProjectUnchecke
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectUpdateInputSchema: z.ZodType<Prisma.ProjectUpdateInput> = z.object({
@@ -1388,17 +1438,18 @@ export const ProjectUpdateInputSchema: z.ZodType<Prisma.ProjectUpdateInput> = z.
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedUpdateInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateInput> = z.object({
@@ -1406,17 +1457,18 @@ export const ProjectUncheckedUpdateInputSchema: z.ZodType<Prisma.ProjectUnchecke
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
 export const ProjectCreateManyInputSchema: z.ZodType<Prisma.ProjectCreateManyInput> = z.object({
@@ -1424,9 +1476,10 @@ export const ProjectCreateManyInputSchema: z.ZodType<Prisma.ProjectCreateManyInp
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
 }).strict();
 
 export const ProjectUpdateManyMutationInputSchema: z.ZodType<Prisma.ProjectUpdateManyMutationInput> = z.object({
@@ -1434,8 +1487,9 @@ export const ProjectUpdateManyMutationInputSchema: z.ZodType<Prisma.ProjectUpdat
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const ProjectUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateManyInput> = z.object({
@@ -1443,8 +1497,9 @@ export const ProjectUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ProjectUnch
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const BudgetCreateInputSchema: z.ZodType<Prisma.BudgetCreateInput> = z.object({
@@ -1493,528 +1548,563 @@ export const BudgetUncheckedUpdateManyInputSchema: z.ZodType<Prisma.BudgetUnchec
 
 export const TeamCreateInputSchema: z.ZodType<Prisma.TeamCreateInput> = z.object({
   id: z.string().optional(),
-  projectManger: z.string(),
-  siteManger: z.string(),
-  civilManger: z.string(),
-  architecturalLoad: z.string(),
-  totalWorker: z.number().int(),
+  projectManager: z.string(),
+  siteManager: z.string(),
+  civilManager: z.string(),
+  architecturalLead: z.string(),
+  totalWorkers: z.number().int(),
   project: z.lazy(() => ProjectCreateNestedOneWithoutTeamInputSchema)
 }).strict();
 
 export const TeamUncheckedCreateInputSchema: z.ZodType<Prisma.TeamUncheckedCreateInput> = z.object({
   id: z.string().optional(),
-  projectManger: z.string(),
-  siteManger: z.string(),
-  civilManger: z.string(),
-  architecturalLoad: z.string(),
-  totalWorker: z.number().int(),
+  projectManager: z.string(),
+  siteManager: z.string(),
+  civilManager: z.string(),
+  architecturalLead: z.string(),
+  totalWorkers: z.number().int(),
   projectId: z.string()
 }).strict();
 
 export const TeamUpdateInputSchema: z.ZodType<Prisma.TeamUpdateInput> = z.object({
-  projectManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  siteManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  civilManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  architecturalLoad: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  totalWorker: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  projectManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  siteManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  civilManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  architecturalLead: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  totalWorkers: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   project: z.lazy(() => ProjectUpdateOneRequiredWithoutTeamNestedInputSchema).optional()
 }).strict();
 
 export const TeamUncheckedUpdateInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateInput> = z.object({
-  projectManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  siteManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  civilManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  architecturalLoad: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  totalWorker: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  projectManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  siteManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  civilManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  architecturalLead: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  totalWorkers: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const TeamCreateManyInputSchema: z.ZodType<Prisma.TeamCreateManyInput> = z.object({
   id: z.string().optional(),
-  projectManger: z.string(),
-  siteManger: z.string(),
-  civilManger: z.string(),
-  architecturalLoad: z.string(),
-  totalWorker: z.number().int(),
+  projectManager: z.string(),
+  siteManager: z.string(),
+  civilManager: z.string(),
+  architecturalLead: z.string(),
+  totalWorkers: z.number().int(),
   projectId: z.string()
 }).strict();
 
 export const TeamUpdateManyMutationInputSchema: z.ZodType<Prisma.TeamUpdateManyMutationInput> = z.object({
-  projectManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  siteManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  civilManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  architecturalLoad: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  totalWorker: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  projectManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  siteManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  civilManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  architecturalLead: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  totalWorkers: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const TeamUncheckedUpdateManyInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateManyInput> = z.object({
-  projectManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  siteManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  civilManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  architecturalLoad: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  totalWorker: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
+  projectManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  siteManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  civilManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  architecturalLead: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  totalWorkers: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
   projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const UpcomingMilstoneCreateInputSchema: z.ZodType<Prisma.UpcomingMilstoneCreateInput> = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  date: z.coerce.date().optional(),
-  status: z.lazy(() => StatusSchema),
-  project: z.lazy(() => ProjectCreateNestedOneWithoutUpcomingMilstoneInputSchema)
-}).strict();
-
-export const UpcomingMilstoneUncheckedCreateInputSchema: z.ZodType<Prisma.UpcomingMilstoneUncheckedCreateInput> = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  date: z.coerce.date().optional(),
-  status: z.lazy(() => StatusSchema),
-  projectId: z.string()
-}).strict();
-
-export const UpcomingMilstoneUpdateInputSchema: z.ZodType<Prisma.UpcomingMilstoneUpdateInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  project: z.lazy(() => ProjectUpdateOneRequiredWithoutUpcomingMilstoneNestedInputSchema).optional()
-}).strict();
-
-export const UpcomingMilstoneUncheckedUpdateInputSchema: z.ZodType<Prisma.UpcomingMilstoneUncheckedUpdateInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const UpcomingMilstoneCreateManyInputSchema: z.ZodType<Prisma.UpcomingMilstoneCreateManyInput> = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  date: z.coerce.date().optional(),
-  status: z.lazy(() => StatusSchema),
-  projectId: z.string()
-}).strict();
-
-export const UpcomingMilstoneUpdateManyMutationInputSchema: z.ZodType<Prisma.UpcomingMilstoneUpdateManyMutationInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const UpcomingMilstoneUncheckedUpdateManyInputSchema: z.ZodType<Prisma.UpcomingMilstoneUncheckedUpdateManyInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const CheckListCreateInputSchema: z.ZodType<Prisma.CheckListCreateInput> = z.object({
-  id: z.string().optional(),
-  task: z.lazy(() => StatusSchema),
-  assignedTo: z.string(),
-  dueData: z.coerce.date().optional(),
-  priority: z.lazy(() => PrioritySchema),
-  completed: z.boolean(),
-  project: z.lazy(() => ProjectCreateNestedOneWithoutCheckListInputSchema)
-}).strict();
-
-export const CheckListUncheckedCreateInputSchema: z.ZodType<Prisma.CheckListUncheckedCreateInput> = z.object({
-  id: z.string().optional(),
-  task: z.lazy(() => StatusSchema),
-  assignedTo: z.string(),
-  dueData: z.coerce.date().optional(),
-  priority: z.lazy(() => PrioritySchema),
-  completed: z.boolean(),
-  projectId: z.string()
-}).strict();
-
-export const CheckListUpdateInputSchema: z.ZodType<Prisma.CheckListUpdateInput> = z.object({
-  task: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  dueData: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  completed: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  project: z.lazy(() => ProjectUpdateOneRequiredWithoutCheckListNestedInputSchema).optional()
-}).strict();
-
-export const CheckListUncheckedUpdateInputSchema: z.ZodType<Prisma.CheckListUncheckedUpdateInput> = z.object({
-  task: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  dueData: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  completed: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const CheckListCreateManyInputSchema: z.ZodType<Prisma.CheckListCreateManyInput> = z.object({
-  id: z.string().optional(),
-  task: z.lazy(() => StatusSchema),
-  assignedTo: z.string(),
-  dueData: z.coerce.date().optional(),
-  priority: z.lazy(() => PrioritySchema),
-  completed: z.boolean(),
-  projectId: z.string()
-}).strict();
-
-export const CheckListUpdateManyMutationInputSchema: z.ZodType<Prisma.CheckListUpdateManyMutationInput> = z.object({
-  task: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  dueData: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  completed: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const CheckListUncheckedUpdateManyInputSchema: z.ZodType<Prisma.CheckListUncheckedUpdateManyInput> = z.object({
-  task: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  dueData: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  completed: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const DocumentsCreateInputSchema: z.ZodType<Prisma.DocumentsCreateInput> = z.object({
+export const MilestoneCreateInputSchema: z.ZodType<Prisma.MilestoneCreateInput> = z.object({
   id: z.string().optional(),
   name: z.string(),
+  date: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
+  project: z.lazy(() => ProjectCreateNestedOneWithoutMilestonesInputSchema)
+}).strict();
+
+export const MilestoneUncheckedCreateInputSchema: z.ZodType<Prisma.MilestoneUncheckedCreateInput> = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  date: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
+  projectId: z.string()
+}).strict();
+
+export const MilestoneUpdateInputSchema: z.ZodType<Prisma.MilestoneUpdateInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  project: z.lazy(() => ProjectUpdateOneRequiredWithoutMilestonesNestedInputSchema).optional()
+}).strict();
+
+export const MilestoneUncheckedUpdateInputSchema: z.ZodType<Prisma.MilestoneUncheckedUpdateInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const MilestoneCreateManyInputSchema: z.ZodType<Prisma.MilestoneCreateManyInput> = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  date: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
+  projectId: z.string()
+}).strict();
+
+export const MilestoneUpdateManyMutationInputSchema: z.ZodType<Prisma.MilestoneUpdateManyMutationInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const MilestoneUncheckedUpdateManyInputSchema: z.ZodType<Prisma.MilestoneUncheckedUpdateManyInput> = z.object({
+  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ChecklistItemCreateInputSchema: z.ZodType<Prisma.ChecklistItemCreateInput> = z.object({
+  id: z.string().optional(),
+  task: z.string(),
+  assignedTo: z.string(),
+  dueDate: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
+  priority: z.lazy(() => PrioritySchema),
+  milestoneId: z.string(),
+  project: z.lazy(() => ProjectCreateNestedOneWithoutChecklistInputSchema)
+}).strict();
+
+export const ChecklistItemUncheckedCreateInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedCreateInput> = z.object({
+  id: z.string().optional(),
+  task: z.string(),
+  assignedTo: z.string(),
+  dueDate: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
+  priority: z.lazy(() => PrioritySchema),
+  milestoneId: z.string(),
+  projectId: z.string()
+}).strict();
+
+export const ChecklistItemUpdateInputSchema: z.ZodType<Prisma.ChecklistItemUpdateInput> = z.object({
+  task: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  milestoneId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  project: z.lazy(() => ProjectUpdateOneRequiredWithoutChecklistNestedInputSchema).optional()
+}).strict();
+
+export const ChecklistItemUncheckedUpdateInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedUpdateInput> = z.object({
+  task: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  milestoneId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ChecklistItemCreateManyInputSchema: z.ZodType<Prisma.ChecklistItemCreateManyInput> = z.object({
+  id: z.string().optional(),
+  task: z.string(),
+  assignedTo: z.string(),
+  dueDate: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
+  priority: z.lazy(() => PrioritySchema),
+  milestoneId: z.string(),
+  projectId: z.string()
+}).strict();
+
+export const ChecklistItemUpdateManyMutationInputSchema: z.ZodType<Prisma.ChecklistItemUpdateManyMutationInput> = z.object({
+  task: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  milestoneId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ChecklistItemUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedUpdateManyInput> = z.object({
+  task: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  milestoneId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentCreateInputSchema: z.ZodType<Prisma.DocumentCreateInput> = z.object({
+  id: z.string().optional(),
+  title: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
   date: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
   project: z.lazy(() => ProjectCreateNestedOneWithoutDocumentsInputSchema)
 }).strict();
 
-export const DocumentsUncheckedCreateInputSchema: z.ZodType<Prisma.DocumentsUncheckedCreateInput> = z.object({
+export const DocumentUncheckedCreateInputSchema: z.ZodType<Prisma.DocumentUncheckedCreateInput> = z.object({
   id: z.string().optional(),
-  name: z.string(),
+  title: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
   date: z.coerce.date().optional(),
-  projectId: z.string(),
-  downloadedUrl: z.string()
+  projectId: z.string()
 }).strict();
 
-export const DocumentsUpdateInputSchema: z.ZodType<Prisma.DocumentsUpdateInput> = z.object({
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+export const DocumentUpdateInputSchema: z.ZodType<Prisma.DocumentUpdateInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   project: z.lazy(() => ProjectUpdateOneRequiredWithoutDocumentsNestedInputSchema).optional()
 }).strict();
 
-export const DocumentsUncheckedUpdateInputSchema: z.ZodType<Prisma.DocumentsUncheckedUpdateInput> = z.object({
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+export const DocumentUncheckedUpdateInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const DocumentsCreateManyInputSchema: z.ZodType<Prisma.DocumentsCreateManyInput> = z.object({
+export const DocumentCreateManyInputSchema: z.ZodType<Prisma.DocumentCreateManyInput> = z.object({
   id: z.string().optional(),
-  name: z.string(),
+  title: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
   date: z.coerce.date().optional(),
-  projectId: z.string(),
-  downloadedUrl: z.string()
-}).strict();
-
-export const DocumentsUpdateManyMutationInputSchema: z.ZodType<Prisma.DocumentsUpdateManyMutationInput> = z.object({
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const DocumentsUncheckedUpdateManyInputSchema: z.ZodType<Prisma.DocumentsUncheckedUpdateManyInput> = z.object({
-  name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TheIncomingLetterCreateInputSchema: z.ZodType<Prisma.TheIncomingLetterCreateInput> = z.object({
-  id: z.string().optional(),
-  sender: z.string(),
-  subject: z.string(),
-  priority: z.lazy(() => PrioritySchema),
-  status: z.lazy(() => IncomingStatusSchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
-  updatedAt: z.coerce.date().optional(),
-  project: z.lazy(() => ProjectCreateNestedOneWithoutTheIncomingLetterInputSchema)
-}).strict();
-
-export const TheIncomingLetterUncheckedCreateInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedCreateInput> = z.object({
-  id: z.string().optional(),
-  sender: z.string(),
-  subject: z.string(),
-  priority: z.lazy(() => PrioritySchema),
-  status: z.lazy(() => IncomingStatusSchema),
-  projectId: z.string(),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
-  updatedAt: z.coerce.date().optional()
-}).strict();
-
-export const TheIncomingLetterUpdateInputSchema: z.ZodType<Prisma.TheIncomingLetterUpdateInput> = z.object({
-  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  project: z.lazy(() => ProjectUpdateOneRequiredWithoutTheIncomingLetterNestedInputSchema).optional()
-}).strict();
-
-export const TheIncomingLetterUncheckedUpdateInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedUpdateInput> = z.object({
-  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TheIncomingLetterCreateManyInputSchema: z.ZodType<Prisma.TheIncomingLetterCreateManyInput> = z.object({
-  id: z.string().optional(),
-  sender: z.string(),
-  subject: z.string(),
-  priority: z.lazy(() => PrioritySchema),
-  status: z.lazy(() => IncomingStatusSchema),
-  projectId: z.string(),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
-  updatedAt: z.coerce.date().optional()
-}).strict();
-
-export const TheIncomingLetterUpdateManyMutationInputSchema: z.ZodType<Prisma.TheIncomingLetterUpdateManyMutationInput> = z.object({
-  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TheIncomingLetterUncheckedUpdateManyInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedUpdateManyInput> = z.object({
-  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterCreateInputSchema: z.ZodType<Prisma.TheOutgoingLetterCreateInput> = z.object({
-  id: z.string().optional(),
-  recipent: z.string(),
-  subject: z.string(),
-  status: z.lazy(() => OutgoingStatusSchema),
-  priority: z.lazy(() => PrioritySchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
-  project: z.lazy(() => ProjectCreateNestedOneWithoutTheOutgoingLetterInputSchema)
-}).strict();
-
-export const TheOutgoingLetterUncheckedCreateInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedCreateInput> = z.object({
-  id: z.string().optional(),
-  recipent: z.string(),
-  subject: z.string(),
-  status: z.lazy(() => OutgoingStatusSchema),
-  priority: z.lazy(() => PrioritySchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
   projectId: z.string()
 }).strict();
 
-export const TheOutgoingLetterUpdateInputSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateInput> = z.object({
-  recipent: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  project: z.lazy(() => ProjectUpdateOneRequiredWithoutTheOutgoingLetterNestedInputSchema).optional()
+export const DocumentUpdateManyMutationInputSchema: z.ZodType<Prisma.DocumentUpdateManyMutationInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const TheOutgoingLetterUncheckedUpdateInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedUpdateInput> = z.object({
-  recipent: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+export const DocumentUncheckedUpdateManyInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateManyInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const TheOutgoingLetterCreateManyInputSchema: z.ZodType<Prisma.TheOutgoingLetterCreateManyInput> = z.object({
+export const SiteImageCreateInputSchema: z.ZodType<Prisma.SiteImageCreateInput> = z.object({
   id: z.string().optional(),
-  recipent: z.string(),
-  subject: z.string(),
-  status: z.lazy(() => OutgoingStatusSchema),
-  priority: z.lazy(() => PrioritySchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
+  title: z.string(),
+  location: z.string(),
+  category: z.lazy(() => CategorySchema),
+  imageUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional(),
+  project: z.lazy(() => ProjectCreateNestedOneWithoutSiteImagesInputSchema)
+}).strict();
+
+export const SiteImageUncheckedCreateInputSchema: z.ZodType<Prisma.SiteImageUncheckedCreateInput> = z.object({
+  id: z.string().optional(),
+  title: z.string(),
+  location: z.string(),
+  category: z.lazy(() => CategorySchema),
+  imageUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional(),
   projectId: z.string()
 }).strict();
 
-export const TheOutgoingLetterUpdateManyMutationInputSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateManyMutationInput> = z.object({
-  recipent: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+export const SiteImageUpdateInputSchema: z.ZodType<Prisma.SiteImageUpdateInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  category: z.union([ z.lazy(() => CategorySchema),z.lazy(() => EnumCategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  imageUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  project: z.lazy(() => ProjectUpdateOneRequiredWithoutSiteImagesNestedInputSchema).optional()
 }).strict();
 
-export const TheOutgoingLetterUncheckedUpdateManyInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedUpdateManyInput> = z.object({
-  recipent: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+export const SiteImageUncheckedUpdateInputSchema: z.ZodType<Prisma.SiteImageUncheckedUpdateInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  category: z.union([ z.lazy(() => CategorySchema),z.lazy(() => EnumCategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  imageUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const SiteImageCreateManyInputSchema: z.ZodType<Prisma.SiteImageCreateManyInput> = z.object({
+  id: z.string().optional(),
+  title: z.string(),
+  location: z.string(),
+  category: z.lazy(() => CategorySchema),
+  imageUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional(),
+  projectId: z.string()
+}).strict();
+
+export const SiteImageUpdateManyMutationInputSchema: z.ZodType<Prisma.SiteImageUpdateManyMutationInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  category: z.union([ z.lazy(() => CategorySchema),z.lazy(() => EnumCategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  imageUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const SiteImageUncheckedUpdateManyInputSchema: z.ZodType<Prisma.SiteImageUncheckedUpdateManyInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  category: z.union([ z.lazy(() => CategorySchema),z.lazy(() => EnumCategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  imageUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const OutgoingLetterCreateInputSchema: z.ZodType<Prisma.OutgoingLetterCreateInput> = z.object({
+  id: z.string().optional(),
+  recipient: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => OutgoingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional(),
+  project: z.lazy(() => ProjectCreateNestedOneWithoutOutgoingLettersInputSchema)
+}).strict();
+
+export const OutgoingLetterUncheckedCreateInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedCreateInput> = z.object({
+  id: z.string().optional(),
+  recipient: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => OutgoingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional(),
+  projectId: z.string()
+}).strict();
+
+export const OutgoingLetterUpdateInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateInput> = z.object({
+  recipient: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
   priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  project: z.lazy(() => ProjectUpdateOneRequiredWithoutOutgoingLettersNestedInputSchema).optional()
+}).strict();
+
+export const OutgoingLetterUncheckedUpdateInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedUpdateInput> = z.object({
+  recipient: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const OutgoingLetterCreateManyInputSchema: z.ZodType<Prisma.OutgoingLetterCreateManyInput> = z.object({
+  id: z.string().optional(),
+  recipient: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => OutgoingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional(),
+  projectId: z.string()
+}).strict();
+
+export const OutgoingLetterUpdateManyMutationInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateManyMutationInput> = z.object({
+  recipient: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const OutgoingLetterUncheckedUpdateManyInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedUpdateManyInput> = z.object({
+  recipient: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const IncomingLetterCreateInputSchema: z.ZodType<Prisma.IncomingLetterCreateInput> = z.object({
+  id: z.string().optional(),
+  sender: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => IncomingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional(),
+  project: z.lazy(() => ProjectCreateNestedOneWithoutIncomingLettersInputSchema)
+}).strict();
+
+export const IncomingLetterUncheckedCreateInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedCreateInput> = z.object({
+  id: z.string().optional(),
+  sender: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => IncomingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional(),
+  projectId: z.string()
+}).strict();
+
+export const IncomingLetterUpdateInputSchema: z.ZodType<Prisma.IncomingLetterUpdateInput> = z.object({
+  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  project: z.lazy(() => ProjectUpdateOneRequiredWithoutIncomingLettersNestedInputSchema).optional()
+}).strict();
+
+export const IncomingLetterUncheckedUpdateInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedUpdateInput> = z.object({
+  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const IncomingLetterCreateManyInputSchema: z.ZodType<Prisma.IncomingLetterCreateManyInput> = z.object({
+  id: z.string().optional(),
+  sender: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => IncomingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional(),
+  projectId: z.string()
+}).strict();
+
+export const IncomingLetterUpdateManyMutationInputSchema: z.ZodType<Prisma.IncomingLetterUpdateManyMutationInput> = z.object({
+  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const IncomingLetterUncheckedUpdateManyInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedUpdateManyInput> = z.object({
+  sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const ReportCreateInputSchema: z.ZodType<Prisma.ReportCreateInput> = z.object({
   id: z.string().optional(),
+  title: z.string(),
   publisher: z.string(),
-  status: z.lazy(() => reportStatusSchema),
-  uploadedDate: z.coerce.date().optional(),
-  lastModified: z.coerce.date().optional(),
+  reportType: z.lazy(() => ReportTypeSchema),
   version: z.string(),
-  downloadedUrl: z.string(),
-  reportType: z.lazy(() => reportTypeSchema),
-  project: z.lazy(() => ProjectCreateNestedOneWithoutReportInputSchema)
+  status: z.lazy(() => ReportStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  uploadedDate: z.coerce.date().optional(),
+  project: z.lazy(() => ProjectCreateNestedOneWithoutReportsInputSchema)
 }).strict();
 
 export const ReportUncheckedCreateInputSchema: z.ZodType<Prisma.ReportUncheckedCreateInput> = z.object({
   id: z.string().optional(),
+  title: z.string(),
   publisher: z.string(),
-  status: z.lazy(() => reportStatusSchema),
-  uploadedDate: z.coerce.date().optional(),
-  lastModified: z.coerce.date().optional(),
+  reportType: z.lazy(() => ReportTypeSchema),
   version: z.string(),
-  downloadedUrl: z.string(),
-  reportType: z.lazy(() => reportTypeSchema),
+  status: z.lazy(() => ReportStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  uploadedDate: z.coerce.date().optional(),
   projectId: z.string()
 }).strict();
 
 export const ReportUpdateInputSchema: z.ZodType<Prisma.ReportUpdateInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   publisher: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => EnumreportStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  lastModified: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  reportType: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema) ]).optional(),
   version: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  reportType: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => EnumreportTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  project: z.lazy(() => ProjectUpdateOneRequiredWithoutReportNestedInputSchema).optional()
+  status: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  project: z.lazy(() => ProjectUpdateOneRequiredWithoutReportsNestedInputSchema).optional()
 }).strict();
 
 export const ReportUncheckedUpdateInputSchema: z.ZodType<Prisma.ReportUncheckedUpdateInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   publisher: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => EnumreportStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  lastModified: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  reportType: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema) ]).optional(),
   version: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  reportType: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => EnumreportTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const ReportCreateManyInputSchema: z.ZodType<Prisma.ReportCreateManyInput> = z.object({
   id: z.string().optional(),
+  title: z.string(),
   publisher: z.string(),
-  status: z.lazy(() => reportStatusSchema),
-  uploadedDate: z.coerce.date().optional(),
-  lastModified: z.coerce.date().optional(),
+  reportType: z.lazy(() => ReportTypeSchema),
   version: z.string(),
-  downloadedUrl: z.string(),
-  reportType: z.lazy(() => reportTypeSchema),
+  status: z.lazy(() => ReportStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  uploadedDate: z.coerce.date().optional(),
   projectId: z.string()
 }).strict();
 
 export const ReportUpdateManyMutationInputSchema: z.ZodType<Prisma.ReportUpdateManyMutationInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   publisher: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => EnumreportStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  lastModified: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  reportType: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema) ]).optional(),
   version: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  reportType: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => EnumreportTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const ReportUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ReportUncheckedUpdateManyInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   publisher: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => EnumreportStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  lastModified: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  reportType: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema) ]).optional(),
   version: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  reportType: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => EnumreportTypeFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const ConstructionSiteImageCreateInputSchema: z.ZodType<Prisma.ConstructionSiteImageCreateInput> = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  imagesrc: z.string(),
-  location: z.string(),
-  date: z.coerce.date().optional(),
-  category: z.lazy(() => categorySchema),
-  project: z.lazy(() => ProjectCreateNestedOneWithoutConstructionSiteImageInputSchema)
-}).strict();
-
-export const ConstructionSiteImageUncheckedCreateInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedCreateInput> = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  imagesrc: z.string(),
-  location: z.string(),
-  date: z.coerce.date().optional(),
-  category: z.lazy(() => categorySchema),
-  projectId: z.string()
-}).strict();
-
-export const ConstructionSiteImageUpdateInputSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  imagesrc: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  category: z.union([ z.lazy(() => categorySchema),z.lazy(() => EnumcategoryFieldUpdateOperationsInputSchema) ]).optional(),
-  project: z.lazy(() => ProjectUpdateOneRequiredWithoutConstructionSiteImageNestedInputSchema).optional()
-}).strict();
-
-export const ConstructionSiteImageUncheckedUpdateInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedUpdateInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  imagesrc: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  category: z.union([ z.lazy(() => categorySchema),z.lazy(() => EnumcategoryFieldUpdateOperationsInputSchema) ]).optional(),
-  projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const ConstructionSiteImageCreateManyInputSchema: z.ZodType<Prisma.ConstructionSiteImageCreateManyInput> = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  imagesrc: z.string(),
-  location: z.string(),
-  date: z.coerce.date().optional(),
-  category: z.lazy(() => categorySchema),
-  projectId: z.string()
-}).strict();
-
-export const ConstructionSiteImageUpdateManyMutationInputSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateManyMutationInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  imagesrc: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  category: z.union([ z.lazy(() => categorySchema),z.lazy(() => EnumcategoryFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const ConstructionSiteImageUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedUpdateManyInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  imagesrc: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  category: z.union([ z.lazy(() => categorySchema),z.lazy(() => EnumcategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
   projectId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
@@ -2103,56 +2193,44 @@ export const DateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeWithAg
   _max: z.lazy(() => NestedDateTimeFilterSchema).optional()
 }).strict();
 
-export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
+export const BudgetNullableScalarRelationFilterSchema: z.ZodType<Prisma.BudgetNullableScalarRelationFilter> = z.object({
+  is: z.lazy(() => BudgetWhereInputSchema).optional().nullable(),
+  isNot: z.lazy(() => BudgetWhereInputSchema).optional().nullable()
 }).strict();
 
-export const BudgetListRelationFilterSchema: z.ZodType<Prisma.BudgetListRelationFilter> = z.object({
-  every: z.lazy(() => BudgetWhereInputSchema).optional(),
-  some: z.lazy(() => BudgetWhereInputSchema).optional(),
-  none: z.lazy(() => BudgetWhereInputSchema).optional()
+export const TeamNullableScalarRelationFilterSchema: z.ZodType<Prisma.TeamNullableScalarRelationFilter> = z.object({
+  is: z.lazy(() => TeamWhereInputSchema).optional().nullable(),
+  isNot: z.lazy(() => TeamWhereInputSchema).optional().nullable()
 }).strict();
 
-export const TeamListRelationFilterSchema: z.ZodType<Prisma.TeamListRelationFilter> = z.object({
-  every: z.lazy(() => TeamWhereInputSchema).optional(),
-  some: z.lazy(() => TeamWhereInputSchema).optional(),
-  none: z.lazy(() => TeamWhereInputSchema).optional()
+export const MilestoneListRelationFilterSchema: z.ZodType<Prisma.MilestoneListRelationFilter> = z.object({
+  every: z.lazy(() => MilestoneWhereInputSchema).optional(),
+  some: z.lazy(() => MilestoneWhereInputSchema).optional(),
+  none: z.lazy(() => MilestoneWhereInputSchema).optional()
 }).strict();
 
-export const UpcomingMilstoneNullableScalarRelationFilterSchema: z.ZodType<Prisma.UpcomingMilstoneNullableScalarRelationFilter> = z.object({
-  is: z.lazy(() => UpcomingMilstoneWhereInputSchema).optional().nullable(),
-  isNot: z.lazy(() => UpcomingMilstoneWhereInputSchema).optional().nullable()
+export const ChecklistItemListRelationFilterSchema: z.ZodType<Prisma.ChecklistItemListRelationFilter> = z.object({
+  every: z.lazy(() => ChecklistItemWhereInputSchema).optional(),
+  some: z.lazy(() => ChecklistItemWhereInputSchema).optional(),
+  none: z.lazy(() => ChecklistItemWhereInputSchema).optional()
 }).strict();
 
-export const CheckListListRelationFilterSchema: z.ZodType<Prisma.CheckListListRelationFilter> = z.object({
-  every: z.lazy(() => CheckListWhereInputSchema).optional(),
-  some: z.lazy(() => CheckListWhereInputSchema).optional(),
-  none: z.lazy(() => CheckListWhereInputSchema).optional()
+export const DocumentListRelationFilterSchema: z.ZodType<Prisma.DocumentListRelationFilter> = z.object({
+  every: z.lazy(() => DocumentWhereInputSchema).optional(),
+  some: z.lazy(() => DocumentWhereInputSchema).optional(),
+  none: z.lazy(() => DocumentWhereInputSchema).optional()
 }).strict();
 
-export const DocumentsListRelationFilterSchema: z.ZodType<Prisma.DocumentsListRelationFilter> = z.object({
-  every: z.lazy(() => DocumentsWhereInputSchema).optional(),
-  some: z.lazy(() => DocumentsWhereInputSchema).optional(),
-  none: z.lazy(() => DocumentsWhereInputSchema).optional()
+export const OutgoingLetterListRelationFilterSchema: z.ZodType<Prisma.OutgoingLetterListRelationFilter> = z.object({
+  every: z.lazy(() => OutgoingLetterWhereInputSchema).optional(),
+  some: z.lazy(() => OutgoingLetterWhereInputSchema).optional(),
+  none: z.lazy(() => OutgoingLetterWhereInputSchema).optional()
 }).strict();
 
-export const TheIncomingLetterListRelationFilterSchema: z.ZodType<Prisma.TheIncomingLetterListRelationFilter> = z.object({
-  every: z.lazy(() => TheIncomingLetterWhereInputSchema).optional(),
-  some: z.lazy(() => TheIncomingLetterWhereInputSchema).optional(),
-  none: z.lazy(() => TheIncomingLetterWhereInputSchema).optional()
-}).strict();
-
-export const TheOutgoingLetterListRelationFilterSchema: z.ZodType<Prisma.TheOutgoingLetterListRelationFilter> = z.object({
-  every: z.lazy(() => TheOutgoingLetterWhereInputSchema).optional(),
-  some: z.lazy(() => TheOutgoingLetterWhereInputSchema).optional(),
-  none: z.lazy(() => TheOutgoingLetterWhereInputSchema).optional()
+export const IncomingLetterListRelationFilterSchema: z.ZodType<Prisma.IncomingLetterListRelationFilter> = z.object({
+  every: z.lazy(() => IncomingLetterWhereInputSchema).optional(),
+  some: z.lazy(() => IncomingLetterWhereInputSchema).optional(),
+  none: z.lazy(() => IncomingLetterWhereInputSchema).optional()
 }).strict();
 
 export const ReportListRelationFilterSchema: z.ZodType<Prisma.ReportListRelationFilter> = z.object({
@@ -2161,33 +2239,29 @@ export const ReportListRelationFilterSchema: z.ZodType<Prisma.ReportListRelation
   none: z.lazy(() => ReportWhereInputSchema).optional()
 }).strict();
 
-export const ConstructionSiteImageListRelationFilterSchema: z.ZodType<Prisma.ConstructionSiteImageListRelationFilter> = z.object({
-  every: z.lazy(() => ConstructionSiteImageWhereInputSchema).optional(),
-  some: z.lazy(() => ConstructionSiteImageWhereInputSchema).optional(),
-  none: z.lazy(() => ConstructionSiteImageWhereInputSchema).optional()
+export const SiteImageListRelationFilterSchema: z.ZodType<Prisma.SiteImageListRelationFilter> = z.object({
+  every: z.lazy(() => SiteImageWhereInputSchema).optional(),
+  some: z.lazy(() => SiteImageWhereInputSchema).optional(),
+  none: z.lazy(() => SiteImageWhereInputSchema).optional()
 }).strict();
 
-export const BudgetOrderByRelationAggregateInputSchema: z.ZodType<Prisma.BudgetOrderByRelationAggregateInput> = z.object({
+export const MilestoneOrderByRelationAggregateInputSchema: z.ZodType<Prisma.MilestoneOrderByRelationAggregateInput> = z.object({
   _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const TeamOrderByRelationAggregateInputSchema: z.ZodType<Prisma.TeamOrderByRelationAggregateInput> = z.object({
+export const ChecklistItemOrderByRelationAggregateInputSchema: z.ZodType<Prisma.ChecklistItemOrderByRelationAggregateInput> = z.object({
   _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const CheckListOrderByRelationAggregateInputSchema: z.ZodType<Prisma.CheckListOrderByRelationAggregateInput> = z.object({
+export const DocumentOrderByRelationAggregateInputSchema: z.ZodType<Prisma.DocumentOrderByRelationAggregateInput> = z.object({
   _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const DocumentsOrderByRelationAggregateInputSchema: z.ZodType<Prisma.DocumentsOrderByRelationAggregateInput> = z.object({
+export const OutgoingLetterOrderByRelationAggregateInputSchema: z.ZodType<Prisma.OutgoingLetterOrderByRelationAggregateInput> = z.object({
   _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const TheIncomingLetterOrderByRelationAggregateInputSchema: z.ZodType<Prisma.TheIncomingLetterOrderByRelationAggregateInput> = z.object({
-  _count: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const TheOutgoingLetterOrderByRelationAggregateInputSchema: z.ZodType<Prisma.TheOutgoingLetterOrderByRelationAggregateInput> = z.object({
+export const IncomingLetterOrderByRelationAggregateInputSchema: z.ZodType<Prisma.IncomingLetterOrderByRelationAggregateInput> = z.object({
   _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
@@ -2195,7 +2269,7 @@ export const ReportOrderByRelationAggregateInputSchema: z.ZodType<Prisma.ReportO
   _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const ConstructionSiteImageOrderByRelationAggregateInputSchema: z.ZodType<Prisma.ConstructionSiteImageOrderByRelationAggregateInput> = z.object({
+export const SiteImageOrderByRelationAggregateInputSchema: z.ZodType<Prisma.SiteImageOrderByRelationAggregateInput> = z.object({
   _count: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
@@ -2205,12 +2279,9 @@ export const ProjectCountOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectCo
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
   startDate: z.lazy(() => SortOrderSchema).optional(),
-  dueDate: z.lazy(() => SortOrderSchema).optional(),
-  progress: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const ProjectAvgOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectAvgOrderByAggregateInput> = z.object({
-  progress: z.lazy(() => SortOrderSchema).optional()
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const ProjectMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMaxOrderByAggregateInput> = z.object({
@@ -2219,8 +2290,9 @@ export const ProjectMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMaxO
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
   startDate: z.lazy(() => SortOrderSchema).optional(),
-  dueDate: z.lazy(() => SortOrderSchema).optional(),
-  progress: z.lazy(() => SortOrderSchema).optional()
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const ProjectMinOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMinOrderByAggregateInput> = z.object({
@@ -2229,28 +2301,9 @@ export const ProjectMinOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMinO
   clientName: z.lazy(() => SortOrderSchema).optional(),
   location: z.lazy(() => SortOrderSchema).optional(),
   startDate: z.lazy(() => SortOrderSchema).optional(),
-  dueDate: z.lazy(() => SortOrderSchema).optional(),
-  progress: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const ProjectSumOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectSumOrderByAggregateInput> = z.object({
-  progress: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedIntFilterSchema).optional(),
-  _max: z.lazy(() => NestedIntFilterSchema).optional()
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const FloatFilterSchema: z.ZodType<Prisma.FloatFilter> = z.object({
@@ -2316,42 +2369,69 @@ export const FloatWithAggregatesFilterSchema: z.ZodType<Prisma.FloatWithAggregat
   _max: z.lazy(() => NestedFloatFilterSchema).optional()
 }).strict();
 
+export const IntFilterSchema: z.ZodType<Prisma.IntFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntFilterSchema) ]).optional(),
+}).strict();
+
 export const TeamCountOrderByAggregateInputSchema: z.ZodType<Prisma.TeamCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  projectManger: z.lazy(() => SortOrderSchema).optional(),
-  siteManger: z.lazy(() => SortOrderSchema).optional(),
-  civilManger: z.lazy(() => SortOrderSchema).optional(),
-  architecturalLoad: z.lazy(() => SortOrderSchema).optional(),
-  totalWorker: z.lazy(() => SortOrderSchema).optional(),
+  projectManager: z.lazy(() => SortOrderSchema).optional(),
+  siteManager: z.lazy(() => SortOrderSchema).optional(),
+  civilManager: z.lazy(() => SortOrderSchema).optional(),
+  architecturalLead: z.lazy(() => SortOrderSchema).optional(),
+  totalWorkers: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const TeamAvgOrderByAggregateInputSchema: z.ZodType<Prisma.TeamAvgOrderByAggregateInput> = z.object({
-  totalWorker: z.lazy(() => SortOrderSchema).optional()
+  totalWorkers: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const TeamMaxOrderByAggregateInputSchema: z.ZodType<Prisma.TeamMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  projectManger: z.lazy(() => SortOrderSchema).optional(),
-  siteManger: z.lazy(() => SortOrderSchema).optional(),
-  civilManger: z.lazy(() => SortOrderSchema).optional(),
-  architecturalLoad: z.lazy(() => SortOrderSchema).optional(),
-  totalWorker: z.lazy(() => SortOrderSchema).optional(),
+  projectManager: z.lazy(() => SortOrderSchema).optional(),
+  siteManager: z.lazy(() => SortOrderSchema).optional(),
+  civilManager: z.lazy(() => SortOrderSchema).optional(),
+  architecturalLead: z.lazy(() => SortOrderSchema).optional(),
+  totalWorkers: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const TeamMinOrderByAggregateInputSchema: z.ZodType<Prisma.TeamMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  projectManger: z.lazy(() => SortOrderSchema).optional(),
-  siteManger: z.lazy(() => SortOrderSchema).optional(),
-  civilManger: z.lazy(() => SortOrderSchema).optional(),
-  architecturalLoad: z.lazy(() => SortOrderSchema).optional(),
-  totalWorker: z.lazy(() => SortOrderSchema).optional(),
+  projectManager: z.lazy(() => SortOrderSchema).optional(),
+  siteManager: z.lazy(() => SortOrderSchema).optional(),
+  civilManager: z.lazy(() => SortOrderSchema).optional(),
+  architecturalLead: z.lazy(() => SortOrderSchema).optional(),
+  totalWorkers: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const TeamSumOrderByAggregateInputSchema: z.ZodType<Prisma.TeamSumOrderByAggregateInput> = z.object({
-  totalWorker: z.lazy(() => SortOrderSchema).optional()
+  totalWorkers: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const IntWithAggregatesFilterSchema: z.ZodType<Prisma.IntWithAggregatesFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedIntFilterSchema).optional(),
+  _max: z.lazy(() => NestedIntFilterSchema).optional()
 }).strict();
 
 export const EnumStatusFilterSchema: z.ZodType<Prisma.EnumStatusFilter> = z.object({
@@ -2361,25 +2441,25 @@ export const EnumStatusFilterSchema: z.ZodType<Prisma.EnumStatusFilter> = z.obje
   not: z.union([ z.lazy(() => StatusSchema),z.lazy(() => NestedEnumStatusFilterSchema) ]).optional(),
 }).strict();
 
-export const UpcomingMilstoneCountOrderByAggregateInputSchema: z.ZodType<Prisma.UpcomingMilstoneCountOrderByAggregateInput> = z.object({
+export const MilestoneCountOrderByAggregateInputSchema: z.ZodType<Prisma.MilestoneCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
   date: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const UpcomingMilstoneMaxOrderByAggregateInputSchema: z.ZodType<Prisma.UpcomingMilstoneMaxOrderByAggregateInput> = z.object({
+export const MilestoneMaxOrderByAggregateInputSchema: z.ZodType<Prisma.MilestoneMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
   date: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const UpcomingMilstoneMinOrderByAggregateInputSchema: z.ZodType<Prisma.UpcomingMilstoneMinOrderByAggregateInput> = z.object({
+export const MilestoneMinOrderByAggregateInputSchema: z.ZodType<Prisma.MilestoneMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
   date: z.lazy(() => SortOrderSchema).optional(),
   status: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
@@ -2402,38 +2482,36 @@ export const EnumPriorityFilterSchema: z.ZodType<Prisma.EnumPriorityFilter> = z.
   not: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => NestedEnumPriorityFilterSchema) ]).optional(),
 }).strict();
 
-export const BoolFilterSchema: z.ZodType<Prisma.BoolFilter> = z.object({
-  equals: z.boolean().optional(),
-  not: z.union([ z.boolean(),z.lazy(() => NestedBoolFilterSchema) ]).optional(),
-}).strict();
-
-export const CheckListCountOrderByAggregateInputSchema: z.ZodType<Prisma.CheckListCountOrderByAggregateInput> = z.object({
+export const ChecklistItemCountOrderByAggregateInputSchema: z.ZodType<Prisma.ChecklistItemCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   task: z.lazy(() => SortOrderSchema).optional(),
   assignedTo: z.lazy(() => SortOrderSchema).optional(),
-  dueData: z.lazy(() => SortOrderSchema).optional(),
+  dueDate: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
-  completed: z.lazy(() => SortOrderSchema).optional(),
+  milestoneId: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const CheckListMaxOrderByAggregateInputSchema: z.ZodType<Prisma.CheckListMaxOrderByAggregateInput> = z.object({
+export const ChecklistItemMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ChecklistItemMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   task: z.lazy(() => SortOrderSchema).optional(),
   assignedTo: z.lazy(() => SortOrderSchema).optional(),
-  dueData: z.lazy(() => SortOrderSchema).optional(),
+  dueDate: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
-  completed: z.lazy(() => SortOrderSchema).optional(),
+  milestoneId: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const CheckListMinOrderByAggregateInputSchema: z.ZodType<Prisma.CheckListMinOrderByAggregateInput> = z.object({
+export const ChecklistItemMinOrderByAggregateInputSchema: z.ZodType<Prisma.ChecklistItemMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
   task: z.lazy(() => SortOrderSchema).optional(),
   assignedTo: z.lazy(() => SortOrderSchema).optional(),
-  dueData: z.lazy(() => SortOrderSchema).optional(),
+  dueDate: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
-  completed: z.lazy(() => SortOrderSchema).optional(),
+  milestoneId: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
@@ -2447,89 +2525,81 @@ export const EnumPriorityWithAggregatesFilterSchema: z.ZodType<Prisma.EnumPriori
   _max: z.lazy(() => NestedEnumPriorityFilterSchema).optional()
 }).strict();
 
-export const BoolWithAggregatesFilterSchema: z.ZodType<Prisma.BoolWithAggregatesFilter> = z.object({
-  equals: z.boolean().optional(),
-  not: z.union([ z.boolean(),z.lazy(() => NestedBoolWithAggregatesFilterSchema) ]).optional(),
+export const DocumentCountOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentMaxOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const DocumentMinOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const EnumCategoryFilterSchema: z.ZodType<Prisma.EnumCategoryFilter> = z.object({
+  equals: z.lazy(() => CategorySchema).optional(),
+  in: z.lazy(() => CategorySchema).array().optional(),
+  notIn: z.lazy(() => CategorySchema).array().optional(),
+  not: z.union([ z.lazy(() => CategorySchema),z.lazy(() => NestedEnumCategoryFilterSchema) ]).optional(),
+}).strict();
+
+export const SiteImageCountOrderByAggregateInputSchema: z.ZodType<Prisma.SiteImageCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  location: z.lazy(() => SortOrderSchema).optional(),
+  category: z.lazy(() => SortOrderSchema).optional(),
+  imageUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const SiteImageMaxOrderByAggregateInputSchema: z.ZodType<Prisma.SiteImageMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  location: z.lazy(() => SortOrderSchema).optional(),
+  category: z.lazy(() => SortOrderSchema).optional(),
+  imageUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const SiteImageMinOrderByAggregateInputSchema: z.ZodType<Prisma.SiteImageMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
+  location: z.lazy(() => SortOrderSchema).optional(),
+  category: z.lazy(() => SortOrderSchema).optional(),
+  imageUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  date: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const EnumCategoryWithAggregatesFilterSchema: z.ZodType<Prisma.EnumCategoryWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => CategorySchema).optional(),
+  in: z.lazy(() => CategorySchema).array().optional(),
+  notIn: z.lazy(() => CategorySchema).array().optional(),
+  not: z.union([ z.lazy(() => CategorySchema),z.lazy(() => NestedEnumCategoryWithAggregatesFilterSchema) ]).optional(),
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedBoolFilterSchema).optional(),
-  _max: z.lazy(() => NestedBoolFilterSchema).optional()
-}).strict();
-
-export const DocumentsCountOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentsCountOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  name: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const DocumentsMaxOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentsMaxOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  name: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const DocumentsMinOrderByAggregateInputSchema: z.ZodType<Prisma.DocumentsMinOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  name: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const EnumIncomingStatusFilterSchema: z.ZodType<Prisma.EnumIncomingStatusFilter> = z.object({
-  equals: z.lazy(() => IncomingStatusSchema).optional(),
-  in: z.lazy(() => IncomingStatusSchema).array().optional(),
-  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusFilterSchema) ]).optional(),
-}).strict();
-
-export const TheIncomingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.TheIncomingLetterCountOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  sender: z.lazy(() => SortOrderSchema).optional(),
-  subject: z.lazy(() => SortOrderSchema).optional(),
-  priority: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  updatedAt: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const TheIncomingLetterMaxOrderByAggregateInputSchema: z.ZodType<Prisma.TheIncomingLetterMaxOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  sender: z.lazy(() => SortOrderSchema).optional(),
-  subject: z.lazy(() => SortOrderSchema).optional(),
-  priority: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  updatedAt: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const TheIncomingLetterMinOrderByAggregateInputSchema: z.ZodType<Prisma.TheIncomingLetterMinOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  sender: z.lazy(() => SortOrderSchema).optional(),
-  subject: z.lazy(() => SortOrderSchema).optional(),
-  priority: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional(),
-  createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
-  updatedAt: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const EnumIncomingStatusWithAggregatesFilterSchema: z.ZodType<Prisma.EnumIncomingStatusWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => IncomingStatusSchema).optional(),
-  in: z.lazy(() => IncomingStatusSchema).array().optional(),
-  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional()
+  _min: z.lazy(() => NestedEnumCategoryFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumCategoryFilterSchema).optional()
 }).strict();
 
 export const EnumOutgoingStatusFilterSchema: z.ZodType<Prisma.EnumOutgoingStatusFilter> = z.object({
@@ -2539,36 +2609,39 @@ export const EnumOutgoingStatusFilterSchema: z.ZodType<Prisma.EnumOutgoingStatus
   not: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => NestedEnumOutgoingStatusFilterSchema) ]).optional(),
 }).strict();
 
-export const TheOutgoingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.TheOutgoingLetterCountOrderByAggregateInput> = z.object({
+export const OutgoingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.OutgoingLetterCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  recipent: z.lazy(() => SortOrderSchema).optional(),
+  recipient: z.lazy(() => SortOrderSchema).optional(),
   subject: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const TheOutgoingLetterMaxOrderByAggregateInputSchema: z.ZodType<Prisma.TheOutgoingLetterMaxOrderByAggregateInput> = z.object({
+export const OutgoingLetterMaxOrderByAggregateInputSchema: z.ZodType<Prisma.OutgoingLetterMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  recipent: z.lazy(() => SortOrderSchema).optional(),
+  recipient: z.lazy(() => SortOrderSchema).optional(),
   subject: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const TheOutgoingLetterMinOrderByAggregateInputSchema: z.ZodType<Prisma.TheOutgoingLetterMinOrderByAggregateInput> = z.object({
+export const OutgoingLetterMinOrderByAggregateInputSchema: z.ZodType<Prisma.OutgoingLetterMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
-  recipent: z.lazy(() => SortOrderSchema).optional(),
+  recipient: z.lazy(() => SortOrderSchema).optional(),
   subject: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
   priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
   createdAt: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
@@ -2582,121 +2655,130 @@ export const EnumOutgoingStatusWithAggregatesFilterSchema: z.ZodType<Prisma.Enum
   _max: z.lazy(() => NestedEnumOutgoingStatusFilterSchema).optional()
 }).strict();
 
-export const EnumreportStatusFilterSchema: z.ZodType<Prisma.EnumreportStatusFilter> = z.object({
-  equals: z.lazy(() => reportStatusSchema).optional(),
-  in: z.lazy(() => reportStatusSchema).array().optional(),
-  notIn: z.lazy(() => reportStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => NestedEnumreportStatusFilterSchema) ]).optional(),
+export const EnumIncomingStatusFilterSchema: z.ZodType<Prisma.EnumIncomingStatusFilter> = z.object({
+  equals: z.lazy(() => IncomingStatusSchema).optional(),
+  in: z.lazy(() => IncomingStatusSchema).array().optional(),
+  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusFilterSchema) ]).optional(),
 }).strict();
 
-export const EnumreportTypeFilterSchema: z.ZodType<Prisma.EnumreportTypeFilter> = z.object({
-  equals: z.lazy(() => reportTypeSchema).optional(),
-  in: z.lazy(() => reportTypeSchema).array().optional(),
-  notIn: z.lazy(() => reportTypeSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => NestedEnumreportTypeFilterSchema) ]).optional(),
+export const IncomingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.IncomingLetterCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  sender: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const IncomingLetterMaxOrderByAggregateInputSchema: z.ZodType<Prisma.IncomingLetterMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  sender: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const IncomingLetterMinOrderByAggregateInputSchema: z.ZodType<Prisma.IncomingLetterMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  sender: z.lazy(() => SortOrderSchema).optional(),
+  subject: z.lazy(() => SortOrderSchema).optional(),
+  priority: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  projectId: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const EnumIncomingStatusWithAggregatesFilterSchema: z.ZodType<Prisma.EnumIncomingStatusWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => IncomingStatusSchema).optional(),
+  in: z.lazy(() => IncomingStatusSchema).array().optional(),
+  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional()
+}).strict();
+
+export const EnumReportTypeFilterSchema: z.ZodType<Prisma.EnumReportTypeFilter> = z.object({
+  equals: z.lazy(() => ReportTypeSchema).optional(),
+  in: z.lazy(() => ReportTypeSchema).array().optional(),
+  notIn: z.lazy(() => ReportTypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => NestedEnumReportTypeFilterSchema) ]).optional(),
+}).strict();
+
+export const EnumReportStatusFilterSchema: z.ZodType<Prisma.EnumReportStatusFilter> = z.object({
+  equals: z.lazy(() => ReportStatusSchema).optional(),
+  in: z.lazy(() => ReportStatusSchema).array().optional(),
+  notIn: z.lazy(() => ReportStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => NestedEnumReportStatusFilterSchema) ]).optional(),
 }).strict();
 
 export const ReportCountOrderByAggregateInputSchema: z.ZodType<Prisma.ReportCountOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
   publisher: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
-  lastModified: z.lazy(() => SortOrderSchema).optional(),
-  version: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   reportType: z.lazy(() => SortOrderSchema).optional(),
+  version: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const ReportMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ReportMaxOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
   publisher: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
-  lastModified: z.lazy(() => SortOrderSchema).optional(),
-  version: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   reportType: z.lazy(() => SortOrderSchema).optional(),
+  version: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
 export const ReportMinOrderByAggregateInputSchema: z.ZodType<Prisma.ReportMinOrderByAggregateInput> = z.object({
   id: z.lazy(() => SortOrderSchema).optional(),
+  title: z.lazy(() => SortOrderSchema).optional(),
   publisher: z.lazy(() => SortOrderSchema).optional(),
-  status: z.lazy(() => SortOrderSchema).optional(),
-  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
-  lastModified: z.lazy(() => SortOrderSchema).optional(),
-  version: z.lazy(() => SortOrderSchema).optional(),
-  downloadedUrl: z.lazy(() => SortOrderSchema).optional(),
   reportType: z.lazy(() => SortOrderSchema).optional(),
+  version: z.lazy(() => SortOrderSchema).optional(),
+  status: z.lazy(() => SortOrderSchema).optional(),
+  fileUrl: z.lazy(() => SortOrderSchema).optional(),
+  fileName: z.lazy(() => SortOrderSchema).optional(),
+  uploadedDate: z.lazy(() => SortOrderSchema).optional(),
   projectId: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
-export const EnumreportStatusWithAggregatesFilterSchema: z.ZodType<Prisma.EnumreportStatusWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => reportStatusSchema).optional(),
-  in: z.lazy(() => reportStatusSchema).array().optional(),
-  notIn: z.lazy(() => reportStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => NestedEnumreportStatusWithAggregatesFilterSchema) ]).optional(),
+export const EnumReportTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumReportTypeWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => ReportTypeSchema).optional(),
+  in: z.lazy(() => ReportTypeSchema).array().optional(),
+  notIn: z.lazy(() => ReportTypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => NestedEnumReportTypeWithAggregatesFilterSchema) ]).optional(),
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumreportStatusFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumreportStatusFilterSchema).optional()
+  _min: z.lazy(() => NestedEnumReportTypeFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumReportTypeFilterSchema).optional()
 }).strict();
 
-export const EnumreportTypeWithAggregatesFilterSchema: z.ZodType<Prisma.EnumreportTypeWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => reportTypeSchema).optional(),
-  in: z.lazy(() => reportTypeSchema).array().optional(),
-  notIn: z.lazy(() => reportTypeSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => NestedEnumreportTypeWithAggregatesFilterSchema) ]).optional(),
+export const EnumReportStatusWithAggregatesFilterSchema: z.ZodType<Prisma.EnumReportStatusWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => ReportStatusSchema).optional(),
+  in: z.lazy(() => ReportStatusSchema).array().optional(),
+  notIn: z.lazy(() => ReportStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => NestedEnumReportStatusWithAggregatesFilterSchema) ]).optional(),
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumreportTypeFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumreportTypeFilterSchema).optional()
-}).strict();
-
-export const EnumcategoryFilterSchema: z.ZodType<Prisma.EnumcategoryFilter> = z.object({
-  equals: z.lazy(() => categorySchema).optional(),
-  in: z.lazy(() => categorySchema).array().optional(),
-  notIn: z.lazy(() => categorySchema).array().optional(),
-  not: z.union([ z.lazy(() => categorySchema),z.lazy(() => NestedEnumcategoryFilterSchema) ]).optional(),
-}).strict();
-
-export const ConstructionSiteImageCountOrderByAggregateInputSchema: z.ZodType<Prisma.ConstructionSiteImageCountOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
-  imagesrc: z.lazy(() => SortOrderSchema).optional(),
-  location: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  category: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const ConstructionSiteImageMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ConstructionSiteImageMaxOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
-  imagesrc: z.lazy(() => SortOrderSchema).optional(),
-  location: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  category: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const ConstructionSiteImageMinOrderByAggregateInputSchema: z.ZodType<Prisma.ConstructionSiteImageMinOrderByAggregateInput> = z.object({
-  id: z.lazy(() => SortOrderSchema).optional(),
-  title: z.lazy(() => SortOrderSchema).optional(),
-  imagesrc: z.lazy(() => SortOrderSchema).optional(),
-  location: z.lazy(() => SortOrderSchema).optional(),
-  date: z.lazy(() => SortOrderSchema).optional(),
-  category: z.lazy(() => SortOrderSchema).optional(),
-  projectId: z.lazy(() => SortOrderSchema).optional()
-}).strict();
-
-export const EnumcategoryWithAggregatesFilterSchema: z.ZodType<Prisma.EnumcategoryWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => categorySchema).optional(),
-  in: z.lazy(() => categorySchema).array().optional(),
-  notIn: z.lazy(() => categorySchema).array().optional(),
-  not: z.union([ z.lazy(() => categorySchema),z.lazy(() => NestedEnumcategoryWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumcategoryFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumcategoryFilterSchema).optional()
+  _min: z.lazy(() => NestedEnumReportStatusFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumReportStatusFilterSchema).optional()
 }).strict();
 
 export const StringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.StringFieldUpdateOperationsInput> = z.object({
@@ -2707,52 +2789,51 @@ export const DateTimeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.DateTime
   set: z.coerce.date().optional()
 }).strict();
 
-export const BudgetCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.BudgetCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetCreateWithoutProjectInputSchema).array(),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema),z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => BudgetCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
+export const BudgetCreateNestedOneWithoutProjectInputSchema: z.ZodType<Prisma.BudgetCreateNestedOneWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).optional(),
+  connect: z.lazy(() => BudgetWhereUniqueInputSchema).optional()
 }).strict();
 
-export const TeamCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.TeamCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamCreateWithoutProjectInputSchema).array(),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TeamCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
+export const TeamCreateNestedOneWithoutProjectInputSchema: z.ZodType<Prisma.TeamCreateNestedOneWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).optional(),
+  connect: z.lazy(() => TeamWhereUniqueInputSchema).optional()
 }).strict();
 
-export const UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneCreateNestedOneWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => UpcomingMilstoneCreateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedCreateWithoutProjectInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UpcomingMilstoneCreateOrConnectWithoutProjectInputSchema).optional(),
-  connect: z.lazy(() => UpcomingMilstoneWhereUniqueInputSchema).optional()
+export const MilestoneCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => MilestoneCreateWithoutProjectInputSchema),z.lazy(() => MilestoneCreateWithoutProjectInputSchema).array(),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema),z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MilestoneCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const CheckListCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.CheckListCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => CheckListCreateWithoutProjectInputSchema),z.lazy(() => CheckListCreateWithoutProjectInputSchema).array(),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema),z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => CheckListCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
+export const ChecklistItemCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema).array(),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ChecklistItemCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const DocumentsCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => DocumentsCreateWithoutProjectInputSchema),z.lazy(() => DocumentsCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => DocumentsCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
+export const DocumentCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.DocumentCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutProjectInputSchema),z.lazy(() => DocumentCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const TheIncomingLetterCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheIncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+export const OutgoingLetterCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => OutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheOutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+export const IncomingLetterCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => IncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
 export const ReportCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.ReportCreateNestedManyWithoutProjectInput> = z.object({
@@ -2762,59 +2843,58 @@ export const ReportCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.R
   connect: z.union([ z.lazy(() => ReportWhereUniqueInputSchema),z.lazy(() => ReportWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ConstructionSiteImageCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
+export const SiteImageCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => SiteImageCreateWithoutProjectInputSchema),z.lazy(() => SiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => SiteImageCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const BudgetUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUncheckedCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetCreateWithoutProjectInputSchema).array(),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema),z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => BudgetCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
+export const BudgetUncheckedCreateNestedOneWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUncheckedCreateNestedOneWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).optional(),
+  connect: z.lazy(() => BudgetWhereUniqueInputSchema).optional()
 }).strict();
 
-export const TeamUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.TeamUncheckedCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamCreateWithoutProjectInputSchema).array(),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TeamCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
+export const TeamUncheckedCreateNestedOneWithoutProjectInputSchema: z.ZodType<Prisma.TeamUncheckedCreateNestedOneWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).optional(),
+  connect: z.lazy(() => TeamWhereUniqueInputSchema).optional()
 }).strict();
 
-export const UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => UpcomingMilstoneCreateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedCreateWithoutProjectInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UpcomingMilstoneCreateOrConnectWithoutProjectInputSchema).optional(),
-  connect: z.lazy(() => UpcomingMilstoneWhereUniqueInputSchema).optional()
+export const MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUncheckedCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => MilestoneCreateWithoutProjectInputSchema),z.lazy(() => MilestoneCreateWithoutProjectInputSchema).array(),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema),z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MilestoneCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const CheckListUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUncheckedCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => CheckListCreateWithoutProjectInputSchema),z.lazy(() => CheckListCreateWithoutProjectInputSchema).array(),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema),z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => CheckListCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
+export const ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema).array(),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ChecklistItemCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUncheckedCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => DocumentsCreateWithoutProjectInputSchema),z.lazy(() => DocumentsCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => DocumentsCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
+export const DocumentUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUncheckedCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutProjectInputSchema),z.lazy(() => DocumentCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheIncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+export const OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => OutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheOutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+export const IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => IncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
 export const ReportUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.ReportUncheckedCreateNestedManyWithoutProjectInput> = z.object({
@@ -2824,113 +2904,101 @@ export const ReportUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType
   connect: z.union([ z.lazy(() => ReportWhereUniqueInputSchema),z.lazy(() => ReportWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInput> = z.object({
-  create: z.union([ z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ConstructionSiteImageCreateManyProjectInputEnvelopeSchema).optional(),
-  connect: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
+export const SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUncheckedCreateNestedManyWithoutProjectInput> = z.object({
+  create: z.union([ z.lazy(() => SiteImageCreateWithoutProjectInputSchema),z.lazy(() => SiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => SiteImageCreateManyProjectInputEnvelopeSchema).optional(),
+  connect: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
 }).strict();
 
-export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> = z.object({
-  set: z.number().optional(),
-  increment: z.number().optional(),
-  decrement: z.number().optional(),
-  multiply: z.number().optional(),
-  divide: z.number().optional()
+export const BudgetUpdateOneWithoutProjectNestedInputSchema: z.ZodType<Prisma.BudgetUpdateOneWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).optional(),
+  upsert: z.lazy(() => BudgetUpsertWithoutProjectInputSchema).optional(),
+  disconnect: z.union([ z.boolean(),z.lazy(() => BudgetWhereInputSchema) ]).optional(),
+  delete: z.union([ z.boolean(),z.lazy(() => BudgetWhereInputSchema) ]).optional(),
+  connect: z.lazy(() => BudgetWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => BudgetUpdateToOneWithWhereWithoutProjectInputSchema),z.lazy(() => BudgetUpdateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedUpdateWithoutProjectInputSchema) ]).optional(),
 }).strict();
 
-export const BudgetUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.BudgetUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetCreateWithoutProjectInputSchema).array(),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema),z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => BudgetUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => BudgetUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => BudgetCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => BudgetUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => BudgetUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => BudgetUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => BudgetUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => BudgetScalarWhereInputSchema),z.lazy(() => BudgetScalarWhereInputSchema).array() ]).optional(),
+export const TeamUpdateOneWithoutProjectNestedInputSchema: z.ZodType<Prisma.TeamUpdateOneWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).optional(),
+  upsert: z.lazy(() => TeamUpsertWithoutProjectInputSchema).optional(),
+  disconnect: z.union([ z.boolean(),z.lazy(() => TeamWhereInputSchema) ]).optional(),
+  delete: z.union([ z.boolean(),z.lazy(() => TeamWhereInputSchema) ]).optional(),
+  connect: z.lazy(() => TeamWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => TeamUpdateToOneWithWhereWithoutProjectInputSchema),z.lazy(() => TeamUpdateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedUpdateWithoutProjectInputSchema) ]).optional(),
 }).strict();
 
-export const TeamUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.TeamUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamCreateWithoutProjectInputSchema).array(),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TeamUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TeamUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TeamCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TeamUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TeamUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TeamUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => TeamUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TeamScalarWhereInputSchema),z.lazy(() => TeamScalarWhereInputSchema).array() ]).optional(),
+export const MilestoneUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.MilestoneUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => MilestoneCreateWithoutProjectInputSchema),z.lazy(() => MilestoneCreateWithoutProjectInputSchema).array(),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema),z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => MilestoneUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => MilestoneUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MilestoneCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => MilestoneUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => MilestoneUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => MilestoneUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => MilestoneUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => MilestoneScalarWhereInputSchema),z.lazy(() => MilestoneScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema: z.ZodType<Prisma.UpcomingMilstoneUpdateOneWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UpcomingMilstoneCreateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedCreateWithoutProjectInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UpcomingMilstoneCreateOrConnectWithoutProjectInputSchema).optional(),
-  upsert: z.lazy(() => UpcomingMilstoneUpsertWithoutProjectInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => UpcomingMilstoneWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UpcomingMilstoneUpdateToOneWithWhereWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUpdateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedUpdateWithoutProjectInputSchema) ]).optional(),
+export const ChecklistItemUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.ChecklistItemUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema).array(),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => ChecklistItemUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ChecklistItemUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ChecklistItemCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => ChecklistItemUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ChecklistItemUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => ChecklistItemUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => ChecklistItemUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => ChecklistItemScalarWhereInputSchema),z.lazy(() => ChecklistItemScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const CheckListUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.CheckListUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => CheckListCreateWithoutProjectInputSchema),z.lazy(() => CheckListCreateWithoutProjectInputSchema).array(),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema),z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => CheckListUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => CheckListUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => CheckListCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => CheckListUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => CheckListUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => CheckListUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => CheckListUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => CheckListScalarWhereInputSchema),z.lazy(() => CheckListScalarWhereInputSchema).array() ]).optional(),
+export const DocumentUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.DocumentUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutProjectInputSchema),z.lazy(() => DocumentCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DocumentUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DocumentUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DocumentUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => DocumentUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const DocumentsUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.DocumentsUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => DocumentsCreateWithoutProjectInputSchema),z.lazy(() => DocumentsCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => DocumentsUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentsUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => DocumentsCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => DocumentsUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentsUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => DocumentsUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => DocumentsUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => DocumentsScalarWhereInputSchema),z.lazy(() => DocumentsScalarWhereInputSchema).array() ]).optional(),
+export const OutgoingLetterUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => OutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => OutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => OutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => OutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => OutgoingLetterScalarWhereInputSchema),z.lazy(() => OutgoingLetterScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.TheIncomingLetterUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TheIncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheIncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TheIncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TheIncomingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TheIncomingLetterScalarWhereInputSchema),z.lazy(() => TheIncomingLetterScalarWhereInputSchema).array() ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TheOutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheOutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TheOutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TheOutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TheOutgoingLetterScalarWhereInputSchema),z.lazy(() => TheOutgoingLetterScalarWhereInputSchema).array() ]).optional(),
+export const IncomingLetterUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.IncomingLetterUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => IncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => IncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => IncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => IncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => IncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => IncomingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => IncomingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => IncomingLetterScalarWhereInputSchema),z.lazy(() => IncomingLetterScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
 export const ReportUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.ReportUpdateManyWithoutProjectNestedInput> = z.object({
@@ -2947,112 +3015,108 @@ export const ReportUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.R
   deleteMany: z.union([ z.lazy(() => ReportScalarWhereInputSchema),z.lazy(() => ReportScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => ConstructionSiteImageUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ConstructionSiteImageCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => ConstructionSiteImageUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => ConstructionSiteImageUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => ConstructionSiteImageScalarWhereInputSchema),z.lazy(() => ConstructionSiteImageScalarWhereInputSchema).array() ]).optional(),
+export const SiteImageUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.SiteImageUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => SiteImageCreateWithoutProjectInputSchema),z.lazy(() => SiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => SiteImageUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => SiteImageUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => SiteImageCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => SiteImageUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => SiteImageUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => SiteImageUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => SiteImageUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => SiteImageScalarWhereInputSchema),z.lazy(() => SiteImageScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.BudgetUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetCreateWithoutProjectInputSchema).array(),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema),z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => BudgetUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => BudgetUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => BudgetCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => BudgetWhereUniqueInputSchema),z.lazy(() => BudgetWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => BudgetUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => BudgetUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => BudgetUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => BudgetUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => BudgetScalarWhereInputSchema),z.lazy(() => BudgetScalarWhereInputSchema).array() ]).optional(),
+export const BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema: z.ZodType<Prisma.BudgetUncheckedUpdateOneWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => BudgetCreateOrConnectWithoutProjectInputSchema).optional(),
+  upsert: z.lazy(() => BudgetUpsertWithoutProjectInputSchema).optional(),
+  disconnect: z.union([ z.boolean(),z.lazy(() => BudgetWhereInputSchema) ]).optional(),
+  delete: z.union([ z.boolean(),z.lazy(() => BudgetWhereInputSchema) ]).optional(),
+  connect: z.lazy(() => BudgetWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => BudgetUpdateToOneWithWhereWithoutProjectInputSchema),z.lazy(() => BudgetUpdateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedUpdateWithoutProjectInputSchema) ]).optional(),
 }).strict();
 
-export const TeamUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamCreateWithoutProjectInputSchema).array(),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TeamUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TeamUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TeamCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TeamWhereUniqueInputSchema),z.lazy(() => TeamWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TeamUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TeamUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TeamUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => TeamUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TeamScalarWhereInputSchema),z.lazy(() => TeamScalarWhereInputSchema).array() ]).optional(),
+export const TeamUncheckedUpdateOneWithoutProjectNestedInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateOneWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => TeamCreateOrConnectWithoutProjectInputSchema).optional(),
+  upsert: z.lazy(() => TeamUpsertWithoutProjectInputSchema).optional(),
+  disconnect: z.union([ z.boolean(),z.lazy(() => TeamWhereInputSchema) ]).optional(),
+  delete: z.union([ z.boolean(),z.lazy(() => TeamWhereInputSchema) ]).optional(),
+  connect: z.lazy(() => TeamWhereUniqueInputSchema).optional(),
+  update: z.union([ z.lazy(() => TeamUpdateToOneWithWhereWithoutProjectInputSchema),z.lazy(() => TeamUpdateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedUpdateWithoutProjectInputSchema) ]).optional(),
 }).strict();
 
-export const UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema: z.ZodType<Prisma.UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => UpcomingMilstoneCreateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedCreateWithoutProjectInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => UpcomingMilstoneCreateOrConnectWithoutProjectInputSchema).optional(),
-  upsert: z.lazy(() => UpcomingMilstoneUpsertWithoutProjectInputSchema).optional(),
-  disconnect: z.union([ z.boolean(),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional(),
-  delete: z.union([ z.boolean(),z.lazy(() => UpcomingMilstoneWhereInputSchema) ]).optional(),
-  connect: z.lazy(() => UpcomingMilstoneWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => UpcomingMilstoneUpdateToOneWithWhereWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUpdateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedUpdateWithoutProjectInputSchema) ]).optional(),
+export const MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.MilestoneUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => MilestoneCreateWithoutProjectInputSchema),z.lazy(() => MilestoneCreateWithoutProjectInputSchema).array(),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema),z.lazy(() => MilestoneCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => MilestoneUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => MilestoneUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => MilestoneCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => MilestoneWhereUniqueInputSchema),z.lazy(() => MilestoneWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => MilestoneUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => MilestoneUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => MilestoneUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => MilestoneUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => MilestoneScalarWhereInputSchema),z.lazy(() => MilestoneScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.CheckListUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => CheckListCreateWithoutProjectInputSchema),z.lazy(() => CheckListCreateWithoutProjectInputSchema).array(),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema),z.lazy(() => CheckListCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => CheckListUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => CheckListUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => CheckListCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => CheckListWhereUniqueInputSchema),z.lazy(() => CheckListWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => CheckListUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => CheckListUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => CheckListUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => CheckListUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => CheckListScalarWhereInputSchema),z.lazy(() => CheckListScalarWhereInputSchema).array() ]).optional(),
+export const ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema).array(),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ChecklistItemCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => ChecklistItemUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ChecklistItemUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => ChecklistItemCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => ChecklistItemWhereUniqueInputSchema),z.lazy(() => ChecklistItemWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => ChecklistItemUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ChecklistItemUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => ChecklistItemUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => ChecklistItemUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => ChecklistItemScalarWhereInputSchema),z.lazy(() => ChecklistItemScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.DocumentsUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => DocumentsCreateWithoutProjectInputSchema),z.lazy(() => DocumentsCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentsCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => DocumentsUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentsUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => DocumentsCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => DocumentsWhereUniqueInputSchema),z.lazy(() => DocumentsWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => DocumentsUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentsUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => DocumentsUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => DocumentsUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => DocumentsScalarWhereInputSchema),z.lazy(() => DocumentsScalarWhereInputSchema).array() ]).optional(),
+export const DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => DocumentCreateWithoutProjectInputSchema),z.lazy(() => DocumentCreateWithoutProjectInputSchema).array(),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema),z.lazy(() => DocumentCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => DocumentUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => DocumentCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => DocumentWhereUniqueInputSchema),z.lazy(() => DocumentWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => DocumentUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => DocumentUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => DocumentUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => DocumentUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TheIncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheIncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),z.lazy(() => TheIncomingLetterWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TheIncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TheIncomingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TheIncomingLetterScalarWhereInputSchema),z.lazy(() => TheIncomingLetterScalarWhereInputSchema).array() ]).optional(),
+export const OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => OutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => OutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => OutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => OutgoingLetterWhereUniqueInputSchema),z.lazy(() => OutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => OutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => OutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => OutgoingLetterScalarWhereInputSchema),z.lazy(() => OutgoingLetterScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => TheOutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => TheOutgoingLetterCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => TheOutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => TheOutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => TheOutgoingLetterScalarWhereInputSchema),z.lazy(() => TheOutgoingLetterScalarWhereInputSchema).array() ]).optional(),
+export const IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema).array(),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema),z.lazy(() => IncomingLetterCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => IncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => IncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => IncomingLetterCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => IncomingLetterWhereUniqueInputSchema),z.lazy(() => IncomingLetterWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => IncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => IncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => IncomingLetterUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => IncomingLetterUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => IncomingLetterScalarWhereInputSchema),z.lazy(() => IncomingLetterScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
 export const ReportUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.ReportUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
@@ -3069,18 +3133,18 @@ export const ReportUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType
   deleteMany: z.union([ z.lazy(() => ReportScalarWhereInputSchema),z.lazy(() => ReportScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
-  connectOrCreate: z.union([ z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
-  upsert: z.union([ z.lazy(() => ConstructionSiteImageUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  createMany: z.lazy(() => ConstructionSiteImageCreateManyProjectInputEnvelopeSchema).optional(),
-  set: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  disconnect: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  delete: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  connect: z.union([ z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema).array() ]).optional(),
-  update: z.union([ z.lazy(() => ConstructionSiteImageUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
-  updateMany: z.union([ z.lazy(() => ConstructionSiteImageUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
-  deleteMany: z.union([ z.lazy(() => ConstructionSiteImageScalarWhereInputSchema),z.lazy(() => ConstructionSiteImageScalarWhereInputSchema).array() ]).optional(),
+export const SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prisma.SiteImageUncheckedUpdateManyWithoutProjectNestedInput> = z.object({
+  create: z.union([ z.lazy(() => SiteImageCreateWithoutProjectInputSchema),z.lazy(() => SiteImageCreateWithoutProjectInputSchema).array(),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema).array() ]).optional(),
+  connectOrCreate: z.union([ z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema),z.lazy(() => SiteImageCreateOrConnectWithoutProjectInputSchema).array() ]).optional(),
+  upsert: z.union([ z.lazy(() => SiteImageUpsertWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => SiteImageUpsertWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  createMany: z.lazy(() => SiteImageCreateManyProjectInputEnvelopeSchema).optional(),
+  set: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  disconnect: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  delete: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  connect: z.union([ z.lazy(() => SiteImageWhereUniqueInputSchema),z.lazy(() => SiteImageWhereUniqueInputSchema).array() ]).optional(),
+  update: z.union([ z.lazy(() => SiteImageUpdateWithWhereUniqueWithoutProjectInputSchema),z.lazy(() => SiteImageUpdateWithWhereUniqueWithoutProjectInputSchema).array() ]).optional(),
+  updateMany: z.union([ z.lazy(() => SiteImageUpdateManyWithWhereWithoutProjectInputSchema),z.lazy(() => SiteImageUpdateManyWithWhereWithoutProjectInputSchema).array() ]).optional(),
+  deleteMany: z.union([ z.lazy(() => SiteImageScalarWhereInputSchema),z.lazy(() => SiteImageScalarWhereInputSchema).array() ]).optional(),
 }).strict();
 
 export const ProjectCreateNestedOneWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutBudgetInput> = z.object({
@@ -3111,6 +3175,14 @@ export const ProjectCreateNestedOneWithoutTeamInputSchema: z.ZodType<Prisma.Proj
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional()
 }).strict();
 
+export const IntFieldUpdateOperationsInputSchema: z.ZodType<Prisma.IntFieldUpdateOperationsInput> = z.object({
+  set: z.number().optional(),
+  increment: z.number().optional(),
+  decrement: z.number().optional(),
+  multiply: z.number().optional(),
+  divide: z.number().optional()
+}).strict();
+
 export const ProjectUpdateOneRequiredWithoutTeamNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutTeamNestedInput> = z.object({
   create: z.union([ z.lazy(() => ProjectCreateWithoutTeamInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTeamInputSchema) ]).optional(),
   connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutTeamInputSchema).optional(),
@@ -3119,9 +3191,9 @@ export const ProjectUpdateOneRequiredWithoutTeamNestedInputSchema: z.ZodType<Pri
   update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutTeamInputSchema),z.lazy(() => ProjectUpdateWithoutTeamInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutTeamInputSchema) ]).optional(),
 }).strict();
 
-export const ProjectCreateNestedOneWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutUpcomingMilstoneInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUpcomingMilstoneInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutUpcomingMilstoneInputSchema).optional(),
+export const ProjectCreateNestedOneWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutMilestonesInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutMilestonesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutMilestonesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutMilestonesInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional()
 }).strict();
 
@@ -3129,17 +3201,17 @@ export const EnumStatusFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumSt
   set: z.lazy(() => StatusSchema).optional()
 }).strict();
 
-export const ProjectUpdateOneRequiredWithoutUpcomingMilstoneNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutUpcomingMilstoneNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUpcomingMilstoneInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutUpcomingMilstoneInputSchema).optional(),
-  upsert: z.lazy(() => ProjectUpsertWithoutUpcomingMilstoneInputSchema).optional(),
+export const ProjectUpdateOneRequiredWithoutMilestonesNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutMilestonesNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutMilestonesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutMilestonesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutMilestonesInputSchema).optional(),
+  upsert: z.lazy(() => ProjectUpsertWithoutMilestonesInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUpdateWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutUpcomingMilstoneInputSchema) ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutMilestonesInputSchema),z.lazy(() => ProjectUpdateWithoutMilestonesInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutMilestonesInputSchema) ]).optional(),
 }).strict();
 
-export const ProjectCreateNestedOneWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutCheckListInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutCheckListInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutCheckListInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutCheckListInputSchema).optional(),
+export const ProjectCreateNestedOneWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutChecklistInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutChecklistInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutChecklistInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutChecklistInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional()
 }).strict();
 
@@ -3147,16 +3219,12 @@ export const EnumPriorityFieldUpdateOperationsInputSchema: z.ZodType<Prisma.Enum
   set: z.lazy(() => PrioritySchema).optional()
 }).strict();
 
-export const BoolFieldUpdateOperationsInputSchema: z.ZodType<Prisma.BoolFieldUpdateOperationsInput> = z.object({
-  set: z.boolean().optional()
-}).strict();
-
-export const ProjectUpdateOneRequiredWithoutCheckListNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutCheckListNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutCheckListInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutCheckListInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutCheckListInputSchema).optional(),
-  upsert: z.lazy(() => ProjectUpsertWithoutCheckListInputSchema).optional(),
+export const ProjectUpdateOneRequiredWithoutChecklistNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutChecklistNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutChecklistInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutChecklistInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutChecklistInputSchema).optional(),
+  upsert: z.lazy(() => ProjectUpsertWithoutChecklistInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutCheckListInputSchema),z.lazy(() => ProjectUpdateWithoutCheckListInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutCheckListInputSchema) ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutChecklistInputSchema),z.lazy(() => ProjectUpdateWithoutChecklistInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutChecklistInputSchema) ]).optional(),
 }).strict();
 
 export const ProjectCreateNestedOneWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutDocumentsInput> = z.object({
@@ -3173,27 +3241,27 @@ export const ProjectUpdateOneRequiredWithoutDocumentsNestedInputSchema: z.ZodTyp
   update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutDocumentsInputSchema),z.lazy(() => ProjectUpdateWithoutDocumentsInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutDocumentsInputSchema) ]).optional(),
 }).strict();
 
-export const ProjectCreateNestedOneWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutTheIncomingLetterInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheIncomingLetterInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutTheIncomingLetterInputSchema).optional(),
+export const ProjectCreateNestedOneWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutSiteImagesInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutSiteImagesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutSiteImagesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutSiteImagesInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional()
 }).strict();
 
-export const EnumIncomingStatusFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumIncomingStatusFieldUpdateOperationsInput> = z.object({
-  set: z.lazy(() => IncomingStatusSchema).optional()
+export const EnumCategoryFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumCategoryFieldUpdateOperationsInput> = z.object({
+  set: z.lazy(() => CategorySchema).optional()
 }).strict();
 
-export const ProjectUpdateOneRequiredWithoutTheIncomingLetterNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutTheIncomingLetterNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheIncomingLetterInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutTheIncomingLetterInputSchema).optional(),
-  upsert: z.lazy(() => ProjectUpsertWithoutTheIncomingLetterInputSchema).optional(),
+export const ProjectUpdateOneRequiredWithoutSiteImagesNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutSiteImagesNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutSiteImagesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutSiteImagesInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutSiteImagesInputSchema).optional(),
+  upsert: z.lazy(() => ProjectUpsertWithoutSiteImagesInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUpdateWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutTheIncomingLetterInputSchema) ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutSiteImagesInputSchema),z.lazy(() => ProjectUpdateWithoutSiteImagesInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutSiteImagesInputSchema) ]).optional(),
 }).strict();
 
-export const ProjectCreateNestedOneWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutTheOutgoingLetterInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheOutgoingLetterInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutTheOutgoingLetterInputSchema).optional(),
+export const ProjectCreateNestedOneWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutOutgoingLettersInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutOutgoingLettersInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutOutgoingLettersInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional()
 }).strict();
 
@@ -3201,52 +3269,52 @@ export const EnumOutgoingStatusFieldUpdateOperationsInputSchema: z.ZodType<Prism
   set: z.lazy(() => OutgoingStatusSchema).optional()
 }).strict();
 
-export const ProjectUpdateOneRequiredWithoutTheOutgoingLetterNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutTheOutgoingLetterNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheOutgoingLetterInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutTheOutgoingLetterInputSchema).optional(),
-  upsert: z.lazy(() => ProjectUpsertWithoutTheOutgoingLetterInputSchema).optional(),
+export const ProjectUpdateOneRequiredWithoutOutgoingLettersNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutOutgoingLettersNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutOutgoingLettersInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutOutgoingLettersInputSchema).optional(),
+  upsert: z.lazy(() => ProjectUpsertWithoutOutgoingLettersInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUpdateWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutTheOutgoingLetterInputSchema) ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUpdateWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutOutgoingLettersInputSchema) ]).optional(),
 }).strict();
 
-export const ProjectCreateNestedOneWithoutReportInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutReportInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutReportInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutReportInputSchema).optional(),
+export const ProjectCreateNestedOneWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutIncomingLettersInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutIncomingLettersInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutIncomingLettersInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional()
 }).strict();
 
-export const EnumreportStatusFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumreportStatusFieldUpdateOperationsInput> = z.object({
-  set: z.lazy(() => reportStatusSchema).optional()
+export const EnumIncomingStatusFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumIncomingStatusFieldUpdateOperationsInput> = z.object({
+  set: z.lazy(() => IncomingStatusSchema).optional()
 }).strict();
 
-export const EnumreportTypeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumreportTypeFieldUpdateOperationsInput> = z.object({
-  set: z.lazy(() => reportTypeSchema).optional()
-}).strict();
-
-export const ProjectUpdateOneRequiredWithoutReportNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutReportNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutReportInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutReportInputSchema).optional(),
-  upsert: z.lazy(() => ProjectUpsertWithoutReportInputSchema).optional(),
+export const ProjectUpdateOneRequiredWithoutIncomingLettersNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutIncomingLettersNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutIncomingLettersInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutIncomingLettersInputSchema).optional(),
+  upsert: z.lazy(() => ProjectUpsertWithoutIncomingLettersInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutReportInputSchema),z.lazy(() => ProjectUpdateWithoutReportInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutReportInputSchema) ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUpdateWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutIncomingLettersInputSchema) ]).optional(),
 }).strict();
 
-export const ProjectCreateNestedOneWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutConstructionSiteImageInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutConstructionSiteImageInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutConstructionSiteImageInputSchema).optional(),
+export const ProjectCreateNestedOneWithoutReportsInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutReportsInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutReportsInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutReportsInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional()
 }).strict();
 
-export const EnumcategoryFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumcategoryFieldUpdateOperationsInput> = z.object({
-  set: z.lazy(() => categorySchema).optional()
+export const EnumReportTypeFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumReportTypeFieldUpdateOperationsInput> = z.object({
+  set: z.lazy(() => ReportTypeSchema).optional()
 }).strict();
 
-export const ProjectUpdateOneRequiredWithoutConstructionSiteImageNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutConstructionSiteImageNestedInput> = z.object({
-  create: z.union([ z.lazy(() => ProjectCreateWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutConstructionSiteImageInputSchema) ]).optional(),
-  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutConstructionSiteImageInputSchema).optional(),
-  upsert: z.lazy(() => ProjectUpsertWithoutConstructionSiteImageInputSchema).optional(),
+export const EnumReportStatusFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumReportStatusFieldUpdateOperationsInput> = z.object({
+  set: z.lazy(() => ReportStatusSchema).optional()
+}).strict();
+
+export const ProjectUpdateOneRequiredWithoutReportsNestedInputSchema: z.ZodType<Prisma.ProjectUpdateOneRequiredWithoutReportsNestedInput> = z.object({
+  create: z.union([ z.lazy(() => ProjectCreateWithoutReportsInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportsInputSchema) ]).optional(),
+  connectOrCreate: z.lazy(() => ProjectCreateOrConnectWithoutReportsInputSchema).optional(),
+  upsert: z.lazy(() => ProjectUpsertWithoutReportsInputSchema).optional(),
   connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
-  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUpdateWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutConstructionSiteImageInputSchema) ]).optional(),
+  update: z.union([ z.lazy(() => ProjectUpdateToOneWithWhereWithoutReportsInputSchema),z.lazy(() => ProjectUpdateWithoutReportsInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutReportsInputSchema) ]).optional(),
 }).strict();
 
 export const NestedStringFilterSchema: z.ZodType<Prisma.NestedStringFilter> = z.object({
@@ -3316,22 +3384,6 @@ export const NestedDateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDa
   _max: z.lazy(() => NestedDateTimeFilterSchema).optional()
 }).strict();
 
-export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> = z.object({
-  equals: z.number().optional(),
-  in: z.number().array().optional(),
-  notIn: z.number().array().optional(),
-  lt: z.number().optional(),
-  lte: z.number().optional(),
-  gt: z.number().optional(),
-  gte: z.number().optional(),
-  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
-  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedIntFilterSchema).optional(),
-  _max: z.lazy(() => NestedIntFilterSchema).optional()
-}).strict();
-
 export const NestedFloatFilterSchema: z.ZodType<Prisma.NestedFloatFilter> = z.object({
   equals: z.number().optional(),
   in: z.number().array().optional(),
@@ -3359,6 +3411,22 @@ export const NestedFloatWithAggregatesFilterSchema: z.ZodType<Prisma.NestedFloat
   _max: z.lazy(() => NestedFloatFilterSchema).optional()
 }).strict();
 
+export const NestedIntWithAggregatesFilterSchema: z.ZodType<Prisma.NestedIntWithAggregatesFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedIntWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _sum: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedIntFilterSchema).optional(),
+  _max: z.lazy(() => NestedIntFilterSchema).optional()
+}).strict();
+
 export const NestedEnumStatusFilterSchema: z.ZodType<Prisma.NestedEnumStatusFilter> = z.object({
   equals: z.lazy(() => StatusSchema).optional(),
   in: z.lazy(() => StatusSchema).array().optional(),
@@ -3383,11 +3451,6 @@ export const NestedEnumPriorityFilterSchema: z.ZodType<Prisma.NestedEnumPriority
   not: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => NestedEnumPriorityFilterSchema) ]).optional(),
 }).strict();
 
-export const NestedBoolFilterSchema: z.ZodType<Prisma.NestedBoolFilter> = z.object({
-  equals: z.boolean().optional(),
-  not: z.union([ z.boolean(),z.lazy(() => NestedBoolFilterSchema) ]).optional(),
-}).strict();
-
 export const NestedEnumPriorityWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumPriorityWithAggregatesFilter> = z.object({
   equals: z.lazy(() => PrioritySchema).optional(),
   in: z.lazy(() => PrioritySchema).array().optional(),
@@ -3398,29 +3461,21 @@ export const NestedEnumPriorityWithAggregatesFilterSchema: z.ZodType<Prisma.Nest
   _max: z.lazy(() => NestedEnumPriorityFilterSchema).optional()
 }).strict();
 
-export const NestedBoolWithAggregatesFilterSchema: z.ZodType<Prisma.NestedBoolWithAggregatesFilter> = z.object({
-  equals: z.boolean().optional(),
-  not: z.union([ z.boolean(),z.lazy(() => NestedBoolWithAggregatesFilterSchema) ]).optional(),
-  _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedBoolFilterSchema).optional(),
-  _max: z.lazy(() => NestedBoolFilterSchema).optional()
+export const NestedEnumCategoryFilterSchema: z.ZodType<Prisma.NestedEnumCategoryFilter> = z.object({
+  equals: z.lazy(() => CategorySchema).optional(),
+  in: z.lazy(() => CategorySchema).array().optional(),
+  notIn: z.lazy(() => CategorySchema).array().optional(),
+  not: z.union([ z.lazy(() => CategorySchema),z.lazy(() => NestedEnumCategoryFilterSchema) ]).optional(),
 }).strict();
 
-export const NestedEnumIncomingStatusFilterSchema: z.ZodType<Prisma.NestedEnumIncomingStatusFilter> = z.object({
-  equals: z.lazy(() => IncomingStatusSchema).optional(),
-  in: z.lazy(() => IncomingStatusSchema).array().optional(),
-  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusFilterSchema) ]).optional(),
-}).strict();
-
-export const NestedEnumIncomingStatusWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumIncomingStatusWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => IncomingStatusSchema).optional(),
-  in: z.lazy(() => IncomingStatusSchema).array().optional(),
-  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusWithAggregatesFilterSchema) ]).optional(),
+export const NestedEnumCategoryWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumCategoryWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => CategorySchema).optional(),
+  in: z.lazy(() => CategorySchema).array().optional(),
+  notIn: z.lazy(() => CategorySchema).array().optional(),
+  not: z.union([ z.lazy(() => CategorySchema),z.lazy(() => NestedEnumCategoryWithAggregatesFilterSchema) ]).optional(),
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional()
+  _min: z.lazy(() => NestedEnumCategoryFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumCategoryFilterSchema).optional()
 }).strict();
 
 export const NestedEnumOutgoingStatusFilterSchema: z.ZodType<Prisma.NestedEnumOutgoingStatusFilter> = z.object({
@@ -3440,55 +3495,55 @@ export const NestedEnumOutgoingStatusWithAggregatesFilterSchema: z.ZodType<Prism
   _max: z.lazy(() => NestedEnumOutgoingStatusFilterSchema).optional()
 }).strict();
 
-export const NestedEnumreportStatusFilterSchema: z.ZodType<Prisma.NestedEnumreportStatusFilter> = z.object({
-  equals: z.lazy(() => reportStatusSchema).optional(),
-  in: z.lazy(() => reportStatusSchema).array().optional(),
-  notIn: z.lazy(() => reportStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => NestedEnumreportStatusFilterSchema) ]).optional(),
+export const NestedEnumIncomingStatusFilterSchema: z.ZodType<Prisma.NestedEnumIncomingStatusFilter> = z.object({
+  equals: z.lazy(() => IncomingStatusSchema).optional(),
+  in: z.lazy(() => IncomingStatusSchema).array().optional(),
+  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusFilterSchema) ]).optional(),
 }).strict();
 
-export const NestedEnumreportTypeFilterSchema: z.ZodType<Prisma.NestedEnumreportTypeFilter> = z.object({
-  equals: z.lazy(() => reportTypeSchema).optional(),
-  in: z.lazy(() => reportTypeSchema).array().optional(),
-  notIn: z.lazy(() => reportTypeSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => NestedEnumreportTypeFilterSchema) ]).optional(),
-}).strict();
-
-export const NestedEnumreportStatusWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumreportStatusWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => reportStatusSchema).optional(),
-  in: z.lazy(() => reportStatusSchema).array().optional(),
-  notIn: z.lazy(() => reportStatusSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => NestedEnumreportStatusWithAggregatesFilterSchema) ]).optional(),
+export const NestedEnumIncomingStatusWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumIncomingStatusWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => IncomingStatusSchema).optional(),
+  in: z.lazy(() => IncomingStatusSchema).array().optional(),
+  notIn: z.lazy(() => IncomingStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => NestedEnumIncomingStatusWithAggregatesFilterSchema) ]).optional(),
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumreportStatusFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumreportStatusFilterSchema).optional()
+  _min: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional()
 }).strict();
 
-export const NestedEnumreportTypeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumreportTypeWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => reportTypeSchema).optional(),
-  in: z.lazy(() => reportTypeSchema).array().optional(),
-  notIn: z.lazy(() => reportTypeSchema).array().optional(),
-  not: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => NestedEnumreportTypeWithAggregatesFilterSchema) ]).optional(),
+export const NestedEnumReportTypeFilterSchema: z.ZodType<Prisma.NestedEnumReportTypeFilter> = z.object({
+  equals: z.lazy(() => ReportTypeSchema).optional(),
+  in: z.lazy(() => ReportTypeSchema).array().optional(),
+  notIn: z.lazy(() => ReportTypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => NestedEnumReportTypeFilterSchema) ]).optional(),
+}).strict();
+
+export const NestedEnumReportStatusFilterSchema: z.ZodType<Prisma.NestedEnumReportStatusFilter> = z.object({
+  equals: z.lazy(() => ReportStatusSchema).optional(),
+  in: z.lazy(() => ReportStatusSchema).array().optional(),
+  notIn: z.lazy(() => ReportStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => NestedEnumReportStatusFilterSchema) ]).optional(),
+}).strict();
+
+export const NestedEnumReportTypeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumReportTypeWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => ReportTypeSchema).optional(),
+  in: z.lazy(() => ReportTypeSchema).array().optional(),
+  notIn: z.lazy(() => ReportTypeSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => NestedEnumReportTypeWithAggregatesFilterSchema) ]).optional(),
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumreportTypeFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumreportTypeFilterSchema).optional()
+  _min: z.lazy(() => NestedEnumReportTypeFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumReportTypeFilterSchema).optional()
 }).strict();
 
-export const NestedEnumcategoryFilterSchema: z.ZodType<Prisma.NestedEnumcategoryFilter> = z.object({
-  equals: z.lazy(() => categorySchema).optional(),
-  in: z.lazy(() => categorySchema).array().optional(),
-  notIn: z.lazy(() => categorySchema).array().optional(),
-  not: z.union([ z.lazy(() => categorySchema),z.lazy(() => NestedEnumcategoryFilterSchema) ]).optional(),
-}).strict();
-
-export const NestedEnumcategoryWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumcategoryWithAggregatesFilter> = z.object({
-  equals: z.lazy(() => categorySchema).optional(),
-  in: z.lazy(() => categorySchema).array().optional(),
-  notIn: z.lazy(() => categorySchema).array().optional(),
-  not: z.union([ z.lazy(() => categorySchema),z.lazy(() => NestedEnumcategoryWithAggregatesFilterSchema) ]).optional(),
+export const NestedEnumReportStatusWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumReportStatusWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => ReportStatusSchema).optional(),
+  in: z.lazy(() => ReportStatusSchema).array().optional(),
+  notIn: z.lazy(() => ReportStatusSchema).array().optional(),
+  not: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => NestedEnumReportStatusWithAggregatesFilterSchema) ]).optional(),
   _count: z.lazy(() => NestedIntFilterSchema).optional(),
-  _min: z.lazy(() => NestedEnumcategoryFilterSchema).optional(),
-  _max: z.lazy(() => NestedEnumcategoryFilterSchema).optional()
+  _min: z.lazy(() => NestedEnumReportStatusFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumReportStatusFilterSchema).optional()
 }).strict();
 
 export const BudgetCreateWithoutProjectInputSchema: z.ZodType<Prisma.BudgetCreateWithoutProjectInput> = z.object({
@@ -3508,26 +3563,22 @@ export const BudgetCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.Bu
   create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const BudgetCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.BudgetCreateManyProjectInputEnvelope> = z.object({
-  data: z.union([ z.lazy(() => BudgetCreateManyProjectInputSchema),z.lazy(() => BudgetCreateManyProjectInputSchema).array() ]),
-}).strict();
-
 export const TeamCreateWithoutProjectInputSchema: z.ZodType<Prisma.TeamCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  projectManger: z.string(),
-  siteManger: z.string(),
-  civilManger: z.string(),
-  architecturalLoad: z.string(),
-  totalWorker: z.number().int()
+  projectManager: z.string(),
+  siteManager: z.string(),
+  civilManager: z.string(),
+  architecturalLead: z.string(),
+  totalWorkers: z.number().int()
 }).strict();
 
 export const TeamUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.TeamUncheckedCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  projectManger: z.string(),
-  siteManger: z.string(),
-  civilManger: z.string(),
-  architecturalLoad: z.string(),
-  totalWorker: z.number().int()
+  projectManager: z.string(),
+  siteManager: z.string(),
+  civilManager: z.string(),
+  architecturalLead: z.string(),
+  totalWorkers: z.number().int()
 }).strict();
 
 export const TeamCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.TeamCreateOrConnectWithoutProjectInput> = z.object({
@@ -3535,159 +3586,167 @@ export const TeamCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.Team
   create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const TeamCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.TeamCreateManyProjectInputEnvelope> = z.object({
-  data: z.union([ z.lazy(() => TeamCreateManyProjectInputSchema),z.lazy(() => TeamCreateManyProjectInputSchema).array() ]),
-}).strict();
-
-export const UpcomingMilstoneCreateWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneCreateWithoutProjectInput> = z.object({
+export const MilestoneCreateWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  title: z.string(),
-  date: z.coerce.date().optional(),
+  name: z.string(),
+  date: z.coerce.date(),
   status: z.lazy(() => StatusSchema)
 }).strict();
 
-export const UpcomingMilstoneUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneUncheckedCreateWithoutProjectInput> = z.object({
+export const MilestoneUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUncheckedCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  title: z.string(),
-  date: z.coerce.date().optional(),
+  name: z.string(),
+  date: z.coerce.date(),
   status: z.lazy(() => StatusSchema)
 }).strict();
 
-export const UpcomingMilstoneCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneCreateOrConnectWithoutProjectInput> = z.object({
-  where: z.lazy(() => UpcomingMilstoneWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => UpcomingMilstoneCreateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedCreateWithoutProjectInputSchema) ]),
+export const MilestoneCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneCreateOrConnectWithoutProjectInput> = z.object({
+  where: z.lazy(() => MilestoneWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => MilestoneCreateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const CheckListCreateWithoutProjectInputSchema: z.ZodType<Prisma.CheckListCreateWithoutProjectInput> = z.object({
+export const MilestoneCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.MilestoneCreateManyProjectInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => MilestoneCreateManyProjectInputSchema),z.lazy(() => MilestoneCreateManyProjectInputSchema).array() ]),
+}).strict();
+
+export const ChecklistItemCreateWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  task: z.lazy(() => StatusSchema),
+  task: z.string(),
   assignedTo: z.string(),
-  dueData: z.coerce.date().optional(),
+  dueDate: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
   priority: z.lazy(() => PrioritySchema),
-  completed: z.boolean()
+  milestoneId: z.string()
 }).strict();
 
-export const CheckListUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUncheckedCreateWithoutProjectInput> = z.object({
+export const ChecklistItemUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  task: z.lazy(() => StatusSchema),
+  task: z.string(),
   assignedTo: z.string(),
-  dueData: z.coerce.date().optional(),
+  dueDate: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
   priority: z.lazy(() => PrioritySchema),
-  completed: z.boolean()
+  milestoneId: z.string()
 }).strict();
 
-export const CheckListCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.CheckListCreateOrConnectWithoutProjectInput> = z.object({
-  where: z.lazy(() => CheckListWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => CheckListCreateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema) ]),
+export const ChecklistItemCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemCreateOrConnectWithoutProjectInput> = z.object({
+  where: z.lazy(() => ChecklistItemWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const CheckListCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.CheckListCreateManyProjectInputEnvelope> = z.object({
-  data: z.union([ z.lazy(() => CheckListCreateManyProjectInputSchema),z.lazy(() => CheckListCreateManyProjectInputSchema).array() ]),
+export const ChecklistItemCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.ChecklistItemCreateManyProjectInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => ChecklistItemCreateManyProjectInputSchema),z.lazy(() => ChecklistItemCreateManyProjectInputSchema).array() ]),
 }).strict();
 
-export const DocumentsCreateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsCreateWithoutProjectInput> = z.object({
+export const DocumentCreateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  name: z.string(),
-  date: z.coerce.date().optional(),
-  downloadedUrl: z.string()
+  title: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional()
 }).strict();
 
-export const DocumentsUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUncheckedCreateWithoutProjectInput> = z.object({
+export const DocumentUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUncheckedCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
-  name: z.string(),
-  date: z.coerce.date().optional(),
-  downloadedUrl: z.string()
+  title: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional()
 }).strict();
 
-export const DocumentsCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsCreateOrConnectWithoutProjectInput> = z.object({
-  where: z.lazy(() => DocumentsWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => DocumentsCreateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema) ]),
+export const DocumentCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.DocumentCreateOrConnectWithoutProjectInput> = z.object({
+  where: z.lazy(() => DocumentWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => DocumentCreateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const DocumentsCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.DocumentsCreateManyProjectInputEnvelope> = z.object({
-  data: z.union([ z.lazy(() => DocumentsCreateManyProjectInputSchema),z.lazy(() => DocumentsCreateManyProjectInputSchema).array() ]),
+export const DocumentCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.DocumentCreateManyProjectInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => DocumentCreateManyProjectInputSchema),z.lazy(() => DocumentCreateManyProjectInputSchema).array() ]),
 }).strict();
 
-export const TheIncomingLetterCreateWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterCreateWithoutProjectInput> = z.object({
+export const OutgoingLetterCreateWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterCreateWithoutProjectInput> = z.object({
+  id: z.string().optional(),
+  recipient: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => OutgoingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional()
+}).strict();
+
+export const OutgoingLetterUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedCreateWithoutProjectInput> = z.object({
+  id: z.string().optional(),
+  recipient: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => OutgoingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional()
+}).strict();
+
+export const OutgoingLetterCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterCreateOrConnectWithoutProjectInput> = z.object({
+  where: z.lazy(() => OutgoingLetterWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema) ]),
+}).strict();
+
+export const OutgoingLetterCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.OutgoingLetterCreateManyProjectInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => OutgoingLetterCreateManyProjectInputSchema),z.lazy(() => OutgoingLetterCreateManyProjectInputSchema).array() ]),
+}).strict();
+
+export const IncomingLetterCreateWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
   sender: z.string(),
   subject: z.string(),
   priority: z.lazy(() => PrioritySchema),
   status: z.lazy(() => IncomingStatusSchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
-  updatedAt: z.coerce.date().optional()
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional()
 }).strict();
 
-export const TheIncomingLetterUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedCreateWithoutProjectInput> = z.object({
+export const IncomingLetterUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
   sender: z.string(),
   subject: z.string(),
   priority: z.lazy(() => PrioritySchema),
   status: z.lazy(() => IncomingStatusSchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
-  updatedAt: z.coerce.date().optional()
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional()
 }).strict();
 
-export const TheIncomingLetterCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterCreateOrConnectWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema) ]),
+export const IncomingLetterCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterCreateOrConnectWithoutProjectInput> = z.object({
+  where: z.lazy(() => IncomingLetterWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const TheIncomingLetterCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.TheIncomingLetterCreateManyProjectInputEnvelope> = z.object({
-  data: z.union([ z.lazy(() => TheIncomingLetterCreateManyProjectInputSchema),z.lazy(() => TheIncomingLetterCreateManyProjectInputSchema).array() ]),
-}).strict();
-
-export const TheOutgoingLetterCreateWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterCreateWithoutProjectInput> = z.object({
-  id: z.string().optional(),
-  recipent: z.string(),
-  subject: z.string(),
-  status: z.lazy(() => OutgoingStatusSchema),
-  priority: z.lazy(() => PrioritySchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string()
-}).strict();
-
-export const TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedCreateWithoutProjectInput> = z.object({
-  id: z.string().optional(),
-  recipent: z.string(),
-  subject: z.string(),
-  status: z.lazy(() => OutgoingStatusSchema),
-  priority: z.lazy(() => PrioritySchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string()
-}).strict();
-
-export const TheOutgoingLetterCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterCreateOrConnectWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema) ]),
-}).strict();
-
-export const TheOutgoingLetterCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.TheOutgoingLetterCreateManyProjectInputEnvelope> = z.object({
-  data: z.union([ z.lazy(() => TheOutgoingLetterCreateManyProjectInputSchema),z.lazy(() => TheOutgoingLetterCreateManyProjectInputSchema).array() ]),
+export const IncomingLetterCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.IncomingLetterCreateManyProjectInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => IncomingLetterCreateManyProjectInputSchema),z.lazy(() => IncomingLetterCreateManyProjectInputSchema).array() ]),
 }).strict();
 
 export const ReportCreateWithoutProjectInputSchema: z.ZodType<Prisma.ReportCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
+  title: z.string(),
   publisher: z.string(),
-  status: z.lazy(() => reportStatusSchema),
-  uploadedDate: z.coerce.date().optional(),
-  lastModified: z.coerce.date().optional(),
+  reportType: z.lazy(() => ReportTypeSchema),
   version: z.string(),
-  downloadedUrl: z.string(),
-  reportType: z.lazy(() => reportTypeSchema)
+  status: z.lazy(() => ReportStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  uploadedDate: z.coerce.date().optional()
 }).strict();
 
 export const ReportUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.ReportUncheckedCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
+  title: z.string(),
   publisher: z.string(),
-  status: z.lazy(() => reportStatusSchema),
-  uploadedDate: z.coerce.date().optional(),
-  lastModified: z.coerce.date().optional(),
+  reportType: z.lazy(() => ReportTypeSchema),
   version: z.string(),
-  downloadedUrl: z.string(),
-  reportType: z.lazy(() => reportTypeSchema)
+  status: z.lazy(() => ReportStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  uploadedDate: z.coerce.date().optional()
 }).strict();
 
 export const ReportCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.ReportCreateOrConnectWithoutProjectInput> = z.object({
@@ -3699,225 +3758,227 @@ export const ReportCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.Report
   data: z.union([ z.lazy(() => ReportCreateManyProjectInputSchema),z.lazy(() => ReportCreateManyProjectInputSchema).array() ]),
 }).strict();
 
-export const ConstructionSiteImageCreateWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageCreateWithoutProjectInput> = z.object({
+export const SiteImageCreateWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
   title: z.string(),
-  imagesrc: z.string(),
   location: z.string(),
-  date: z.coerce.date().optional(),
-  category: z.lazy(() => categorySchema)
+  category: z.lazy(() => CategorySchema),
+  imageUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional()
 }).strict();
 
-export const ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedCreateWithoutProjectInput> = z.object({
+export const SiteImageUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUncheckedCreateWithoutProjectInput> = z.object({
   id: z.string().optional(),
   title: z.string(),
-  imagesrc: z.string(),
   location: z.string(),
-  date: z.coerce.date().optional(),
-  category: z.lazy(() => categorySchema)
+  category: z.lazy(() => CategorySchema),
+  imageUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional()
 }).strict();
 
-export const ConstructionSiteImageCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageCreateOrConnectWithoutProjectInput> = z.object({
-  where: z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema) ]),
+export const SiteImageCreateOrConnectWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageCreateOrConnectWithoutProjectInput> = z.object({
+  where: z.lazy(() => SiteImageWhereUniqueInputSchema),
+  create: z.union([ z.lazy(() => SiteImageCreateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const ConstructionSiteImageCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.ConstructionSiteImageCreateManyProjectInputEnvelope> = z.object({
-  data: z.union([ z.lazy(() => ConstructionSiteImageCreateManyProjectInputSchema),z.lazy(() => ConstructionSiteImageCreateManyProjectInputSchema).array() ]),
+export const SiteImageCreateManyProjectInputEnvelopeSchema: z.ZodType<Prisma.SiteImageCreateManyProjectInputEnvelope> = z.object({
+  data: z.union([ z.lazy(() => SiteImageCreateManyProjectInputSchema),z.lazy(() => SiteImageCreateManyProjectInputSchema).array() ]),
 }).strict();
 
-export const BudgetUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpsertWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => BudgetWhereUniqueInputSchema),
+export const BudgetUpsertWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpsertWithoutProjectInput> = z.object({
   update: z.union([ z.lazy(() => BudgetUpdateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedUpdateWithoutProjectInputSchema) ]),
   create: z.union([ z.lazy(() => BudgetCreateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedCreateWithoutProjectInputSchema) ]),
+  where: z.lazy(() => BudgetWhereInputSchema).optional()
 }).strict();
 
-export const BudgetUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpdateWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => BudgetWhereUniqueInputSchema),
+export const BudgetUpdateToOneWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpdateToOneWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => BudgetWhereInputSchema).optional(),
   data: z.union([ z.lazy(() => BudgetUpdateWithoutProjectInputSchema),z.lazy(() => BudgetUncheckedUpdateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const BudgetUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpdateManyWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => BudgetScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => BudgetUpdateManyMutationInputSchema),z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectInputSchema) ]),
+export const BudgetUpdateWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpdateWithoutProjectInput> = z.object({
+  total: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  spent: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const BudgetScalarWhereInputSchema: z.ZodType<Prisma.BudgetScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => BudgetScalarWhereInputSchema),z.lazy(() => BudgetScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => BudgetScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => BudgetScalarWhereInputSchema),z.lazy(() => BudgetScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  total: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  spent: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+export const BudgetUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUncheckedUpdateWithoutProjectInput> = z.object({
+  total: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  spent: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const TeamUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.TeamUpsertWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => TeamWhereUniqueInputSchema),
+export const TeamUpsertWithoutProjectInputSchema: z.ZodType<Prisma.TeamUpsertWithoutProjectInput> = z.object({
   update: z.union([ z.lazy(() => TeamUpdateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedUpdateWithoutProjectInputSchema) ]),
   create: z.union([ z.lazy(() => TeamCreateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedCreateWithoutProjectInputSchema) ]),
+  where: z.lazy(() => TeamWhereInputSchema).optional()
 }).strict();
 
-export const TeamUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.TeamUpdateWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => TeamWhereUniqueInputSchema),
+export const TeamUpdateToOneWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.TeamUpdateToOneWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => TeamWhereInputSchema).optional(),
   data: z.union([ z.lazy(() => TeamUpdateWithoutProjectInputSchema),z.lazy(() => TeamUncheckedUpdateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const TeamUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.TeamUpdateManyWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => TeamScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => TeamUpdateManyMutationInputSchema),z.lazy(() => TeamUncheckedUpdateManyWithoutProjectInputSchema) ]),
+export const TeamUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TeamUpdateWithoutProjectInput> = z.object({
+  projectManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  siteManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  civilManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  architecturalLead: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  totalWorkers: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const TeamScalarWhereInputSchema: z.ZodType<Prisma.TeamScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => TeamScalarWhereInputSchema),z.lazy(() => TeamScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TeamScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TeamScalarWhereInputSchema),z.lazy(() => TeamScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  projectManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  siteManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  civilManger: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  architecturalLoad: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  totalWorker: z.union([ z.lazy(() => IntFilterSchema),z.number() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+export const TeamUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateWithoutProjectInput> = z.object({
+  projectManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  siteManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  civilManager: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  architecturalLead: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  totalWorkers: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const UpcomingMilstoneUpsertWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneUpsertWithoutProjectInput> = z.object({
-  update: z.union([ z.lazy(() => UpcomingMilstoneUpdateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedUpdateWithoutProjectInputSchema) ]),
-  create: z.union([ z.lazy(() => UpcomingMilstoneCreateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedCreateWithoutProjectInputSchema) ]),
-  where: z.lazy(() => UpcomingMilstoneWhereInputSchema).optional()
+export const MilestoneUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUpsertWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => MilestoneWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => MilestoneUpdateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedUpdateWithoutProjectInputSchema) ]),
+  create: z.union([ z.lazy(() => MilestoneCreateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const UpcomingMilstoneUpdateToOneWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneUpdateToOneWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => UpcomingMilstoneWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => UpcomingMilstoneUpdateWithoutProjectInputSchema),z.lazy(() => UpcomingMilstoneUncheckedUpdateWithoutProjectInputSchema) ]),
+export const MilestoneUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUpdateWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => MilestoneWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => MilestoneUpdateWithoutProjectInputSchema),z.lazy(() => MilestoneUncheckedUpdateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const UpcomingMilstoneUpdateWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneUpdateWithoutProjectInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+export const MilestoneUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUpdateManyWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => MilestoneScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => MilestoneUpdateManyMutationInputSchema),z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectInputSchema) ]),
 }).strict();
 
-export const UpcomingMilstoneUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.UpcomingMilstoneUncheckedUpdateWithoutProjectInput> = z.object({
-  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const CheckListUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUpsertWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => CheckListWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => CheckListUpdateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedUpdateWithoutProjectInputSchema) ]),
-  create: z.union([ z.lazy(() => CheckListCreateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedCreateWithoutProjectInputSchema) ]),
-}).strict();
-
-export const CheckListUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUpdateWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => CheckListWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => CheckListUpdateWithoutProjectInputSchema),z.lazy(() => CheckListUncheckedUpdateWithoutProjectInputSchema) ]),
-}).strict();
-
-export const CheckListUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUpdateManyWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => CheckListScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => CheckListUpdateManyMutationInputSchema),z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectInputSchema) ]),
-}).strict();
-
-export const CheckListScalarWhereInputSchema: z.ZodType<Prisma.CheckListScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => CheckListScalarWhereInputSchema),z.lazy(() => CheckListScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => CheckListScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => CheckListScalarWhereInputSchema),z.lazy(() => CheckListScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  task: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
-  assignedTo: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  dueData: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  completed: z.union([ z.lazy(() => BoolFilterSchema),z.boolean() ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-}).strict();
-
-export const DocumentsUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUpsertWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => DocumentsWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => DocumentsUpdateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedUpdateWithoutProjectInputSchema) ]),
-  create: z.union([ z.lazy(() => DocumentsCreateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedCreateWithoutProjectInputSchema) ]),
-}).strict();
-
-export const DocumentsUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUpdateWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => DocumentsWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => DocumentsUpdateWithoutProjectInputSchema),z.lazy(() => DocumentsUncheckedUpdateWithoutProjectInputSchema) ]),
-}).strict();
-
-export const DocumentsUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUpdateManyWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => DocumentsScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => DocumentsUpdateManyMutationInputSchema),z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectInputSchema) ]),
-}).strict();
-
-export const DocumentsScalarWhereInputSchema: z.ZodType<Prisma.DocumentsScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => DocumentsScalarWhereInputSchema),z.lazy(() => DocumentsScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => DocumentsScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => DocumentsScalarWhereInputSchema),z.lazy(() => DocumentsScalarWhereInputSchema).array() ]).optional(),
+export const MilestoneScalarWhereInputSchema: z.ZodType<Prisma.MilestoneScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => MilestoneScalarWhereInputSchema),z.lazy(() => MilestoneScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => MilestoneScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => MilestoneScalarWhereInputSchema),z.lazy(() => MilestoneScalarWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   name: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
 }).strict();
 
-export const TheIncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUpsertWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => TheIncomingLetterUpdateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
-  create: z.union([ z.lazy(() => TheIncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedCreateWithoutProjectInputSchema) ]),
+export const ChecklistItemUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUpsertWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => ChecklistItemWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => ChecklistItemUpdateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedUpdateWithoutProjectInputSchema) ]),
+  create: z.union([ z.lazy(() => ChecklistItemCreateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const TheIncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUpdateWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheIncomingLetterWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => TheIncomingLetterUpdateWithoutProjectInputSchema),z.lazy(() => TheIncomingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
+export const ChecklistItemUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUpdateWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => ChecklistItemWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => ChecklistItemUpdateWithoutProjectInputSchema),z.lazy(() => ChecklistItemUncheckedUpdateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const TheIncomingLetterUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUpdateManyWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheIncomingLetterScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => TheIncomingLetterUpdateManyMutationInputSchema),z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectInputSchema) ]),
+export const ChecklistItemUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUpdateManyWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => ChecklistItemScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => ChecklistItemUpdateManyMutationInputSchema),z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectInputSchema) ]),
 }).strict();
 
-export const TheIncomingLetterScalarWhereInputSchema: z.ZodType<Prisma.TheIncomingLetterScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => TheIncomingLetterScalarWhereInputSchema),z.lazy(() => TheIncomingLetterScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheIncomingLetterScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheIncomingLetterScalarWhereInputSchema),z.lazy(() => TheIncomingLetterScalarWhereInputSchema).array() ]).optional(),
+export const ChecklistItemScalarWhereInputSchema: z.ZodType<Prisma.ChecklistItemScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => ChecklistItemScalarWhereInputSchema),z.lazy(() => ChecklistItemScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => ChecklistItemScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => ChecklistItemScalarWhereInputSchema),z.lazy(() => ChecklistItemScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  task: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  assignedTo: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  dueDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  status: z.union([ z.lazy(() => EnumStatusFilterSchema),z.lazy(() => StatusSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
+  milestoneId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const DocumentUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUpsertWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => DocumentWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => DocumentUpdateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedUpdateWithoutProjectInputSchema) ]),
+  create: z.union([ z.lazy(() => DocumentCreateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedCreateWithoutProjectInputSchema) ]),
+}).strict();
+
+export const DocumentUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUpdateWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => DocumentWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => DocumentUpdateWithoutProjectInputSchema),z.lazy(() => DocumentUncheckedUpdateWithoutProjectInputSchema) ]),
+}).strict();
+
+export const DocumentUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUpdateManyWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => DocumentScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => DocumentUpdateManyMutationInputSchema),z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectInputSchema) ]),
+}).strict();
+
+export const DocumentScalarWhereInputSchema: z.ZodType<Prisma.DocumentScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => DocumentScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => DocumentScalarWhereInputSchema),z.lazy(() => DocumentScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const OutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUpsertWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => OutgoingLetterWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => OutgoingLetterUpdateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
+  create: z.union([ z.lazy(() => OutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedCreateWithoutProjectInputSchema) ]),
+}).strict();
+
+export const OutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => OutgoingLetterWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => OutgoingLetterUpdateWithoutProjectInputSchema),z.lazy(() => OutgoingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
+}).strict();
+
+export const OutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateManyWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => OutgoingLetterScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => OutgoingLetterUpdateManyMutationInputSchema),z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectInputSchema) ]),
+}).strict();
+
+export const OutgoingLetterScalarWhereInputSchema: z.ZodType<Prisma.OutgoingLetterScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => OutgoingLetterScalarWhereInputSchema),z.lazy(() => OutgoingLetterScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => OutgoingLetterScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => OutgoingLetterScalarWhereInputSchema),z.lazy(() => OutgoingLetterScalarWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  recipient: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
+  status: z.union([ z.lazy(() => EnumOutgoingStatusFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+}).strict();
+
+export const IncomingLetterUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUpsertWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => IncomingLetterWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => IncomingLetterUpdateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
+  create: z.union([ z.lazy(() => IncomingLetterCreateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedCreateWithoutProjectInputSchema) ]),
+}).strict();
+
+export const IncomingLetterUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUpdateWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => IncomingLetterWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => IncomingLetterUpdateWithoutProjectInputSchema),z.lazy(() => IncomingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
+}).strict();
+
+export const IncomingLetterUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUpdateManyWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => IncomingLetterScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => IncomingLetterUpdateManyMutationInputSchema),z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectInputSchema) ]),
+}).strict();
+
+export const IncomingLetterScalarWhereInputSchema: z.ZodType<Prisma.IncomingLetterScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => IncomingLetterScalarWhereInputSchema),z.lazy(() => IncomingLetterScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => IncomingLetterScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => IncomingLetterScalarWhereInputSchema),z.lazy(() => IncomingLetterScalarWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   sender: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
   status: z.union([ z.lazy(() => EnumIncomingStatusFilterSchema),z.lazy(() => IncomingStatusSchema) ]).optional(),
-  projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUpsertWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => TheOutgoingLetterUpdateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
-  create: z.union([ z.lazy(() => TheOutgoingLetterCreateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedCreateWithoutProjectInputSchema) ]),
-}).strict();
-
-export const TheOutgoingLetterUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheOutgoingLetterWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => TheOutgoingLetterUpdateWithoutProjectInputSchema),z.lazy(() => TheOutgoingLetterUncheckedUpdateWithoutProjectInputSchema) ]),
-}).strict();
-
-export const TheOutgoingLetterUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateManyWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => TheOutgoingLetterScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => TheOutgoingLetterUpdateManyMutationInputSchema),z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectInputSchema) ]),
-}).strict();
-
-export const TheOutgoingLetterScalarWhereInputSchema: z.ZodType<Prisma.TheOutgoingLetterScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => TheOutgoingLetterScalarWhereInputSchema),z.lazy(() => TheOutgoingLetterScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => TheOutgoingLetterScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => TheOutgoingLetterScalarWhereInputSchema),z.lazy(() => TheOutgoingLetterScalarWhereInputSchema).array() ]).optional(),
-  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  recipent: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  subject: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumOutgoingStatusFilterSchema),z.lazy(() => OutgoingStatusSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => EnumPriorityFilterSchema),z.lazy(() => PrioritySchema) ]).optional(),
-  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
 }).strict();
 
@@ -3942,42 +4003,44 @@ export const ReportScalarWhereInputSchema: z.ZodType<Prisma.ReportScalarWhereInp
   OR: z.lazy(() => ReportScalarWhereInputSchema).array().optional(),
   NOT: z.union([ z.lazy(() => ReportScalarWhereInputSchema),z.lazy(() => ReportScalarWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   publisher: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  status: z.union([ z.lazy(() => EnumreportStatusFilterSchema),z.lazy(() => reportStatusSchema) ]).optional(),
-  uploadedDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  lastModified: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  reportType: z.union([ z.lazy(() => EnumReportTypeFilterSchema),z.lazy(() => ReportTypeSchema) ]).optional(),
   version: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  downloadedUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  reportType: z.union([ z.lazy(() => EnumreportTypeFilterSchema),z.lazy(() => reportTypeSchema) ]).optional(),
+  status: z.union([ z.lazy(() => EnumReportStatusFilterSchema),z.lazy(() => ReportStatusSchema) ]).optional(),
+  fileUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  uploadedDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUpsertWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),
-  update: z.union([ z.lazy(() => ConstructionSiteImageUpdateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedUpdateWithoutProjectInputSchema) ]),
-  create: z.union([ z.lazy(() => ConstructionSiteImageCreateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedCreateWithoutProjectInputSchema) ]),
+export const SiteImageUpsertWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUpsertWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => SiteImageWhereUniqueInputSchema),
+  update: z.union([ z.lazy(() => SiteImageUpdateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedUpdateWithoutProjectInputSchema) ]),
+  create: z.union([ z.lazy(() => SiteImageCreateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedCreateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const ConstructionSiteImageUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateWithWhereUniqueWithoutProjectInput> = z.object({
-  where: z.lazy(() => ConstructionSiteImageWhereUniqueInputSchema),
-  data: z.union([ z.lazy(() => ConstructionSiteImageUpdateWithoutProjectInputSchema),z.lazy(() => ConstructionSiteImageUncheckedUpdateWithoutProjectInputSchema) ]),
+export const SiteImageUpdateWithWhereUniqueWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUpdateWithWhereUniqueWithoutProjectInput> = z.object({
+  where: z.lazy(() => SiteImageWhereUniqueInputSchema),
+  data: z.union([ z.lazy(() => SiteImageUpdateWithoutProjectInputSchema),z.lazy(() => SiteImageUncheckedUpdateWithoutProjectInputSchema) ]),
 }).strict();
 
-export const ConstructionSiteImageUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateManyWithWhereWithoutProjectInput> = z.object({
-  where: z.lazy(() => ConstructionSiteImageScalarWhereInputSchema),
-  data: z.union([ z.lazy(() => ConstructionSiteImageUpdateManyMutationInputSchema),z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectInputSchema) ]),
+export const SiteImageUpdateManyWithWhereWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUpdateManyWithWhereWithoutProjectInput> = z.object({
+  where: z.lazy(() => SiteImageScalarWhereInputSchema),
+  data: z.union([ z.lazy(() => SiteImageUpdateManyMutationInputSchema),z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectInputSchema) ]),
 }).strict();
 
-export const ConstructionSiteImageScalarWhereInputSchema: z.ZodType<Prisma.ConstructionSiteImageScalarWhereInput> = z.object({
-  AND: z.union([ z.lazy(() => ConstructionSiteImageScalarWhereInputSchema),z.lazy(() => ConstructionSiteImageScalarWhereInputSchema).array() ]).optional(),
-  OR: z.lazy(() => ConstructionSiteImageScalarWhereInputSchema).array().optional(),
-  NOT: z.union([ z.lazy(() => ConstructionSiteImageScalarWhereInputSchema),z.lazy(() => ConstructionSiteImageScalarWhereInputSchema).array() ]).optional(),
+export const SiteImageScalarWhereInputSchema: z.ZodType<Prisma.SiteImageScalarWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => SiteImageScalarWhereInputSchema),z.lazy(() => SiteImageScalarWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => SiteImageScalarWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => SiteImageScalarWhereInputSchema),z.lazy(() => SiteImageScalarWhereInputSchema).array() ]).optional(),
   id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   title: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
-  imagesrc: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   location: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  category: z.union([ z.lazy(() => EnumCategoryFilterSchema),z.lazy(() => CategorySchema) ]).optional(),
+  imageUrl: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  fileName: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
   date: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
-  category: z.union([ z.lazy(() => EnumcategoryFilterSchema),z.lazy(() => categorySchema) ]).optional(),
   projectId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
 }).strict();
 
@@ -3986,17 +4049,18 @@ export const ProjectCreateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectCrea
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedCreateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutBudgetInput> = z.object({
@@ -4004,17 +4068,18 @@ export const ProjectUncheckedCreateWithoutBudgetInputSchema: z.ZodType<Prisma.Pr
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectCreateOrConnectWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutBudgetInput> = z.object({
@@ -4038,16 +4103,17 @@ export const ProjectUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUpda
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutBudgetInput> = z.object({
@@ -4055,16 +4121,17 @@ export const ProjectUncheckedUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.Pr
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
 export const ProjectCreateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectCreateWithoutTeamInput> = z.object({
@@ -4072,17 +4139,18 @@ export const ProjectCreateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectCreate
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedCreateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutTeamInput> = z.object({
@@ -4090,17 +4158,18 @@ export const ProjectUncheckedCreateWithoutTeamInputSchema: z.ZodType<Prisma.Proj
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectCreateOrConnectWithoutTeamInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutTeamInput> = z.object({
@@ -4124,16 +4193,17 @@ export const ProjectUpdateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUpdate
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutTeamInput> = z.object({
@@ -4141,188 +4211,197 @@ export const ProjectUncheckedUpdateWithoutTeamInputSchema: z.ZodType<Prisma.Proj
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectCreateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectCreateWithoutUpcomingMilstoneInput> = z.object({
+export const ProjectCreateWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectCreateWithoutMilestonesInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedCreateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutUpcomingMilstoneInput> = z.object({
+export const ProjectUncheckedCreateWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutMilestonesInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectCreateOrConnectWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutUpcomingMilstoneInput> = z.object({
+export const ProjectCreateOrConnectWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutMilestonesInput> = z.object({
   where: z.lazy(() => ProjectWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUpcomingMilstoneInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutMilestonesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutMilestonesInputSchema) ]),
 }).strict();
 
-export const ProjectUpsertWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutUpcomingMilstoneInput> = z.object({
-  update: z.union([ z.lazy(() => ProjectUpdateWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutUpcomingMilstoneInputSchema) ]),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutUpcomingMilstoneInputSchema) ]),
+export const ProjectUpsertWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutMilestonesInput> = z.object({
+  update: z.union([ z.lazy(() => ProjectUpdateWithoutMilestonesInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutMilestonesInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutMilestonesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutMilestonesInputSchema) ]),
   where: z.lazy(() => ProjectWhereInputSchema).optional()
 }).strict();
 
-export const ProjectUpdateToOneWithWhereWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutUpcomingMilstoneInput> = z.object({
+export const ProjectUpdateToOneWithWhereWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutMilestonesInput> = z.object({
   where: z.lazy(() => ProjectWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => ProjectUpdateWithoutUpcomingMilstoneInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutUpcomingMilstoneInputSchema) ]),
+  data: z.union([ z.lazy(() => ProjectUpdateWithoutMilestonesInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutMilestonesInputSchema) ]),
 }).strict();
 
-export const ProjectUpdateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutUpcomingMilstoneInput> = z.object({
+export const ProjectUpdateWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutMilestonesInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedUpdateWithoutUpcomingMilstoneInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutUpcomingMilstoneInput> = z.object({
+export const ProjectUncheckedUpdateWithoutMilestonesInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutMilestonesInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectCreateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectCreateWithoutCheckListInput> = z.object({
+export const ProjectCreateWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectCreateWithoutChecklistInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedCreateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutCheckListInput> = z.object({
+export const ProjectUncheckedCreateWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutChecklistInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectCreateOrConnectWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutCheckListInput> = z.object({
+export const ProjectCreateOrConnectWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutChecklistInput> = z.object({
   where: z.lazy(() => ProjectWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutCheckListInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutCheckListInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutChecklistInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutChecklistInputSchema) ]),
 }).strict();
 
-export const ProjectUpsertWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutCheckListInput> = z.object({
-  update: z.union([ z.lazy(() => ProjectUpdateWithoutCheckListInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutCheckListInputSchema) ]),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutCheckListInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutCheckListInputSchema) ]),
+export const ProjectUpsertWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutChecklistInput> = z.object({
+  update: z.union([ z.lazy(() => ProjectUpdateWithoutChecklistInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutChecklistInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutChecklistInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutChecklistInputSchema) ]),
   where: z.lazy(() => ProjectWhereInputSchema).optional()
 }).strict();
 
-export const ProjectUpdateToOneWithWhereWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutCheckListInput> = z.object({
+export const ProjectUpdateToOneWithWhereWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutChecklistInput> = z.object({
   where: z.lazy(() => ProjectWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => ProjectUpdateWithoutCheckListInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutCheckListInputSchema) ]),
+  data: z.union([ z.lazy(() => ProjectUpdateWithoutChecklistInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutChecklistInputSchema) ]),
 }).strict();
 
-export const ProjectUpdateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutCheckListInput> = z.object({
+export const ProjectUpdateWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutChecklistInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedUpdateWithoutCheckListInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutCheckListInput> = z.object({
+export const ProjectUncheckedUpdateWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutChecklistInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
 export const ProjectCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectCreateWithoutDocumentsInput> = z.object({
@@ -4330,17 +4409,18 @@ export const ProjectCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectC
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutDocumentsInput> = z.object({
@@ -4348,17 +4428,18 @@ export const ProjectUncheckedCreateWithoutDocumentsInputSchema: z.ZodType<Prisma
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
 export const ProjectCreateOrConnectWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutDocumentsInput> = z.object({
@@ -4382,16 +4463,17 @@ export const ProjectUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectU
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
 export const ProjectUncheckedUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutDocumentsInput> = z.object({
@@ -4399,624 +4481,632 @@ export const ProjectUncheckedUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectCreateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectCreateWithoutTheIncomingLetterInput> = z.object({
+export const ProjectCreateWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectCreateWithoutSiteImagesInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedCreateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutTheIncomingLetterInput> = z.object({
+export const ProjectUncheckedCreateWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutSiteImagesInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectCreateOrConnectWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutTheIncomingLetterInput> = z.object({
+export const ProjectCreateOrConnectWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutSiteImagesInput> = z.object({
   where: z.lazy(() => ProjectWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheIncomingLetterInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutSiteImagesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutSiteImagesInputSchema) ]),
 }).strict();
 
-export const ProjectUpsertWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutTheIncomingLetterInput> = z.object({
-  update: z.union([ z.lazy(() => ProjectUpdateWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutTheIncomingLetterInputSchema) ]),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheIncomingLetterInputSchema) ]),
+export const ProjectUpsertWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutSiteImagesInput> = z.object({
+  update: z.union([ z.lazy(() => ProjectUpdateWithoutSiteImagesInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutSiteImagesInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutSiteImagesInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutSiteImagesInputSchema) ]),
   where: z.lazy(() => ProjectWhereInputSchema).optional()
 }).strict();
 
-export const ProjectUpdateToOneWithWhereWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutTheIncomingLetterInput> = z.object({
+export const ProjectUpdateToOneWithWhereWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutSiteImagesInput> = z.object({
   where: z.lazy(() => ProjectWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => ProjectUpdateWithoutTheIncomingLetterInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutTheIncomingLetterInputSchema) ]),
+  data: z.union([ z.lazy(() => ProjectUpdateWithoutSiteImagesInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutSiteImagesInputSchema) ]),
 }).strict();
 
-export const ProjectUpdateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutTheIncomingLetterInput> = z.object({
+export const ProjectUpdateWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutSiteImagesInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedUpdateWithoutTheIncomingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutTheIncomingLetterInput> = z.object({
+export const ProjectUncheckedUpdateWithoutSiteImagesInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutSiteImagesInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectCreateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectCreateWithoutTheOutgoingLetterInput> = z.object({
+export const ProjectCreateWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectCreateWithoutOutgoingLettersInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedCreateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutTheOutgoingLetterInput> = z.object({
+export const ProjectUncheckedCreateWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutOutgoingLettersInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectCreateOrConnectWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutTheOutgoingLetterInput> = z.object({
+export const ProjectCreateOrConnectWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutOutgoingLettersInput> = z.object({
   where: z.lazy(() => ProjectWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheOutgoingLetterInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutOutgoingLettersInputSchema) ]),
 }).strict();
 
-export const ProjectUpsertWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutTheOutgoingLetterInput> = z.object({
-  update: z.union([ z.lazy(() => ProjectUpdateWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutTheOutgoingLetterInputSchema) ]),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutTheOutgoingLetterInputSchema) ]),
+export const ProjectUpsertWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutOutgoingLettersInput> = z.object({
+  update: z.union([ z.lazy(() => ProjectUpdateWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutOutgoingLettersInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutOutgoingLettersInputSchema) ]),
   where: z.lazy(() => ProjectWhereInputSchema).optional()
 }).strict();
 
-export const ProjectUpdateToOneWithWhereWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutTheOutgoingLetterInput> = z.object({
+export const ProjectUpdateToOneWithWhereWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutOutgoingLettersInput> = z.object({
   where: z.lazy(() => ProjectWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => ProjectUpdateWithoutTheOutgoingLetterInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutTheOutgoingLetterInputSchema) ]),
+  data: z.union([ z.lazy(() => ProjectUpdateWithoutOutgoingLettersInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutOutgoingLettersInputSchema) ]),
 }).strict();
 
-export const ProjectUpdateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutTheOutgoingLetterInput> = z.object({
+export const ProjectUpdateWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutOutgoingLettersInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedUpdateWithoutTheOutgoingLetterInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutTheOutgoingLetterInput> = z.object({
+export const ProjectUncheckedUpdateWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutOutgoingLettersInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectCreateWithoutReportInputSchema: z.ZodType<Prisma.ProjectCreateWithoutReportInput> = z.object({
+export const ProjectCreateWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectCreateWithoutIncomingLettersInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedCreateWithoutReportInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutReportInput> = z.object({
+export const ProjectUncheckedCreateWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutIncomingLettersInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectCreateOrConnectWithoutReportInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutReportInput> = z.object({
+export const ProjectCreateOrConnectWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutIncomingLettersInput> = z.object({
   where: z.lazy(() => ProjectWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutReportInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutIncomingLettersInputSchema) ]),
 }).strict();
 
-export const ProjectUpsertWithoutReportInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutReportInput> = z.object({
-  update: z.union([ z.lazy(() => ProjectUpdateWithoutReportInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutReportInputSchema) ]),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutReportInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportInputSchema) ]),
+export const ProjectUpsertWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutIncomingLettersInput> = z.object({
+  update: z.union([ z.lazy(() => ProjectUpdateWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutIncomingLettersInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutIncomingLettersInputSchema) ]),
   where: z.lazy(() => ProjectWhereInputSchema).optional()
 }).strict();
 
-export const ProjectUpdateToOneWithWhereWithoutReportInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutReportInput> = z.object({
+export const ProjectUpdateToOneWithWhereWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutIncomingLettersInput> = z.object({
   where: z.lazy(() => ProjectWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => ProjectUpdateWithoutReportInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutReportInputSchema) ]),
+  data: z.union([ z.lazy(() => ProjectUpdateWithoutIncomingLettersInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutIncomingLettersInputSchema) ]),
 }).strict();
 
-export const ProjectUpdateWithoutReportInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutReportInput> = z.object({
+export const ProjectUpdateWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutIncomingLettersInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedUpdateWithoutReportInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutReportInput> = z.object({
+export const ProjectUncheckedUpdateWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutIncomingLettersInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  constructionSiteImage: z.lazy(() => ConstructionSiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  reports: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectCreateWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectCreateWithoutConstructionSiteImageInput> = z.object({
+export const ProjectCreateWithoutReportsInputSchema: z.ZodType<Prisma.ProjectCreateWithoutReportsInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedCreateWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutConstructionSiteImageInput> = z.object({
+export const ProjectUncheckedCreateWithoutReportsInputSchema: z.ZodType<Prisma.ProjectUncheckedCreateWithoutReportsInput> = z.object({
   id: z.string().optional(),
   projectName: z.string(),
   clientName: z.string(),
   location: z.string(),
-  startDate: z.coerce.date().optional(),
-  dueDate: z.coerce.date().optional(),
-  progress: z.number().int(),
-  budget: z.lazy(() => BudgetUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+  budget: z.lazy(() => BudgetUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedCreateNestedOneWithoutProjectInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedCreateNestedManyWithoutProjectInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema).optional()
 }).strict();
 
-export const ProjectCreateOrConnectWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutConstructionSiteImageInput> = z.object({
+export const ProjectCreateOrConnectWithoutReportsInputSchema: z.ZodType<Prisma.ProjectCreateOrConnectWithoutReportsInput> = z.object({
   where: z.lazy(() => ProjectWhereUniqueInputSchema),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutConstructionSiteImageInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutReportsInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportsInputSchema) ]),
 }).strict();
 
-export const ProjectUpsertWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutConstructionSiteImageInput> = z.object({
-  update: z.union([ z.lazy(() => ProjectUpdateWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutConstructionSiteImageInputSchema) ]),
-  create: z.union([ z.lazy(() => ProjectCreateWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutConstructionSiteImageInputSchema) ]),
+export const ProjectUpsertWithoutReportsInputSchema: z.ZodType<Prisma.ProjectUpsertWithoutReportsInput> = z.object({
+  update: z.union([ z.lazy(() => ProjectUpdateWithoutReportsInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutReportsInputSchema) ]),
+  create: z.union([ z.lazy(() => ProjectCreateWithoutReportsInputSchema),z.lazy(() => ProjectUncheckedCreateWithoutReportsInputSchema) ]),
   where: z.lazy(() => ProjectWhereInputSchema).optional()
 }).strict();
 
-export const ProjectUpdateToOneWithWhereWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutConstructionSiteImageInput> = z.object({
+export const ProjectUpdateToOneWithWhereWithoutReportsInputSchema: z.ZodType<Prisma.ProjectUpdateToOneWithWhereWithoutReportsInput> = z.object({
   where: z.lazy(() => ProjectWhereInputSchema).optional(),
-  data: z.union([ z.lazy(() => ProjectUpdateWithoutConstructionSiteImageInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutConstructionSiteImageInputSchema) ]),
+  data: z.union([ z.lazy(() => ProjectUpdateWithoutReportsInputSchema),z.lazy(() => ProjectUncheckedUpdateWithoutReportsInputSchema) ]),
 }).strict();
 
-export const ProjectUpdateWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutConstructionSiteImageInput> = z.object({
+export const ProjectUpdateWithoutReportsInputSchema: z.ZodType<Prisma.ProjectUpdateWithoutReportsInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const ProjectUncheckedUpdateWithoutConstructionSiteImageInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutConstructionSiteImageInput> = z.object({
+export const ProjectUncheckedUpdateWithoutReportsInputSchema: z.ZodType<Prisma.ProjectUncheckedUpdateWithoutReportsInput> = z.object({
   projectName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   clientName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  progress: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-  budget: z.lazy(() => BudgetUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  team: z.lazy(() => TeamUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  upcomingMilstone: z.lazy(() => UpcomingMilstoneUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
-  checkList: z.lazy(() => CheckListUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  documents: z.lazy(() => DocumentsUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theIncomingLetter: z.lazy(() => TheIncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  theOutgoingLetter: z.lazy(() => TheOutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
-  report: z.lazy(() => ReportUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
+  endDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  budget: z.lazy(() => BudgetUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  team: z.lazy(() => TeamUncheckedUpdateOneWithoutProjectNestedInputSchema).optional(),
+  milestones: z.lazy(() => MilestoneUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  checklist: z.lazy(() => ChecklistItemUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  documents: z.lazy(() => DocumentUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  outgoingLetters: z.lazy(() => OutgoingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  incomingLetters: z.lazy(() => IncomingLetterUncheckedUpdateManyWithoutProjectNestedInputSchema).optional(),
+  siteImages: z.lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema).optional()
 }).strict();
 
-export const BudgetCreateManyProjectInputSchema: z.ZodType<Prisma.BudgetCreateManyProjectInput> = z.object({
-  id: z.string().optional(),
-  total: z.number(),
-  spent: z.number()
-}).strict();
-
-export const TeamCreateManyProjectInputSchema: z.ZodType<Prisma.TeamCreateManyProjectInput> = z.object({
-  id: z.string().optional(),
-  projectManger: z.string(),
-  siteManger: z.string(),
-  civilManger: z.string(),
-  architecturalLoad: z.string(),
-  totalWorker: z.number().int()
-}).strict();
-
-export const CheckListCreateManyProjectInputSchema: z.ZodType<Prisma.CheckListCreateManyProjectInput> = z.object({
-  id: z.string().optional(),
-  task: z.lazy(() => StatusSchema),
-  assignedTo: z.string(),
-  dueData: z.coerce.date().optional(),
-  priority: z.lazy(() => PrioritySchema),
-  completed: z.boolean()
-}).strict();
-
-export const DocumentsCreateManyProjectInputSchema: z.ZodType<Prisma.DocumentsCreateManyProjectInput> = z.object({
+export const MilestoneCreateManyProjectInputSchema: z.ZodType<Prisma.MilestoneCreateManyProjectInput> = z.object({
   id: z.string().optional(),
   name: z.string(),
-  date: z.coerce.date().optional(),
-  downloadedUrl: z.string()
+  date: z.coerce.date(),
+  status: z.lazy(() => StatusSchema)
 }).strict();
 
-export const TheIncomingLetterCreateManyProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterCreateManyProjectInput> = z.object({
+export const ChecklistItemCreateManyProjectInputSchema: z.ZodType<Prisma.ChecklistItemCreateManyProjectInput> = z.object({
+  id: z.string().optional(),
+  task: z.string(),
+  assignedTo: z.string(),
+  dueDate: z.coerce.date(),
+  status: z.lazy(() => StatusSchema),
+  priority: z.lazy(() => PrioritySchema),
+  milestoneId: z.string()
+}).strict();
+
+export const DocumentCreateManyProjectInputSchema: z.ZodType<Prisma.DocumentCreateManyProjectInput> = z.object({
+  id: z.string().optional(),
+  title: z.string(),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional()
+}).strict();
+
+export const OutgoingLetterCreateManyProjectInputSchema: z.ZodType<Prisma.OutgoingLetterCreateManyProjectInput> = z.object({
+  id: z.string().optional(),
+  recipient: z.string(),
+  subject: z.string(),
+  priority: z.lazy(() => PrioritySchema),
+  status: z.lazy(() => OutgoingStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional()
+}).strict();
+
+export const IncomingLetterCreateManyProjectInputSchema: z.ZodType<Prisma.IncomingLetterCreateManyProjectInput> = z.object({
   id: z.string().optional(),
   sender: z.string(),
   subject: z.string(),
   priority: z.lazy(() => PrioritySchema),
   status: z.lazy(() => IncomingStatusSchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string(),
-  updatedAt: z.coerce.date().optional()
-}).strict();
-
-export const TheOutgoingLetterCreateManyProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterCreateManyProjectInput> = z.object({
-  id: z.string().optional(),
-  recipent: z.string(),
-  subject: z.string(),
-  status: z.lazy(() => OutgoingStatusSchema),
-  priority: z.lazy(() => PrioritySchema),
-  createdAt: z.coerce.date().optional(),
-  downloadedUrl: z.string()
+  fileUrl: z.string(),
+  fileName: z.string(),
+  createdAt: z.coerce.date().optional()
 }).strict();
 
 export const ReportCreateManyProjectInputSchema: z.ZodType<Prisma.ReportCreateManyProjectInput> = z.object({
   id: z.string().optional(),
+  title: z.string(),
   publisher: z.string(),
-  status: z.lazy(() => reportStatusSchema),
-  uploadedDate: z.coerce.date().optional(),
-  lastModified: z.coerce.date().optional(),
+  reportType: z.lazy(() => ReportTypeSchema),
   version: z.string(),
-  downloadedUrl: z.string(),
-  reportType: z.lazy(() => reportTypeSchema)
+  status: z.lazy(() => ReportStatusSchema),
+  fileUrl: z.string(),
+  fileName: z.string(),
+  uploadedDate: z.coerce.date().optional()
 }).strict();
 
-export const ConstructionSiteImageCreateManyProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageCreateManyProjectInput> = z.object({
+export const SiteImageCreateManyProjectInputSchema: z.ZodType<Prisma.SiteImageCreateManyProjectInput> = z.object({
   id: z.string().optional(),
   title: z.string(),
-  imagesrc: z.string(),
   location: z.string(),
-  date: z.coerce.date().optional(),
-  category: z.lazy(() => categorySchema)
+  category: z.lazy(() => CategorySchema),
+  imageUrl: z.string(),
+  fileName: z.string(),
+  date: z.coerce.date().optional()
 }).strict();
 
-export const BudgetUpdateWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUpdateWithoutProjectInput> = z.object({
-  total: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  spent: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const BudgetUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUncheckedUpdateWithoutProjectInput> = z.object({
-  total: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  spent: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const BudgetUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.BudgetUncheckedUpdateManyWithoutProjectInput> = z.object({
-  total: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-  spent: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TeamUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TeamUpdateWithoutProjectInput> = z.object({
-  projectManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  siteManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  civilManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  architecturalLoad: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  totalWorker: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TeamUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateWithoutProjectInput> = z.object({
-  projectManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  siteManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  civilManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  architecturalLoad: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  totalWorker: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TeamUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.TeamUncheckedUpdateManyWithoutProjectInput> = z.object({
-  projectManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  siteManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  civilManger: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  architecturalLoad: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  totalWorker: z.union([ z.number().int(),z.lazy(() => IntFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const CheckListUpdateWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUpdateWithoutProjectInput> = z.object({
-  task: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  dueData: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  completed: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const CheckListUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUncheckedUpdateWithoutProjectInput> = z.object({
-  task: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  dueData: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  completed: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const CheckListUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.CheckListUncheckedUpdateManyWithoutProjectInput> = z.object({
-  task: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  dueData: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  completed: z.union([ z.boolean(),z.lazy(() => BoolFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const DocumentsUpdateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUpdateWithoutProjectInput> = z.object({
+export const MilestoneUpdateWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUpdateWithoutProjectInput> = z.object({
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const DocumentsUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUncheckedUpdateWithoutProjectInput> = z.object({
+export const MilestoneUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUncheckedUpdateWithoutProjectInput> = z.object({
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const DocumentsUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.DocumentsUncheckedUpdateManyWithoutProjectInput> = z.object({
+export const MilestoneUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.MilestoneUncheckedUpdateManyWithoutProjectInput> = z.object({
   name: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const TheIncomingLetterUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUpdateWithoutProjectInput> = z.object({
+export const ChecklistItemUpdateWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUpdateWithoutProjectInput> = z.object({
+  task: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  milestoneId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ChecklistItemUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedUpdateWithoutProjectInput> = z.object({
+  task: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  milestoneId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ChecklistItemUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.ChecklistItemUncheckedUpdateManyWithoutProjectInput> = z.object({
+  task: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  assignedTo: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  dueDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => StatusSchema),z.lazy(() => EnumStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  milestoneId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentUpdateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUpdateWithoutProjectInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateWithoutProjectInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const DocumentUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.DocumentUncheckedUpdateManyWithoutProjectInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const OutgoingLetterUpdateWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateWithoutProjectInput> = z.object({
+  recipient: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const OutgoingLetterUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedUpdateWithoutProjectInput> = z.object({
+  recipient: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const OutgoingLetterUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedUpdateManyWithoutProjectInput> = z.object({
+  recipient: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const IncomingLetterUpdateWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUpdateWithoutProjectInput> = z.object({
   sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
   status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const TheIncomingLetterUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedUpdateWithoutProjectInput> = z.object({
+export const IncomingLetterUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedUpdateWithoutProjectInput> = z.object({
   sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
   status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const TheIncomingLetterUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.TheIncomingLetterUncheckedUpdateManyWithoutProjectInput> = z.object({
+export const IncomingLetterUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedUpdateManyWithoutProjectInput> = z.object({
   sender: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
   status: z.union([ z.lazy(() => IncomingStatusSchema),z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateWithoutProjectInput> = z.object({
-  recipent: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedUpdateWithoutProjectInput> = z.object({
-  recipent: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-}).strict();
-
-export const TheOutgoingLetterUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.TheOutgoingLetterUncheckedUpdateManyWithoutProjectInput> = z.object({
-  recipent: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  subject: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => OutgoingStatusSchema),z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  priority: z.union([ z.lazy(() => PrioritySchema),z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema) ]).optional(),
-  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const ReportUpdateWithoutProjectInputSchema: z.ZodType<Prisma.ReportUpdateWithoutProjectInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   publisher: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => EnumreportStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  lastModified: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  reportType: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema) ]).optional(),
   version: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  reportType: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => EnumreportTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const ReportUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.ReportUncheckedUpdateWithoutProjectInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   publisher: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => EnumreportStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  lastModified: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  reportType: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema) ]).optional(),
   version: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  reportType: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => EnumreportTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const ReportUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.ReportUncheckedUpdateManyWithoutProjectInput> = z.object({
+  title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   publisher: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  status: z.union([ z.lazy(() => reportStatusSchema),z.lazy(() => EnumreportStatusFieldUpdateOperationsInputSchema) ]).optional(),
-  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  lastModified: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  reportType: z.union([ z.lazy(() => ReportTypeSchema),z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema) ]).optional(),
   version: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  downloadedUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  reportType: z.union([ z.lazy(() => reportTypeSchema),z.lazy(() => EnumreportTypeFieldUpdateOperationsInputSchema) ]).optional(),
+  status: z.union([ z.lazy(() => ReportStatusSchema),z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema) ]).optional(),
+  fileUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  uploadedDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageUpdateWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateWithoutProjectInput> = z.object({
+export const SiteImageUpdateWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUpdateWithoutProjectInput> = z.object({
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  imagesrc: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  category: z.union([ z.lazy(() => CategorySchema),z.lazy(() => EnumCategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  imageUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  category: z.union([ z.lazy(() => categorySchema),z.lazy(() => EnumcategoryFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedUpdateWithoutProjectInput> = z.object({
+export const SiteImageUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUncheckedUpdateWithoutProjectInput> = z.object({
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  imagesrc: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  category: z.union([ z.lazy(() => CategorySchema),z.lazy(() => EnumCategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  imageUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  category: z.union([ z.lazy(() => categorySchema),z.lazy(() => EnumcategoryFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
-export const ConstructionSiteImageUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.ConstructionSiteImageUncheckedUpdateManyWithoutProjectInput> = z.object({
+export const SiteImageUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prisma.SiteImageUncheckedUpdateManyWithoutProjectInput> = z.object({
   title: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
-  imagesrc: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   location: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  category: z.union([ z.lazy(() => CategorySchema),z.lazy(() => EnumCategoryFieldUpdateOperationsInputSchema) ]).optional(),
+  imageUrl: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  fileName: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   date: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
-  category: z.union([ z.lazy(() => categorySchema),z.lazy(() => EnumcategoryFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 /////////////////////////////////////////
@@ -5266,314 +5356,376 @@ export const TeamFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.TeamFindUniqueOrT
   where: TeamWhereUniqueInputSchema,
 }).strict() ;
 
-export const UpcomingMilstoneFindFirstArgsSchema: z.ZodType<Prisma.UpcomingMilstoneFindFirstArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  where: UpcomingMilstoneWhereInputSchema.optional(),
-  orderBy: z.union([ UpcomingMilstoneOrderByWithRelationInputSchema.array(),UpcomingMilstoneOrderByWithRelationInputSchema ]).optional(),
-  cursor: UpcomingMilstoneWhereUniqueInputSchema.optional(),
+export const MilestoneFindFirstArgsSchema: z.ZodType<Prisma.MilestoneFindFirstArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  where: MilestoneWhereInputSchema.optional(),
+  orderBy: z.union([ MilestoneOrderByWithRelationInputSchema.array(),MilestoneOrderByWithRelationInputSchema ]).optional(),
+  cursor: MilestoneWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
-  distinct: z.union([ UpcomingMilstoneScalarFieldEnumSchema,UpcomingMilstoneScalarFieldEnumSchema.array() ]).optional(),
+  distinct: z.union([ MilestoneScalarFieldEnumSchema,MilestoneScalarFieldEnumSchema.array() ]).optional(),
 }).strict() ;
 
-export const UpcomingMilstoneFindFirstOrThrowArgsSchema: z.ZodType<Prisma.UpcomingMilstoneFindFirstOrThrowArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  where: UpcomingMilstoneWhereInputSchema.optional(),
-  orderBy: z.union([ UpcomingMilstoneOrderByWithRelationInputSchema.array(),UpcomingMilstoneOrderByWithRelationInputSchema ]).optional(),
-  cursor: UpcomingMilstoneWhereUniqueInputSchema.optional(),
+export const MilestoneFindFirstOrThrowArgsSchema: z.ZodType<Prisma.MilestoneFindFirstOrThrowArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  where: MilestoneWhereInputSchema.optional(),
+  orderBy: z.union([ MilestoneOrderByWithRelationInputSchema.array(),MilestoneOrderByWithRelationInputSchema ]).optional(),
+  cursor: MilestoneWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
-  distinct: z.union([ UpcomingMilstoneScalarFieldEnumSchema,UpcomingMilstoneScalarFieldEnumSchema.array() ]).optional(),
+  distinct: z.union([ MilestoneScalarFieldEnumSchema,MilestoneScalarFieldEnumSchema.array() ]).optional(),
 }).strict() ;
 
-export const UpcomingMilstoneFindManyArgsSchema: z.ZodType<Prisma.UpcomingMilstoneFindManyArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  where: UpcomingMilstoneWhereInputSchema.optional(),
-  orderBy: z.union([ UpcomingMilstoneOrderByWithRelationInputSchema.array(),UpcomingMilstoneOrderByWithRelationInputSchema ]).optional(),
-  cursor: UpcomingMilstoneWhereUniqueInputSchema.optional(),
+export const MilestoneFindManyArgsSchema: z.ZodType<Prisma.MilestoneFindManyArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  where: MilestoneWhereInputSchema.optional(),
+  orderBy: z.union([ MilestoneOrderByWithRelationInputSchema.array(),MilestoneOrderByWithRelationInputSchema ]).optional(),
+  cursor: MilestoneWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
-  distinct: z.union([ UpcomingMilstoneScalarFieldEnumSchema,UpcomingMilstoneScalarFieldEnumSchema.array() ]).optional(),
+  distinct: z.union([ MilestoneScalarFieldEnumSchema,MilestoneScalarFieldEnumSchema.array() ]).optional(),
 }).strict() ;
 
-export const UpcomingMilstoneAggregateArgsSchema: z.ZodType<Prisma.UpcomingMilstoneAggregateArgs> = z.object({
-  where: UpcomingMilstoneWhereInputSchema.optional(),
-  orderBy: z.union([ UpcomingMilstoneOrderByWithRelationInputSchema.array(),UpcomingMilstoneOrderByWithRelationInputSchema ]).optional(),
-  cursor: UpcomingMilstoneWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-}).strict() ;
-
-export const UpcomingMilstoneGroupByArgsSchema: z.ZodType<Prisma.UpcomingMilstoneGroupByArgs> = z.object({
-  where: UpcomingMilstoneWhereInputSchema.optional(),
-  orderBy: z.union([ UpcomingMilstoneOrderByWithAggregationInputSchema.array(),UpcomingMilstoneOrderByWithAggregationInputSchema ]).optional(),
-  by: UpcomingMilstoneScalarFieldEnumSchema.array(),
-  having: UpcomingMilstoneScalarWhereWithAggregatesInputSchema.optional(),
+export const MilestoneAggregateArgsSchema: z.ZodType<Prisma.MilestoneAggregateArgs> = z.object({
+  where: MilestoneWhereInputSchema.optional(),
+  orderBy: z.union([ MilestoneOrderByWithRelationInputSchema.array(),MilestoneOrderByWithRelationInputSchema ]).optional(),
+  cursor: MilestoneWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const UpcomingMilstoneFindUniqueArgsSchema: z.ZodType<Prisma.UpcomingMilstoneFindUniqueArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  where: UpcomingMilstoneWhereUniqueInputSchema,
-}).strict() ;
-
-export const UpcomingMilstoneFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.UpcomingMilstoneFindUniqueOrThrowArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  where: UpcomingMilstoneWhereUniqueInputSchema,
-}).strict() ;
-
-export const CheckListFindFirstArgsSchema: z.ZodType<Prisma.CheckListFindFirstArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  where: CheckListWhereInputSchema.optional(),
-  orderBy: z.union([ CheckListOrderByWithRelationInputSchema.array(),CheckListOrderByWithRelationInputSchema ]).optional(),
-  cursor: CheckListWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ CheckListScalarFieldEnumSchema,CheckListScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const CheckListFindFirstOrThrowArgsSchema: z.ZodType<Prisma.CheckListFindFirstOrThrowArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  where: CheckListWhereInputSchema.optional(),
-  orderBy: z.union([ CheckListOrderByWithRelationInputSchema.array(),CheckListOrderByWithRelationInputSchema ]).optional(),
-  cursor: CheckListWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ CheckListScalarFieldEnumSchema,CheckListScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const CheckListFindManyArgsSchema: z.ZodType<Prisma.CheckListFindManyArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  where: CheckListWhereInputSchema.optional(),
-  orderBy: z.union([ CheckListOrderByWithRelationInputSchema.array(),CheckListOrderByWithRelationInputSchema ]).optional(),
-  cursor: CheckListWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ CheckListScalarFieldEnumSchema,CheckListScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const CheckListAggregateArgsSchema: z.ZodType<Prisma.CheckListAggregateArgs> = z.object({
-  where: CheckListWhereInputSchema.optional(),
-  orderBy: z.union([ CheckListOrderByWithRelationInputSchema.array(),CheckListOrderByWithRelationInputSchema ]).optional(),
-  cursor: CheckListWhereUniqueInputSchema.optional(),
+export const MilestoneGroupByArgsSchema: z.ZodType<Prisma.MilestoneGroupByArgs> = z.object({
+  where: MilestoneWhereInputSchema.optional(),
+  orderBy: z.union([ MilestoneOrderByWithAggregationInputSchema.array(),MilestoneOrderByWithAggregationInputSchema ]).optional(),
+  by: MilestoneScalarFieldEnumSchema.array(),
+  having: MilestoneScalarWhereWithAggregatesInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const CheckListGroupByArgsSchema: z.ZodType<Prisma.CheckListGroupByArgs> = z.object({
-  where: CheckListWhereInputSchema.optional(),
-  orderBy: z.union([ CheckListOrderByWithAggregationInputSchema.array(),CheckListOrderByWithAggregationInputSchema ]).optional(),
-  by: CheckListScalarFieldEnumSchema.array(),
-  having: CheckListScalarWhereWithAggregatesInputSchema.optional(),
+export const MilestoneFindUniqueArgsSchema: z.ZodType<Prisma.MilestoneFindUniqueArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  where: MilestoneWhereUniqueInputSchema,
+}).strict() ;
+
+export const MilestoneFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.MilestoneFindUniqueOrThrowArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  where: MilestoneWhereUniqueInputSchema,
+}).strict() ;
+
+export const ChecklistItemFindFirstArgsSchema: z.ZodType<Prisma.ChecklistItemFindFirstArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  where: ChecklistItemWhereInputSchema.optional(),
+  orderBy: z.union([ ChecklistItemOrderByWithRelationInputSchema.array(),ChecklistItemOrderByWithRelationInputSchema ]).optional(),
+  cursor: ChecklistItemWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ ChecklistItemScalarFieldEnumSchema,ChecklistItemScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const ChecklistItemFindFirstOrThrowArgsSchema: z.ZodType<Prisma.ChecklistItemFindFirstOrThrowArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  where: ChecklistItemWhereInputSchema.optional(),
+  orderBy: z.union([ ChecklistItemOrderByWithRelationInputSchema.array(),ChecklistItemOrderByWithRelationInputSchema ]).optional(),
+  cursor: ChecklistItemWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ ChecklistItemScalarFieldEnumSchema,ChecklistItemScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const ChecklistItemFindManyArgsSchema: z.ZodType<Prisma.ChecklistItemFindManyArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  where: ChecklistItemWhereInputSchema.optional(),
+  orderBy: z.union([ ChecklistItemOrderByWithRelationInputSchema.array(),ChecklistItemOrderByWithRelationInputSchema ]).optional(),
+  cursor: ChecklistItemWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ ChecklistItemScalarFieldEnumSchema,ChecklistItemScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const ChecklistItemAggregateArgsSchema: z.ZodType<Prisma.ChecklistItemAggregateArgs> = z.object({
+  where: ChecklistItemWhereInputSchema.optional(),
+  orderBy: z.union([ ChecklistItemOrderByWithRelationInputSchema.array(),ChecklistItemOrderByWithRelationInputSchema ]).optional(),
+  cursor: ChecklistItemWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const CheckListFindUniqueArgsSchema: z.ZodType<Prisma.CheckListFindUniqueArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  where: CheckListWhereUniqueInputSchema,
-}).strict() ;
-
-export const CheckListFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.CheckListFindUniqueOrThrowArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  where: CheckListWhereUniqueInputSchema,
-}).strict() ;
-
-export const DocumentsFindFirstArgsSchema: z.ZodType<Prisma.DocumentsFindFirstArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  where: DocumentsWhereInputSchema.optional(),
-  orderBy: z.union([ DocumentsOrderByWithRelationInputSchema.array(),DocumentsOrderByWithRelationInputSchema ]).optional(),
-  cursor: DocumentsWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ DocumentsScalarFieldEnumSchema,DocumentsScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const DocumentsFindFirstOrThrowArgsSchema: z.ZodType<Prisma.DocumentsFindFirstOrThrowArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  where: DocumentsWhereInputSchema.optional(),
-  orderBy: z.union([ DocumentsOrderByWithRelationInputSchema.array(),DocumentsOrderByWithRelationInputSchema ]).optional(),
-  cursor: DocumentsWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ DocumentsScalarFieldEnumSchema,DocumentsScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const DocumentsFindManyArgsSchema: z.ZodType<Prisma.DocumentsFindManyArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  where: DocumentsWhereInputSchema.optional(),
-  orderBy: z.union([ DocumentsOrderByWithRelationInputSchema.array(),DocumentsOrderByWithRelationInputSchema ]).optional(),
-  cursor: DocumentsWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ DocumentsScalarFieldEnumSchema,DocumentsScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const DocumentsAggregateArgsSchema: z.ZodType<Prisma.DocumentsAggregateArgs> = z.object({
-  where: DocumentsWhereInputSchema.optional(),
-  orderBy: z.union([ DocumentsOrderByWithRelationInputSchema.array(),DocumentsOrderByWithRelationInputSchema ]).optional(),
-  cursor: DocumentsWhereUniqueInputSchema.optional(),
+export const ChecklistItemGroupByArgsSchema: z.ZodType<Prisma.ChecklistItemGroupByArgs> = z.object({
+  where: ChecklistItemWhereInputSchema.optional(),
+  orderBy: z.union([ ChecklistItemOrderByWithAggregationInputSchema.array(),ChecklistItemOrderByWithAggregationInputSchema ]).optional(),
+  by: ChecklistItemScalarFieldEnumSchema.array(),
+  having: ChecklistItemScalarWhereWithAggregatesInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const DocumentsGroupByArgsSchema: z.ZodType<Prisma.DocumentsGroupByArgs> = z.object({
-  where: DocumentsWhereInputSchema.optional(),
-  orderBy: z.union([ DocumentsOrderByWithAggregationInputSchema.array(),DocumentsOrderByWithAggregationInputSchema ]).optional(),
-  by: DocumentsScalarFieldEnumSchema.array(),
-  having: DocumentsScalarWhereWithAggregatesInputSchema.optional(),
+export const ChecklistItemFindUniqueArgsSchema: z.ZodType<Prisma.ChecklistItemFindUniqueArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  where: ChecklistItemWhereUniqueInputSchema,
+}).strict() ;
+
+export const ChecklistItemFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.ChecklistItemFindUniqueOrThrowArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  where: ChecklistItemWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentFindFirstArgsSchema: z.ZodType<Prisma.DocumentFindFirstArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentScalarFieldEnumSchema,DocumentScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentFindFirstOrThrowArgsSchema: z.ZodType<Prisma.DocumentFindFirstOrThrowArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentScalarFieldEnumSchema,DocumentScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentFindManyArgsSchema: z.ZodType<Prisma.DocumentFindManyArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ DocumentScalarFieldEnumSchema,DocumentScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const DocumentAggregateArgsSchema: z.ZodType<Prisma.DocumentAggregateArgs> = z.object({
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithRelationInputSchema.array(),DocumentOrderByWithRelationInputSchema ]).optional(),
+  cursor: DocumentWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const DocumentsFindUniqueArgsSchema: z.ZodType<Prisma.DocumentsFindUniqueArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  where: DocumentsWhereUniqueInputSchema,
-}).strict() ;
-
-export const DocumentsFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.DocumentsFindUniqueOrThrowArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  where: DocumentsWhereUniqueInputSchema,
-}).strict() ;
-
-export const TheIncomingLetterFindFirstArgsSchema: z.ZodType<Prisma.TheIncomingLetterFindFirstArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  where: TheIncomingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheIncomingLetterOrderByWithRelationInputSchema.array(),TheIncomingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheIncomingLetterWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ TheIncomingLetterScalarFieldEnumSchema,TheIncomingLetterScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const TheIncomingLetterFindFirstOrThrowArgsSchema: z.ZodType<Prisma.TheIncomingLetterFindFirstOrThrowArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  where: TheIncomingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheIncomingLetterOrderByWithRelationInputSchema.array(),TheIncomingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheIncomingLetterWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ TheIncomingLetterScalarFieldEnumSchema,TheIncomingLetterScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const TheIncomingLetterFindManyArgsSchema: z.ZodType<Prisma.TheIncomingLetterFindManyArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  where: TheIncomingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheIncomingLetterOrderByWithRelationInputSchema.array(),TheIncomingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheIncomingLetterWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ TheIncomingLetterScalarFieldEnumSchema,TheIncomingLetterScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const TheIncomingLetterAggregateArgsSchema: z.ZodType<Prisma.TheIncomingLetterAggregateArgs> = z.object({
-  where: TheIncomingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheIncomingLetterOrderByWithRelationInputSchema.array(),TheIncomingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheIncomingLetterWhereUniqueInputSchema.optional(),
+export const DocumentGroupByArgsSchema: z.ZodType<Prisma.DocumentGroupByArgs> = z.object({
+  where: DocumentWhereInputSchema.optional(),
+  orderBy: z.union([ DocumentOrderByWithAggregationInputSchema.array(),DocumentOrderByWithAggregationInputSchema ]).optional(),
+  by: DocumentScalarFieldEnumSchema.array(),
+  having: DocumentScalarWhereWithAggregatesInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const TheIncomingLetterGroupByArgsSchema: z.ZodType<Prisma.TheIncomingLetterGroupByArgs> = z.object({
-  where: TheIncomingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheIncomingLetterOrderByWithAggregationInputSchema.array(),TheIncomingLetterOrderByWithAggregationInputSchema ]).optional(),
-  by: TheIncomingLetterScalarFieldEnumSchema.array(),
-  having: TheIncomingLetterScalarWhereWithAggregatesInputSchema.optional(),
+export const DocumentFindUniqueArgsSchema: z.ZodType<Prisma.DocumentFindUniqueArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
+}).strict() ;
+
+export const DocumentFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.DocumentFindUniqueOrThrowArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
+}).strict() ;
+
+export const SiteImageFindFirstArgsSchema: z.ZodType<Prisma.SiteImageFindFirstArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  where: SiteImageWhereInputSchema.optional(),
+  orderBy: z.union([ SiteImageOrderByWithRelationInputSchema.array(),SiteImageOrderByWithRelationInputSchema ]).optional(),
+  cursor: SiteImageWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ SiteImageScalarFieldEnumSchema,SiteImageScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const SiteImageFindFirstOrThrowArgsSchema: z.ZodType<Prisma.SiteImageFindFirstOrThrowArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  where: SiteImageWhereInputSchema.optional(),
+  orderBy: z.union([ SiteImageOrderByWithRelationInputSchema.array(),SiteImageOrderByWithRelationInputSchema ]).optional(),
+  cursor: SiteImageWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ SiteImageScalarFieldEnumSchema,SiteImageScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const SiteImageFindManyArgsSchema: z.ZodType<Prisma.SiteImageFindManyArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  where: SiteImageWhereInputSchema.optional(),
+  orderBy: z.union([ SiteImageOrderByWithRelationInputSchema.array(),SiteImageOrderByWithRelationInputSchema ]).optional(),
+  cursor: SiteImageWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ SiteImageScalarFieldEnumSchema,SiteImageScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const SiteImageAggregateArgsSchema: z.ZodType<Prisma.SiteImageAggregateArgs> = z.object({
+  where: SiteImageWhereInputSchema.optional(),
+  orderBy: z.union([ SiteImageOrderByWithRelationInputSchema.array(),SiteImageOrderByWithRelationInputSchema ]).optional(),
+  cursor: SiteImageWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const TheIncomingLetterFindUniqueArgsSchema: z.ZodType<Prisma.TheIncomingLetterFindUniqueArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  where: TheIncomingLetterWhereUniqueInputSchema,
-}).strict() ;
-
-export const TheIncomingLetterFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.TheIncomingLetterFindUniqueOrThrowArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  where: TheIncomingLetterWhereUniqueInputSchema,
-}).strict() ;
-
-export const TheOutgoingLetterFindFirstArgsSchema: z.ZodType<Prisma.TheOutgoingLetterFindFirstArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  where: TheOutgoingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheOutgoingLetterOrderByWithRelationInputSchema.array(),TheOutgoingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheOutgoingLetterWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ TheOutgoingLetterScalarFieldEnumSchema,TheOutgoingLetterScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const TheOutgoingLetterFindFirstOrThrowArgsSchema: z.ZodType<Prisma.TheOutgoingLetterFindFirstOrThrowArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  where: TheOutgoingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheOutgoingLetterOrderByWithRelationInputSchema.array(),TheOutgoingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheOutgoingLetterWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ TheOutgoingLetterScalarFieldEnumSchema,TheOutgoingLetterScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const TheOutgoingLetterFindManyArgsSchema: z.ZodType<Prisma.TheOutgoingLetterFindManyArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  where: TheOutgoingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheOutgoingLetterOrderByWithRelationInputSchema.array(),TheOutgoingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheOutgoingLetterWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ TheOutgoingLetterScalarFieldEnumSchema,TheOutgoingLetterScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const TheOutgoingLetterAggregateArgsSchema: z.ZodType<Prisma.TheOutgoingLetterAggregateArgs> = z.object({
-  where: TheOutgoingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheOutgoingLetterOrderByWithRelationInputSchema.array(),TheOutgoingLetterOrderByWithRelationInputSchema ]).optional(),
-  cursor: TheOutgoingLetterWhereUniqueInputSchema.optional(),
+export const SiteImageGroupByArgsSchema: z.ZodType<Prisma.SiteImageGroupByArgs> = z.object({
+  where: SiteImageWhereInputSchema.optional(),
+  orderBy: z.union([ SiteImageOrderByWithAggregationInputSchema.array(),SiteImageOrderByWithAggregationInputSchema ]).optional(),
+  by: SiteImageScalarFieldEnumSchema.array(),
+  having: SiteImageScalarWhereWithAggregatesInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const TheOutgoingLetterGroupByArgsSchema: z.ZodType<Prisma.TheOutgoingLetterGroupByArgs> = z.object({
-  where: TheOutgoingLetterWhereInputSchema.optional(),
-  orderBy: z.union([ TheOutgoingLetterOrderByWithAggregationInputSchema.array(),TheOutgoingLetterOrderByWithAggregationInputSchema ]).optional(),
-  by: TheOutgoingLetterScalarFieldEnumSchema.array(),
-  having: TheOutgoingLetterScalarWhereWithAggregatesInputSchema.optional(),
+export const SiteImageFindUniqueArgsSchema: z.ZodType<Prisma.SiteImageFindUniqueArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  where: SiteImageWhereUniqueInputSchema,
+}).strict() ;
+
+export const SiteImageFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.SiteImageFindUniqueOrThrowArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  where: SiteImageWhereUniqueInputSchema,
+}).strict() ;
+
+export const OutgoingLetterFindFirstArgsSchema: z.ZodType<Prisma.OutgoingLetterFindFirstArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  where: OutgoingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ OutgoingLetterOrderByWithRelationInputSchema.array(),OutgoingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: OutgoingLetterWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ OutgoingLetterScalarFieldEnumSchema,OutgoingLetterScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const OutgoingLetterFindFirstOrThrowArgsSchema: z.ZodType<Prisma.OutgoingLetterFindFirstOrThrowArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  where: OutgoingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ OutgoingLetterOrderByWithRelationInputSchema.array(),OutgoingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: OutgoingLetterWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ OutgoingLetterScalarFieldEnumSchema,OutgoingLetterScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const OutgoingLetterFindManyArgsSchema: z.ZodType<Prisma.OutgoingLetterFindManyArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  where: OutgoingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ OutgoingLetterOrderByWithRelationInputSchema.array(),OutgoingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: OutgoingLetterWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ OutgoingLetterScalarFieldEnumSchema,OutgoingLetterScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const OutgoingLetterAggregateArgsSchema: z.ZodType<Prisma.OutgoingLetterAggregateArgs> = z.object({
+  where: OutgoingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ OutgoingLetterOrderByWithRelationInputSchema.array(),OutgoingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: OutgoingLetterWhereUniqueInputSchema.optional(),
   take: z.number().optional(),
   skip: z.number().optional(),
 }).strict() ;
 
-export const TheOutgoingLetterFindUniqueArgsSchema: z.ZodType<Prisma.TheOutgoingLetterFindUniqueArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  where: TheOutgoingLetterWhereUniqueInputSchema,
+export const OutgoingLetterGroupByArgsSchema: z.ZodType<Prisma.OutgoingLetterGroupByArgs> = z.object({
+  where: OutgoingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ OutgoingLetterOrderByWithAggregationInputSchema.array(),OutgoingLetterOrderByWithAggregationInputSchema ]).optional(),
+  by: OutgoingLetterScalarFieldEnumSchema.array(),
+  having: OutgoingLetterScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
 }).strict() ;
 
-export const TheOutgoingLetterFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.TheOutgoingLetterFindUniqueOrThrowArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  where: TheOutgoingLetterWhereUniqueInputSchema,
+export const OutgoingLetterFindUniqueArgsSchema: z.ZodType<Prisma.OutgoingLetterFindUniqueArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  where: OutgoingLetterWhereUniqueInputSchema,
+}).strict() ;
+
+export const OutgoingLetterFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.OutgoingLetterFindUniqueOrThrowArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  where: OutgoingLetterWhereUniqueInputSchema,
+}).strict() ;
+
+export const IncomingLetterFindFirstArgsSchema: z.ZodType<Prisma.IncomingLetterFindFirstArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  where: IncomingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ IncomingLetterOrderByWithRelationInputSchema.array(),IncomingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: IncomingLetterWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ IncomingLetterScalarFieldEnumSchema,IncomingLetterScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const IncomingLetterFindFirstOrThrowArgsSchema: z.ZodType<Prisma.IncomingLetterFindFirstOrThrowArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  where: IncomingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ IncomingLetterOrderByWithRelationInputSchema.array(),IncomingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: IncomingLetterWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ IncomingLetterScalarFieldEnumSchema,IncomingLetterScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const IncomingLetterFindManyArgsSchema: z.ZodType<Prisma.IncomingLetterFindManyArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  where: IncomingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ IncomingLetterOrderByWithRelationInputSchema.array(),IncomingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: IncomingLetterWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: z.union([ IncomingLetterScalarFieldEnumSchema,IncomingLetterScalarFieldEnumSchema.array() ]).optional(),
+}).strict() ;
+
+export const IncomingLetterAggregateArgsSchema: z.ZodType<Prisma.IncomingLetterAggregateArgs> = z.object({
+  where: IncomingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ IncomingLetterOrderByWithRelationInputSchema.array(),IncomingLetterOrderByWithRelationInputSchema ]).optional(),
+  cursor: IncomingLetterWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const IncomingLetterGroupByArgsSchema: z.ZodType<Prisma.IncomingLetterGroupByArgs> = z.object({
+  where: IncomingLetterWhereInputSchema.optional(),
+  orderBy: z.union([ IncomingLetterOrderByWithAggregationInputSchema.array(),IncomingLetterOrderByWithAggregationInputSchema ]).optional(),
+  by: IncomingLetterScalarFieldEnumSchema.array(),
+  having: IncomingLetterScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict() ;
+
+export const IncomingLetterFindUniqueArgsSchema: z.ZodType<Prisma.IncomingLetterFindUniqueArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  where: IncomingLetterWhereUniqueInputSchema,
+}).strict() ;
+
+export const IncomingLetterFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.IncomingLetterFindUniqueOrThrowArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  where: IncomingLetterWhereUniqueInputSchema,
 }).strict() ;
 
 export const ReportFindFirstArgsSchema: z.ZodType<Prisma.ReportFindFirstArgs> = z.object({
@@ -5636,68 +5788,6 @@ export const ReportFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.ReportFindUniqu
   select: ReportSelectSchema.optional(),
   include: ReportIncludeSchema.optional(),
   where: ReportWhereUniqueInputSchema,
-}).strict() ;
-
-export const ConstructionSiteImageFindFirstArgsSchema: z.ZodType<Prisma.ConstructionSiteImageFindFirstArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  where: ConstructionSiteImageWhereInputSchema.optional(),
-  orderBy: z.union([ ConstructionSiteImageOrderByWithRelationInputSchema.array(),ConstructionSiteImageOrderByWithRelationInputSchema ]).optional(),
-  cursor: ConstructionSiteImageWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ ConstructionSiteImageScalarFieldEnumSchema,ConstructionSiteImageScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const ConstructionSiteImageFindFirstOrThrowArgsSchema: z.ZodType<Prisma.ConstructionSiteImageFindFirstOrThrowArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  where: ConstructionSiteImageWhereInputSchema.optional(),
-  orderBy: z.union([ ConstructionSiteImageOrderByWithRelationInputSchema.array(),ConstructionSiteImageOrderByWithRelationInputSchema ]).optional(),
-  cursor: ConstructionSiteImageWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ ConstructionSiteImageScalarFieldEnumSchema,ConstructionSiteImageScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const ConstructionSiteImageFindManyArgsSchema: z.ZodType<Prisma.ConstructionSiteImageFindManyArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  where: ConstructionSiteImageWhereInputSchema.optional(),
-  orderBy: z.union([ ConstructionSiteImageOrderByWithRelationInputSchema.array(),ConstructionSiteImageOrderByWithRelationInputSchema ]).optional(),
-  cursor: ConstructionSiteImageWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-  distinct: z.union([ ConstructionSiteImageScalarFieldEnumSchema,ConstructionSiteImageScalarFieldEnumSchema.array() ]).optional(),
-}).strict() ;
-
-export const ConstructionSiteImageAggregateArgsSchema: z.ZodType<Prisma.ConstructionSiteImageAggregateArgs> = z.object({
-  where: ConstructionSiteImageWhereInputSchema.optional(),
-  orderBy: z.union([ ConstructionSiteImageOrderByWithRelationInputSchema.array(),ConstructionSiteImageOrderByWithRelationInputSchema ]).optional(),
-  cursor: ConstructionSiteImageWhereUniqueInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-}).strict() ;
-
-export const ConstructionSiteImageGroupByArgsSchema: z.ZodType<Prisma.ConstructionSiteImageGroupByArgs> = z.object({
-  where: ConstructionSiteImageWhereInputSchema.optional(),
-  orderBy: z.union([ ConstructionSiteImageOrderByWithAggregationInputSchema.array(),ConstructionSiteImageOrderByWithAggregationInputSchema ]).optional(),
-  by: ConstructionSiteImageScalarFieldEnumSchema.array(),
-  having: ConstructionSiteImageScalarWhereWithAggregatesInputSchema.optional(),
-  take: z.number().optional(),
-  skip: z.number().optional(),
-}).strict() ;
-
-export const ConstructionSiteImageFindUniqueArgsSchema: z.ZodType<Prisma.ConstructionSiteImageFindUniqueArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  where: ConstructionSiteImageWhereUniqueInputSchema,
-}).strict() ;
-
-export const ConstructionSiteImageFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.ConstructionSiteImageFindUniqueOrThrowArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  where: ConstructionSiteImageWhereUniqueInputSchema,
 }).strict() ;
 
 export const UserCreateArgsSchema: z.ZodType<Prisma.UserCreateArgs> = z.object({
@@ -5864,213 +5954,255 @@ export const TeamDeleteManyArgsSchema: z.ZodType<Prisma.TeamDeleteManyArgs> = z.
   limit: z.number().optional(),
 }).strict() ;
 
-export const UpcomingMilstoneCreateArgsSchema: z.ZodType<Prisma.UpcomingMilstoneCreateArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  data: z.union([ UpcomingMilstoneCreateInputSchema,UpcomingMilstoneUncheckedCreateInputSchema ]),
+export const MilestoneCreateArgsSchema: z.ZodType<Prisma.MilestoneCreateArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  data: z.union([ MilestoneCreateInputSchema,MilestoneUncheckedCreateInputSchema ]),
 }).strict() ;
 
-export const UpcomingMilstoneUpsertArgsSchema: z.ZodType<Prisma.UpcomingMilstoneUpsertArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  where: UpcomingMilstoneWhereUniqueInputSchema,
-  create: z.union([ UpcomingMilstoneCreateInputSchema,UpcomingMilstoneUncheckedCreateInputSchema ]),
-  update: z.union([ UpcomingMilstoneUpdateInputSchema,UpcomingMilstoneUncheckedUpdateInputSchema ]),
+export const MilestoneUpsertArgsSchema: z.ZodType<Prisma.MilestoneUpsertArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  where: MilestoneWhereUniqueInputSchema,
+  create: z.union([ MilestoneCreateInputSchema,MilestoneUncheckedCreateInputSchema ]),
+  update: z.union([ MilestoneUpdateInputSchema,MilestoneUncheckedUpdateInputSchema ]),
 }).strict() ;
 
-export const UpcomingMilstoneCreateManyArgsSchema: z.ZodType<Prisma.UpcomingMilstoneCreateManyArgs> = z.object({
-  data: z.union([ UpcomingMilstoneCreateManyInputSchema,UpcomingMilstoneCreateManyInputSchema.array() ]),
+export const MilestoneCreateManyArgsSchema: z.ZodType<Prisma.MilestoneCreateManyArgs> = z.object({
+  data: z.union([ MilestoneCreateManyInputSchema,MilestoneCreateManyInputSchema.array() ]),
 }).strict() ;
 
-export const UpcomingMilstoneDeleteArgsSchema: z.ZodType<Prisma.UpcomingMilstoneDeleteArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  where: UpcomingMilstoneWhereUniqueInputSchema,
+export const MilestoneDeleteArgsSchema: z.ZodType<Prisma.MilestoneDeleteArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  where: MilestoneWhereUniqueInputSchema,
 }).strict() ;
 
-export const UpcomingMilstoneUpdateArgsSchema: z.ZodType<Prisma.UpcomingMilstoneUpdateArgs> = z.object({
-  select: UpcomingMilstoneSelectSchema.optional(),
-  include: UpcomingMilstoneIncludeSchema.optional(),
-  data: z.union([ UpcomingMilstoneUpdateInputSchema,UpcomingMilstoneUncheckedUpdateInputSchema ]),
-  where: UpcomingMilstoneWhereUniqueInputSchema,
+export const MilestoneUpdateArgsSchema: z.ZodType<Prisma.MilestoneUpdateArgs> = z.object({
+  select: MilestoneSelectSchema.optional(),
+  include: MilestoneIncludeSchema.optional(),
+  data: z.union([ MilestoneUpdateInputSchema,MilestoneUncheckedUpdateInputSchema ]),
+  where: MilestoneWhereUniqueInputSchema,
 }).strict() ;
 
-export const UpcomingMilstoneUpdateManyArgsSchema: z.ZodType<Prisma.UpcomingMilstoneUpdateManyArgs> = z.object({
-  data: z.union([ UpcomingMilstoneUpdateManyMutationInputSchema,UpcomingMilstoneUncheckedUpdateManyInputSchema ]),
-  where: UpcomingMilstoneWhereInputSchema.optional(),
+export const MilestoneUpdateManyArgsSchema: z.ZodType<Prisma.MilestoneUpdateManyArgs> = z.object({
+  data: z.union([ MilestoneUpdateManyMutationInputSchema,MilestoneUncheckedUpdateManyInputSchema ]),
+  where: MilestoneWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const UpcomingMilstoneDeleteManyArgsSchema: z.ZodType<Prisma.UpcomingMilstoneDeleteManyArgs> = z.object({
-  where: UpcomingMilstoneWhereInputSchema.optional(),
+export const MilestoneDeleteManyArgsSchema: z.ZodType<Prisma.MilestoneDeleteManyArgs> = z.object({
+  where: MilestoneWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const CheckListCreateArgsSchema: z.ZodType<Prisma.CheckListCreateArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  data: z.union([ CheckListCreateInputSchema,CheckListUncheckedCreateInputSchema ]),
+export const ChecklistItemCreateArgsSchema: z.ZodType<Prisma.ChecklistItemCreateArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  data: z.union([ ChecklistItemCreateInputSchema,ChecklistItemUncheckedCreateInputSchema ]),
 }).strict() ;
 
-export const CheckListUpsertArgsSchema: z.ZodType<Prisma.CheckListUpsertArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  where: CheckListWhereUniqueInputSchema,
-  create: z.union([ CheckListCreateInputSchema,CheckListUncheckedCreateInputSchema ]),
-  update: z.union([ CheckListUpdateInputSchema,CheckListUncheckedUpdateInputSchema ]),
+export const ChecklistItemUpsertArgsSchema: z.ZodType<Prisma.ChecklistItemUpsertArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  where: ChecklistItemWhereUniqueInputSchema,
+  create: z.union([ ChecklistItemCreateInputSchema,ChecklistItemUncheckedCreateInputSchema ]),
+  update: z.union([ ChecklistItemUpdateInputSchema,ChecklistItemUncheckedUpdateInputSchema ]),
 }).strict() ;
 
-export const CheckListCreateManyArgsSchema: z.ZodType<Prisma.CheckListCreateManyArgs> = z.object({
-  data: z.union([ CheckListCreateManyInputSchema,CheckListCreateManyInputSchema.array() ]),
+export const ChecklistItemCreateManyArgsSchema: z.ZodType<Prisma.ChecklistItemCreateManyArgs> = z.object({
+  data: z.union([ ChecklistItemCreateManyInputSchema,ChecklistItemCreateManyInputSchema.array() ]),
 }).strict() ;
 
-export const CheckListDeleteArgsSchema: z.ZodType<Prisma.CheckListDeleteArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  where: CheckListWhereUniqueInputSchema,
+export const ChecklistItemDeleteArgsSchema: z.ZodType<Prisma.ChecklistItemDeleteArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  where: ChecklistItemWhereUniqueInputSchema,
 }).strict() ;
 
-export const CheckListUpdateArgsSchema: z.ZodType<Prisma.CheckListUpdateArgs> = z.object({
-  select: CheckListSelectSchema.optional(),
-  include: CheckListIncludeSchema.optional(),
-  data: z.union([ CheckListUpdateInputSchema,CheckListUncheckedUpdateInputSchema ]),
-  where: CheckListWhereUniqueInputSchema,
+export const ChecklistItemUpdateArgsSchema: z.ZodType<Prisma.ChecklistItemUpdateArgs> = z.object({
+  select: ChecklistItemSelectSchema.optional(),
+  include: ChecklistItemIncludeSchema.optional(),
+  data: z.union([ ChecklistItemUpdateInputSchema,ChecklistItemUncheckedUpdateInputSchema ]),
+  where: ChecklistItemWhereUniqueInputSchema,
 }).strict() ;
 
-export const CheckListUpdateManyArgsSchema: z.ZodType<Prisma.CheckListUpdateManyArgs> = z.object({
-  data: z.union([ CheckListUpdateManyMutationInputSchema,CheckListUncheckedUpdateManyInputSchema ]),
-  where: CheckListWhereInputSchema.optional(),
+export const ChecklistItemUpdateManyArgsSchema: z.ZodType<Prisma.ChecklistItemUpdateManyArgs> = z.object({
+  data: z.union([ ChecklistItemUpdateManyMutationInputSchema,ChecklistItemUncheckedUpdateManyInputSchema ]),
+  where: ChecklistItemWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const CheckListDeleteManyArgsSchema: z.ZodType<Prisma.CheckListDeleteManyArgs> = z.object({
-  where: CheckListWhereInputSchema.optional(),
+export const ChecklistItemDeleteManyArgsSchema: z.ZodType<Prisma.ChecklistItemDeleteManyArgs> = z.object({
+  where: ChecklistItemWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const DocumentsCreateArgsSchema: z.ZodType<Prisma.DocumentsCreateArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  data: z.union([ DocumentsCreateInputSchema,DocumentsUncheckedCreateInputSchema ]),
+export const DocumentCreateArgsSchema: z.ZodType<Prisma.DocumentCreateArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  data: z.union([ DocumentCreateInputSchema,DocumentUncheckedCreateInputSchema ]),
 }).strict() ;
 
-export const DocumentsUpsertArgsSchema: z.ZodType<Prisma.DocumentsUpsertArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  where: DocumentsWhereUniqueInputSchema,
-  create: z.union([ DocumentsCreateInputSchema,DocumentsUncheckedCreateInputSchema ]),
-  update: z.union([ DocumentsUpdateInputSchema,DocumentsUncheckedUpdateInputSchema ]),
+export const DocumentUpsertArgsSchema: z.ZodType<Prisma.DocumentUpsertArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
+  create: z.union([ DocumentCreateInputSchema,DocumentUncheckedCreateInputSchema ]),
+  update: z.union([ DocumentUpdateInputSchema,DocumentUncheckedUpdateInputSchema ]),
 }).strict() ;
 
-export const DocumentsCreateManyArgsSchema: z.ZodType<Prisma.DocumentsCreateManyArgs> = z.object({
-  data: z.union([ DocumentsCreateManyInputSchema,DocumentsCreateManyInputSchema.array() ]),
+export const DocumentCreateManyArgsSchema: z.ZodType<Prisma.DocumentCreateManyArgs> = z.object({
+  data: z.union([ DocumentCreateManyInputSchema,DocumentCreateManyInputSchema.array() ]),
 }).strict() ;
 
-export const DocumentsDeleteArgsSchema: z.ZodType<Prisma.DocumentsDeleteArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  where: DocumentsWhereUniqueInputSchema,
+export const DocumentDeleteArgsSchema: z.ZodType<Prisma.DocumentDeleteArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  where: DocumentWhereUniqueInputSchema,
 }).strict() ;
 
-export const DocumentsUpdateArgsSchema: z.ZodType<Prisma.DocumentsUpdateArgs> = z.object({
-  select: DocumentsSelectSchema.optional(),
-  include: DocumentsIncludeSchema.optional(),
-  data: z.union([ DocumentsUpdateInputSchema,DocumentsUncheckedUpdateInputSchema ]),
-  where: DocumentsWhereUniqueInputSchema,
+export const DocumentUpdateArgsSchema: z.ZodType<Prisma.DocumentUpdateArgs> = z.object({
+  select: DocumentSelectSchema.optional(),
+  include: DocumentIncludeSchema.optional(),
+  data: z.union([ DocumentUpdateInputSchema,DocumentUncheckedUpdateInputSchema ]),
+  where: DocumentWhereUniqueInputSchema,
 }).strict() ;
 
-export const DocumentsUpdateManyArgsSchema: z.ZodType<Prisma.DocumentsUpdateManyArgs> = z.object({
-  data: z.union([ DocumentsUpdateManyMutationInputSchema,DocumentsUncheckedUpdateManyInputSchema ]),
-  where: DocumentsWhereInputSchema.optional(),
+export const DocumentUpdateManyArgsSchema: z.ZodType<Prisma.DocumentUpdateManyArgs> = z.object({
+  data: z.union([ DocumentUpdateManyMutationInputSchema,DocumentUncheckedUpdateManyInputSchema ]),
+  where: DocumentWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const DocumentsDeleteManyArgsSchema: z.ZodType<Prisma.DocumentsDeleteManyArgs> = z.object({
-  where: DocumentsWhereInputSchema.optional(),
+export const DocumentDeleteManyArgsSchema: z.ZodType<Prisma.DocumentDeleteManyArgs> = z.object({
+  where: DocumentWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const TheIncomingLetterCreateArgsSchema: z.ZodType<Prisma.TheIncomingLetterCreateArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  data: z.union([ TheIncomingLetterCreateInputSchema,TheIncomingLetterUncheckedCreateInputSchema ]),
+export const SiteImageCreateArgsSchema: z.ZodType<Prisma.SiteImageCreateArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  data: z.union([ SiteImageCreateInputSchema,SiteImageUncheckedCreateInputSchema ]),
 }).strict() ;
 
-export const TheIncomingLetterUpsertArgsSchema: z.ZodType<Prisma.TheIncomingLetterUpsertArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  where: TheIncomingLetterWhereUniqueInputSchema,
-  create: z.union([ TheIncomingLetterCreateInputSchema,TheIncomingLetterUncheckedCreateInputSchema ]),
-  update: z.union([ TheIncomingLetterUpdateInputSchema,TheIncomingLetterUncheckedUpdateInputSchema ]),
+export const SiteImageUpsertArgsSchema: z.ZodType<Prisma.SiteImageUpsertArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  where: SiteImageWhereUniqueInputSchema,
+  create: z.union([ SiteImageCreateInputSchema,SiteImageUncheckedCreateInputSchema ]),
+  update: z.union([ SiteImageUpdateInputSchema,SiteImageUncheckedUpdateInputSchema ]),
 }).strict() ;
 
-export const TheIncomingLetterCreateManyArgsSchema: z.ZodType<Prisma.TheIncomingLetterCreateManyArgs> = z.object({
-  data: z.union([ TheIncomingLetterCreateManyInputSchema,TheIncomingLetterCreateManyInputSchema.array() ]),
+export const SiteImageCreateManyArgsSchema: z.ZodType<Prisma.SiteImageCreateManyArgs> = z.object({
+  data: z.union([ SiteImageCreateManyInputSchema,SiteImageCreateManyInputSchema.array() ]),
 }).strict() ;
 
-export const TheIncomingLetterDeleteArgsSchema: z.ZodType<Prisma.TheIncomingLetterDeleteArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  where: TheIncomingLetterWhereUniqueInputSchema,
+export const SiteImageDeleteArgsSchema: z.ZodType<Prisma.SiteImageDeleteArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  where: SiteImageWhereUniqueInputSchema,
 }).strict() ;
 
-export const TheIncomingLetterUpdateArgsSchema: z.ZodType<Prisma.TheIncomingLetterUpdateArgs> = z.object({
-  select: TheIncomingLetterSelectSchema.optional(),
-  include: TheIncomingLetterIncludeSchema.optional(),
-  data: z.union([ TheIncomingLetterUpdateInputSchema,TheIncomingLetterUncheckedUpdateInputSchema ]),
-  where: TheIncomingLetterWhereUniqueInputSchema,
+export const SiteImageUpdateArgsSchema: z.ZodType<Prisma.SiteImageUpdateArgs> = z.object({
+  select: SiteImageSelectSchema.optional(),
+  include: SiteImageIncludeSchema.optional(),
+  data: z.union([ SiteImageUpdateInputSchema,SiteImageUncheckedUpdateInputSchema ]),
+  where: SiteImageWhereUniqueInputSchema,
 }).strict() ;
 
-export const TheIncomingLetterUpdateManyArgsSchema: z.ZodType<Prisma.TheIncomingLetterUpdateManyArgs> = z.object({
-  data: z.union([ TheIncomingLetterUpdateManyMutationInputSchema,TheIncomingLetterUncheckedUpdateManyInputSchema ]),
-  where: TheIncomingLetterWhereInputSchema.optional(),
+export const SiteImageUpdateManyArgsSchema: z.ZodType<Prisma.SiteImageUpdateManyArgs> = z.object({
+  data: z.union([ SiteImageUpdateManyMutationInputSchema,SiteImageUncheckedUpdateManyInputSchema ]),
+  where: SiteImageWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const TheIncomingLetterDeleteManyArgsSchema: z.ZodType<Prisma.TheIncomingLetterDeleteManyArgs> = z.object({
-  where: TheIncomingLetterWhereInputSchema.optional(),
+export const SiteImageDeleteManyArgsSchema: z.ZodType<Prisma.SiteImageDeleteManyArgs> = z.object({
+  where: SiteImageWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const TheOutgoingLetterCreateArgsSchema: z.ZodType<Prisma.TheOutgoingLetterCreateArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  data: z.union([ TheOutgoingLetterCreateInputSchema,TheOutgoingLetterUncheckedCreateInputSchema ]),
+export const OutgoingLetterCreateArgsSchema: z.ZodType<Prisma.OutgoingLetterCreateArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  data: z.union([ OutgoingLetterCreateInputSchema,OutgoingLetterUncheckedCreateInputSchema ]),
 }).strict() ;
 
-export const TheOutgoingLetterUpsertArgsSchema: z.ZodType<Prisma.TheOutgoingLetterUpsertArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  where: TheOutgoingLetterWhereUniqueInputSchema,
-  create: z.union([ TheOutgoingLetterCreateInputSchema,TheOutgoingLetterUncheckedCreateInputSchema ]),
-  update: z.union([ TheOutgoingLetterUpdateInputSchema,TheOutgoingLetterUncheckedUpdateInputSchema ]),
+export const OutgoingLetterUpsertArgsSchema: z.ZodType<Prisma.OutgoingLetterUpsertArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  where: OutgoingLetterWhereUniqueInputSchema,
+  create: z.union([ OutgoingLetterCreateInputSchema,OutgoingLetterUncheckedCreateInputSchema ]),
+  update: z.union([ OutgoingLetterUpdateInputSchema,OutgoingLetterUncheckedUpdateInputSchema ]),
 }).strict() ;
 
-export const TheOutgoingLetterCreateManyArgsSchema: z.ZodType<Prisma.TheOutgoingLetterCreateManyArgs> = z.object({
-  data: z.union([ TheOutgoingLetterCreateManyInputSchema,TheOutgoingLetterCreateManyInputSchema.array() ]),
+export const OutgoingLetterCreateManyArgsSchema: z.ZodType<Prisma.OutgoingLetterCreateManyArgs> = z.object({
+  data: z.union([ OutgoingLetterCreateManyInputSchema,OutgoingLetterCreateManyInputSchema.array() ]),
 }).strict() ;
 
-export const TheOutgoingLetterDeleteArgsSchema: z.ZodType<Prisma.TheOutgoingLetterDeleteArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  where: TheOutgoingLetterWhereUniqueInputSchema,
+export const OutgoingLetterDeleteArgsSchema: z.ZodType<Prisma.OutgoingLetterDeleteArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  where: OutgoingLetterWhereUniqueInputSchema,
 }).strict() ;
 
-export const TheOutgoingLetterUpdateArgsSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateArgs> = z.object({
-  select: TheOutgoingLetterSelectSchema.optional(),
-  include: TheOutgoingLetterIncludeSchema.optional(),
-  data: z.union([ TheOutgoingLetterUpdateInputSchema,TheOutgoingLetterUncheckedUpdateInputSchema ]),
-  where: TheOutgoingLetterWhereUniqueInputSchema,
+export const OutgoingLetterUpdateArgsSchema: z.ZodType<Prisma.OutgoingLetterUpdateArgs> = z.object({
+  select: OutgoingLetterSelectSchema.optional(),
+  include: OutgoingLetterIncludeSchema.optional(),
+  data: z.union([ OutgoingLetterUpdateInputSchema,OutgoingLetterUncheckedUpdateInputSchema ]),
+  where: OutgoingLetterWhereUniqueInputSchema,
 }).strict() ;
 
-export const TheOutgoingLetterUpdateManyArgsSchema: z.ZodType<Prisma.TheOutgoingLetterUpdateManyArgs> = z.object({
-  data: z.union([ TheOutgoingLetterUpdateManyMutationInputSchema,TheOutgoingLetterUncheckedUpdateManyInputSchema ]),
-  where: TheOutgoingLetterWhereInputSchema.optional(),
+export const OutgoingLetterUpdateManyArgsSchema: z.ZodType<Prisma.OutgoingLetterUpdateManyArgs> = z.object({
+  data: z.union([ OutgoingLetterUpdateManyMutationInputSchema,OutgoingLetterUncheckedUpdateManyInputSchema ]),
+  where: OutgoingLetterWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
-export const TheOutgoingLetterDeleteManyArgsSchema: z.ZodType<Prisma.TheOutgoingLetterDeleteManyArgs> = z.object({
-  where: TheOutgoingLetterWhereInputSchema.optional(),
+export const OutgoingLetterDeleteManyArgsSchema: z.ZodType<Prisma.OutgoingLetterDeleteManyArgs> = z.object({
+  where: OutgoingLetterWhereInputSchema.optional(),
+  limit: z.number().optional(),
+}).strict() ;
+
+export const IncomingLetterCreateArgsSchema: z.ZodType<Prisma.IncomingLetterCreateArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  data: z.union([ IncomingLetterCreateInputSchema,IncomingLetterUncheckedCreateInputSchema ]),
+}).strict() ;
+
+export const IncomingLetterUpsertArgsSchema: z.ZodType<Prisma.IncomingLetterUpsertArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  where: IncomingLetterWhereUniqueInputSchema,
+  create: z.union([ IncomingLetterCreateInputSchema,IncomingLetterUncheckedCreateInputSchema ]),
+  update: z.union([ IncomingLetterUpdateInputSchema,IncomingLetterUncheckedUpdateInputSchema ]),
+}).strict() ;
+
+export const IncomingLetterCreateManyArgsSchema: z.ZodType<Prisma.IncomingLetterCreateManyArgs> = z.object({
+  data: z.union([ IncomingLetterCreateManyInputSchema,IncomingLetterCreateManyInputSchema.array() ]),
+}).strict() ;
+
+export const IncomingLetterDeleteArgsSchema: z.ZodType<Prisma.IncomingLetterDeleteArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  where: IncomingLetterWhereUniqueInputSchema,
+}).strict() ;
+
+export const IncomingLetterUpdateArgsSchema: z.ZodType<Prisma.IncomingLetterUpdateArgs> = z.object({
+  select: IncomingLetterSelectSchema.optional(),
+  include: IncomingLetterIncludeSchema.optional(),
+  data: z.union([ IncomingLetterUpdateInputSchema,IncomingLetterUncheckedUpdateInputSchema ]),
+  where: IncomingLetterWhereUniqueInputSchema,
+}).strict() ;
+
+export const IncomingLetterUpdateManyArgsSchema: z.ZodType<Prisma.IncomingLetterUpdateManyArgs> = z.object({
+  data: z.union([ IncomingLetterUpdateManyMutationInputSchema,IncomingLetterUncheckedUpdateManyInputSchema ]),
+  where: IncomingLetterWhereInputSchema.optional(),
+  limit: z.number().optional(),
+}).strict() ;
+
+export const IncomingLetterDeleteManyArgsSchema: z.ZodType<Prisma.IncomingLetterDeleteManyArgs> = z.object({
+  where: IncomingLetterWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;
 
@@ -6113,47 +6245,5 @@ export const ReportUpdateManyArgsSchema: z.ZodType<Prisma.ReportUpdateManyArgs> 
 
 export const ReportDeleteManyArgsSchema: z.ZodType<Prisma.ReportDeleteManyArgs> = z.object({
   where: ReportWhereInputSchema.optional(),
-  limit: z.number().optional(),
-}).strict() ;
-
-export const ConstructionSiteImageCreateArgsSchema: z.ZodType<Prisma.ConstructionSiteImageCreateArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  data: z.union([ ConstructionSiteImageCreateInputSchema,ConstructionSiteImageUncheckedCreateInputSchema ]),
-}).strict() ;
-
-export const ConstructionSiteImageUpsertArgsSchema: z.ZodType<Prisma.ConstructionSiteImageUpsertArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  where: ConstructionSiteImageWhereUniqueInputSchema,
-  create: z.union([ ConstructionSiteImageCreateInputSchema,ConstructionSiteImageUncheckedCreateInputSchema ]),
-  update: z.union([ ConstructionSiteImageUpdateInputSchema,ConstructionSiteImageUncheckedUpdateInputSchema ]),
-}).strict() ;
-
-export const ConstructionSiteImageCreateManyArgsSchema: z.ZodType<Prisma.ConstructionSiteImageCreateManyArgs> = z.object({
-  data: z.union([ ConstructionSiteImageCreateManyInputSchema,ConstructionSiteImageCreateManyInputSchema.array() ]),
-}).strict() ;
-
-export const ConstructionSiteImageDeleteArgsSchema: z.ZodType<Prisma.ConstructionSiteImageDeleteArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  where: ConstructionSiteImageWhereUniqueInputSchema,
-}).strict() ;
-
-export const ConstructionSiteImageUpdateArgsSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateArgs> = z.object({
-  select: ConstructionSiteImageSelectSchema.optional(),
-  include: ConstructionSiteImageIncludeSchema.optional(),
-  data: z.union([ ConstructionSiteImageUpdateInputSchema,ConstructionSiteImageUncheckedUpdateInputSchema ]),
-  where: ConstructionSiteImageWhereUniqueInputSchema,
-}).strict() ;
-
-export const ConstructionSiteImageUpdateManyArgsSchema: z.ZodType<Prisma.ConstructionSiteImageUpdateManyArgs> = z.object({
-  data: z.union([ ConstructionSiteImageUpdateManyMutationInputSchema,ConstructionSiteImageUncheckedUpdateManyInputSchema ]),
-  where: ConstructionSiteImageWhereInputSchema.optional(),
-  limit: z.number().optional(),
-}).strict() ;
-
-export const ConstructionSiteImageDeleteManyArgsSchema: z.ZodType<Prisma.ConstructionSiteImageDeleteManyArgs> = z.object({
-  where: ConstructionSiteImageWhereInputSchema.optional(),
   limit: z.number().optional(),
 }).strict() ;

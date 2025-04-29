@@ -22,8 +22,15 @@ export default function TeamInfo({ formData, updateFormData }: TeamInfoProps) {
           <Label htmlFor="projectManager">Project Manager</Label>
           <Input
             id="projectManager"
-            value={formData.projectManager}
-            onChange={(e) => updateFormData({ projectManager: e.target.value })}
+            value={formData.team.projectManager}
+            onChange={(e) =>
+              updateFormData({
+                team: {
+                  ...formData.team,
+                  projectManager: e.target.value,
+                },
+              })
+            }
             placeholder="Enter project manager name"
             required
           />
@@ -33,8 +40,15 @@ export default function TeamInfo({ formData, updateFormData }: TeamInfoProps) {
           <Label htmlFor="siteManager">Site Manager</Label>
           <Input
             id="siteManager"
-            value={formData.siteManager}
-            onChange={(e) => updateFormData({ siteManager: e.target.value })}
+            value={formData.team.siteManager}
+            onChange={(e) =>
+              updateFormData({
+                team: {
+                  ...formData.team,
+                  siteManager: e.target.value,
+                },
+              })
+            }
             placeholder="Enter site manager name"
             required
           />
@@ -44,8 +58,15 @@ export default function TeamInfo({ formData, updateFormData }: TeamInfoProps) {
           <Label htmlFor="civilManager">Civil Manager</Label>
           <Input
             id="civilManager"
-            value={formData.civilManager}
-            onChange={(e) => updateFormData({ civilManager: e.target.value })}
+            value={formData.team.civilManager}
+            onChange={(e) =>
+              updateFormData({
+                team: {
+                  ...formData.team,
+                  civilManager: e.target.value,
+                },
+              })
+            }
             placeholder="Enter civil manager name"
             required
           />
@@ -55,9 +76,14 @@ export default function TeamInfo({ formData, updateFormData }: TeamInfoProps) {
           <Label htmlFor="architecturalLead">Architectural Lead</Label>
           <Input
             id="architecturalLead"
-            value={formData.architecturalLead}
+            value={formData.team.architecturalLead}
             onChange={(e) =>
-              updateFormData({ architecturalLead: e.target.value })
+              updateFormData({
+                team: {
+                  ...formData.team,
+                  architecturalLead: e.target.value,
+                },
+              })
             }
             placeholder="Enter architectural lead name"
             required
@@ -70,9 +96,15 @@ export default function TeamInfo({ formData, updateFormData }: TeamInfoProps) {
             id="totalWorkers"
             type="number"
             min="0"
-            value={formData.totalWorkers}
+            value={formData.team.totalWorkers}
             onChange={(e) =>
-              updateFormData({ totalWorkers: Number(e.target.value) })
+              updateFormData({
+                team: {
+                  ...formData.team,
+
+                  totalWorkers: Number(e.target.value),
+                },
+              })
             }
             placeholder="Enter total number of workers"
             required
