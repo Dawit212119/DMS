@@ -27,7 +27,7 @@ export default function Milestones({
   const [newMilestone, setNewMilestone] = useState({
     name: "",
     date: "",
-    status: "on track" as "on track" | "at risk",
+    status: "ontrack" as "ontrack" | "atrisk",
   });
 
   const addMilestone = () => {
@@ -43,7 +43,7 @@ export default function Milestones({
       setNewMilestone({
         name: "",
         date: "",
-        status: "on track",
+        status: "ontrack",
       });
     }
   };
@@ -106,7 +106,7 @@ export default function Milestones({
                 onValueChange={(value) =>
                   setNewMilestone({
                     ...newMilestone,
-                    status: value as "on track" | "at risk",
+                    status: value as "ontrack" | "atrisk",
                   })
                 }
               >
@@ -114,8 +114,8 @@ export default function Milestones({
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="on track">On Track</SelectItem>
-                  <SelectItem value="at risk">At Risk</SelectItem>
+                  <SelectItem value="ontrack">On Track</SelectItem>
+                  <SelectItem value="atrisk">At Risk</SelectItem>
                 </SelectContent>
               </Select>
             </div>
