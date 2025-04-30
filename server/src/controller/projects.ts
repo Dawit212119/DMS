@@ -205,10 +205,11 @@ export async function createProject(
     });
   } catch (error) {
     if (error instanceof ZodError) {
+      console.error("Zod Validation Error:", JSON.stringify(error.format()));
       res.status(400).json({
         success: false,
         ur: "yyy",
-        errors: error.flatten().formErrors,
+        errors: error.format(),
       });
       return;
     }
