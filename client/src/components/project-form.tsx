@@ -20,12 +20,13 @@ import { toast } from "sonner";
 // FormData type remains the same as in the previous version
 export type FormData = {
   // Project Info
-  projectName: string;
-  clientName: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-
+  project: {
+    projectName: string;
+    clientName: string;
+    location: string;
+    startDate: string;
+    endDate: string;
+  };
   // Budget Info
   budget: { totalBudget: string; amountSpent: string };
 
