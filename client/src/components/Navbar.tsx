@@ -2,12 +2,30 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { LogIn, LayoutDashboard, FolderKanban, Folder } from "lucide-react";
+import {
+  LogIn,
+  LayoutDashboard,
+  FolderKanban,
+  Folder,
+  User,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Container from "./container";
+import { useGetMeQuery, useLogoutUserMutation } from "@/state/features/authApi";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
+  const { data: user, error } = useGetMeQuery();
+  console.log("Here is the user", user);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Prevent scrolling when menu is open
@@ -26,7 +44,16 @@ export default function Header() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
-
+  const router = useRouter();
+  const [logoutUser] = useLogoutUserMutation();
+  const handleLogout = async () => {
+    try {
+      await logoutUser().unwrap();
+      router.push("/sign-in"); // Redirect to login page after logout
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#f9f7f0] py-2 sm:py-3 md:py-4">
       <Container>
@@ -46,15 +73,6 @@ export default function Header() {
           {/* Desktop Navigation (visible on sm and above) */}
           <nav className="hidden sm:block flex-1 mx-4">
             <ul className="flex items-center justify-center space-x-4 md:space-x-6 xl:space-x-8">
-              {/* <li>
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  Dashboard
-                </Link>
-              </li> */}
               <li>
                 <Link
                   href="/projects"
@@ -68,14 +86,29 @@ export default function Header() {
           </nav>
 
           {/* Sign In Button (visible on sm and above) */}
-          <div className="hidden sm:block">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/sign-in" className="flex items-center gap-1.5">
-                <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">Sign In</span>
-              </Link>
-            </Button>
-          </div>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <User />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>My Projects</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="hidden sm:block">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/sign-in" className="flex items-center gap-1.5">
+                  <LogIn className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">Sign In</span>
+                </Link>
+              </Button>
+            </div>
+          )}
 
           {/* Hamburger Menu Button (only visible below sm) */}
           <div className="sm:hidden">

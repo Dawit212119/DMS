@@ -15,6 +15,7 @@ import ProjectDocuments from "./form-steps/project-documents";
 import Letters from "./form-steps/letters";
 import Reports from "./form-steps/reports";
 import ReviewForm from "./form-steps/review-form";
+import { toast } from "sonner";
 
 // FormData type remains the same as in the previous version
 export type FormData = {
@@ -26,22 +27,23 @@ export type FormData = {
   endDate: string;
 
   // Budget Info
-  totalBudget: string;
-  amountSpent: string;
+  budget: { totalBudget: string; amountSpent: string };
 
   // Team Info
-  projectManager: string;
-  siteManager: string;
-  civilManager: string;
-  architecturalLead: string;
-  totalWorkers: number;
+  team: {
+    projectManager: string;
+    siteManager: string;
+    civilManager: string;
+    architecturalLead: string;
+    totalWorkers: number;
+  };
 
   // Milestones
   milestones: Array<{
     id: string;
     name: string;
     date: string;
-    status: "on track" | "at risk";
+    status: "ontrack" | "atrisk";
   }>;
 
   // Checklist
@@ -50,7 +52,7 @@ export type FormData = {
     task: string;
     assignedTo: string;
     dueDate: string;
-    status: "on track" | "at risk";
+    status: "ontrack" | "atrisk";
     priority: "high" | "medium" | "low";
     milestoneId: string;
   }>;
@@ -118,13 +120,17 @@ const initialFormData: FormData = {
   location: "",
   startDate: "",
   endDate: "",
-  totalBudget: "",
-  amountSpent: "",
-  projectManager: "",
-  siteManager: "",
-  civilManager: "",
-  architecturalLead: "",
-  totalWorkers: 0,
+  budget: {
+    totalBudget: "",
+    amountSpent: "",
+  },
+  team: {
+    projectManager: "",
+    siteManager: "",
+    civilManager: "",
+    architecturalLead: "",
+    totalWorkers: 0,
+  },
   milestones: [],
   checklist: [],
   documents: [],
@@ -195,10 +201,21 @@ export default function ProjectForm() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    const res = await fetch("http://localhost:8000/project", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+      credentials: "include",
+    });
+    if (res.ok) {
+      toast("Project submitted successfully!");
+    }
     // This is where you would handle the form submission to your backend
     console.log("Form submitted:", formData);
-    alert("Form submitted successfully!");
+
     // Reset form after submission
     setFormData(initialFormData);
     setCurrentStep(1);

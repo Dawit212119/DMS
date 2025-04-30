@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useSigninUserMutation } from "@/state/features/authApi";
-import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,9 +39,8 @@ function Signin() {
     setError(null);
     try {
       const responseData = await signinUser(data).unwrap();
-      localStorage.setItem("token", responseData?.token);
-      console.log("Login successful:", responseData);
-      router.push("/Reports");
+      console.log(responseData);
+      router.push("/");
     } catch (err: any) {
       setError(err.message || "An error occurred during sign in");
     }
@@ -53,8 +52,11 @@ function Signin() {
     <div className="">
       <Card className="w-full max-w-md border-blue-600/20 bg-white shadow-lg">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            Sign in
+          <CardTitle className="text-2xl font-bold text-gray-900 flex gap-2 items-center">
+            <Link href={"/"}>
+              <ArrowLeft />
+            </Link>
+            <span>Sign in</span>
           </CardTitle>
           <CardDescription className="text-gray-600">
             Enter your credentials to access your account

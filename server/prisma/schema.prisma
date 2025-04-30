@@ -1,21 +1,17 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
-generator zod{
+generator zod {
   provider = "zod-prisma-types"
   output = "../zod"
 }
+
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
 model User {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   name       String
@@ -23,170 +19,178 @@ model User {
   password   String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-   
 }
-model Project{
-    id         String   @id @default(auto()) @map("_id") @db.ObjectId
-     projectName String 
-     clientName  String
-     location String
-     startDate  DateTime @default(now())
-     dueDate DateTime @default(now())
-     progress Int
-     budget Budget[]
-     team Team[]
-     upcomingMilstone UpcomingMilstone?
-    
-     checkList CheckList[]
-     documents Documents[]
-     theIncomingLetter TheIncomingLetter[]
-     theOutgoingLetter TheOutgoingLetter[]
-     report Report[]
-     constructionSiteImage ConstructionSiteImage[]
-}
-model Budget{
-    id         String   @id @default(auto()) @map("_id") @db.ObjectId
-    total Float
-    spent Float
-    projectId String  @db.ObjectId
-    project Project @relation(fields: [projectId],references: [id])
-@@index([projectId])
 
+model Project {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectName            String
+  clientName             String
+  location               String
+  startDate              DateTime
+  endDate                DateTime
+  budget                 Budget?
+  team                   Team?
+  milestones             Milestone[]
+  checklist              ChecklistItem[]
+  documents              Document[]
+  outgoingLetters        OutgoingLetter[]
+  incomingLetters        IncomingLetter[]
+  reports                Report[]
+  siteImages             SiteImage[]
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model Budget {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  total     Float
+  spent     Float
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String   @db.ObjectId @unique
 
 }
+
 model Team {
-       id         String   @id @default(auto()) @map("_id") @db.ObjectId
-       projectManger String
-       siteManger String
-       civilManger String
-       architecturalLoad String
-       totalWorker Int
-       projectId String  @db.ObjectId
-       project Project @relation(fields: [projectId],references: [id])
-       @@index([projectId])
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectManager      String
+  siteManager         String
+  civilManager        String
+  architecturalLead   String
+  totalWorkers        Int
+  project             Project  @relation(fields: [projectId], references: [id])
+  projectId           String   @db.ObjectId @unique
+  
 }
 
-model UpcomingMilstone {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  title String
-  date DateTime @default(now())
-  status Status 
-   projectId String @unique @db.ObjectId
-    project Project @relation(fields: [projectId],references: [id])
+model Milestone {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  date       DateTime
+  status     Status
+  project    Project  @relation(fields: [projectId], references: [id])
+  projectId  String   @db.ObjectId
+  @@index([projectId])
 }
 
 enum Status {
   ontrack
   atrisk
+}
 
+model ChecklistItem {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  task         String
+  assignedTo   String
+  dueDate      DateTime
+  status       Status
+  priority     Priority
+  milestoneId  String
+  project      Project  @relation(fields: [projectId], references: [id])
+  projectId    String   @db.ObjectId
+  @@index([projectId])
 }
-model CheckList {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    task Status
-    assignedTo String
-    dueData DateTime @default(now())
-    priority  Priority
-    completed Boolean
-    projectId String  @db.ObjectId
-    project Project @relation(fields: [projectId],references: [id])
-    @@index([projectId])
-}
+
 enum Priority {
-  high 
-  medium 
+  high
+  medium
   low
 }
 
-model Documents{
-      id String @id @default(auto()) @map("_id") @db.ObjectId
-      name String 
-      date DateTime @default(now())
-      projectId String  @db.ObjectId
-      downloadedUrl String
-      project Project @relation(fields: [projectId],references: [id])
-      @@index([projectId])
-}    
-
-model    TheIncomingLetter {
-        id String @id @default(auto()) @map("_id") @db.ObjectId
-        sender String
-        subject String
-        priority  Priority
-        status IncomingStatus
-        projectId String  @db.ObjectId
-        project Project @relation(fields: [projectId],references: [id])
-        createdAt DateTime @default(now())
-        downloadedUrl String
-        updatedAt DateTime @updatedAt
-        @@index([projectId])
-
-
-}
-enum IncomingStatus{
-  read
-  unread
+model Document {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  fileUrl       String
+  fileName      String
+  date          DateTime @default(now())
+  project       Project  @relation(fields: [projectId], references: [id])
+  projectId     String   @db.ObjectId
+  @@index([projectId])
 }
 
-model TheOutgoingLetter {
-          id String @id @default(auto()) @map("_id") @db.ObjectId
-          recipent String
-          subject String
-          status OutgoingStatus
-          priority  Priority
-          createdAt DateTime @default(now())
-          downloadedUrl String
-          projectId String  @db.ObjectId
-          project Project @relation(fields: [projectId],references: [id])
-          @@index([projectId])
-
-}
-enum OutgoingStatus {
-  sent 
-  draft
+model SiteImage {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  location    String
+  category    Category
+  imageUrl    String
+  fileName    String
+  date        DateTime @default(now())
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String   @db.ObjectId
+  @@index([projectId])
 }
 
-model Report {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
-    publisher String
-    status reportStatus
-    uploadedDate DateTime @default(now())
-    lastModified DateTime @default(now())
-    version String
-    downloadedUrl String
-    reportType reportType
-    projectId String  @db.ObjectId
-    project Project @relation(fields: [projectId],references: [id])
-    @@index([projectId])
-}
-
-enum reportStatus {
-  approved
-  rejected
-}
-enum reportType{
-   daily
-   weekly
-   monthly
-   annually
-   quarterly
-}
-
-model ConstructionSiteImage{
-      id String @id @default(auto()) @map("_id") @db.ObjectId
-      title String
-      imagesrc String
-      location String
-      date DateTime @default(now())
-      category category
-   projectId String  @db.ObjectId
-    project Project @relation(fields: [projectId],references: [id])
-    @@index([projectId])
-}
-enum category{
+enum Category {
   foundation
   structural
   electrical
   plumbing
   exterior
   aerial
+}
+
+model OutgoingLetter {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  recipient   String
+  subject     String
+  priority    Priority
+  status      OutgoingStatus
+  fileUrl     String
+  fileName    String
+  createdAt   DateTime @default(now())
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String   @db.ObjectId
+  @@index([projectId])
+}
+
+enum OutgoingStatus {
+  draft
+  sent
+}
+
+model IncomingLetter {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sender      String
+  subject     String
+  priority    Priority
+  status      IncomingStatus
+  fileUrl     String
+  fileName    String
+  createdAt   DateTime @default(now())
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String   @db.ObjectId
+  @@index([projectId])
+}
+
+enum IncomingStatus {
+  read
+  unread
+}
+
+model Report {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  publisher     String
+  reportType    ReportType
+  version       String
+  status        ReportStatus
+  fileUrl       String
+  fileName      String
+  uploadedDate  DateTime @default(now())
+  project       Project  @relation(fields: [projectId], references: [id])
+  projectId     String   @db.ObjectId
+  @@index([projectId])
+}
+
+enum ReportStatus {
+  approved
+  rejected
+}
+
+enum ReportType {
+  daily
+  weekly
+  monthly
+  quarterly
+  annually
 }

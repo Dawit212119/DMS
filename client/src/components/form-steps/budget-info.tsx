@@ -26,8 +26,15 @@ export default function BudgetInfo({
           <Input
             id="totalBudget"
             type="number"
-            value={formData.totalBudget}
-            onChange={(e) => updateFormData({ totalBudget: e.target.value })}
+            value={formData.budget.totalBudget}
+            onChange={(e) =>
+              updateFormData({
+                budget: {
+                  ...formData.budget,
+                  totalBudget: e.target.value,
+                },
+              })
+            }
             placeholder="Enter total budget"
             required
           />
@@ -38,31 +45,40 @@ export default function BudgetInfo({
           <Input
             id="amountSpent"
             type="number"
-            value={formData.amountSpent}
-            onChange={(e) => updateFormData({ amountSpent: e.target.value })}
+            value={formData.budget.amountSpent}
+            onChange={(e) =>
+              updateFormData({
+                budget: {
+                  ...formData.budget,
+                  amountSpent: e.target.value,
+                },
+              })
+            }
             placeholder="Enter amount spent"
             required
           />
         </div>
       </div>
 
-      {formData.totalBudget && formData.amountSpent && (
+      {formData.budget.totalBudget && formData.budget.amountSpent && (
         <div className="mt-6 p-4 bg-muted rounded-md">
           <h4 className="font-medium mb-2">Budget Summary</h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Remaining Budget:</p>
               <p className="font-medium">
-                ${Number(formData.totalBudget) - Number(formData.amountSpent)}
+                $
+                {Number(formData.budget.totalBudget) -
+                  Number(formData.budget.amountSpent)}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Percentage Used:</p>
               <p className="font-medium">
-                {Number(formData.totalBudget) > 0
+                {Number(formData.budget.totalBudget) > 0
                   ? Math.round(
-                      (Number(formData.amountSpent) /
-                        Number(formData.totalBudget)) *
+                      (Number(formData.budget.amountSpent) /
+                        Number(formData.budget.totalBudget)) *
                         100
                     )
                   : 0}
