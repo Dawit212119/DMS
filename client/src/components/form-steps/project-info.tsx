@@ -88,7 +88,7 @@ export default function ProjectInfo({
                 updateFormData({
                   project: {
                     ...formData.project,
-                    location: e.target.value,
+                    clientName: e.target.value,
                   },
                 })
               }

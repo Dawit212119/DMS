@@ -191,17 +191,19 @@ export type User = z.infer<typeof UserSchema>;
 // PROJECT SCHEMA
 /////////////////////////////////////////
 
-export const ProjectSchema = z.object({
-  id: z.string().optional(),
-  projectName: z.string(),
-  clientName: z.string(),
-  location: z.string(),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
-  userId: z.string(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
-});
+export const ProjectSchema = z
+  .object({
+    id: z.string().optional(),
+    projectName: z.string(),
+    clientName: z.string(),
+    location: z.string(),
+    startDate: z.coerce.date().optional(),
+    endDate: z.coerce.date().optional(),
+    userId: z.string().optional(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+  })
+  .optional();
 
 export type Project = z.infer<typeof ProjectSchema>;
 
@@ -211,10 +213,10 @@ export type Project = z.infer<typeof ProjectSchema>;
 
 export const BudgetSchema = z
   .object({
-    id: z.string(),
-    total: z.number(),
-    spent: z.number(),
-    projectId: z.string(),
+    id: z.string().optional(),
+    total: z.number().optional(),
+    spent: z.number().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -226,13 +228,13 @@ export type Budget = z.infer<typeof BudgetSchema>;
 
 export const TeamSchema = z
   .object({
-    id: z.string().optional(),
-    projectManager: z.string(),
-    siteManager: z.string(),
-    civilManager: z.string(),
-    architecturalLead: z.string(),
-    totalWorkers: z.number().int(),
-    projectId: z.string(),
+    id: z.string().optional().optional(),
+    projectManager: z.string().optional(),
+    siteManager: z.string().optional(),
+    civilManager: z.string().optional(),
+    architecturalLead: z.string().optional(),
+    totalWorkers: z.number().int().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -245,10 +247,10 @@ export type Team = z.infer<typeof TeamSchema>;
 export const MilestoneSchema = z
   .object({
     status: StatusSchema,
-    id: z.string(),
-    name: z.string(),
-    date: z.coerce.date(),
-    projectId: z.string(),
+    id: z.string().optional(),
+    name: z.string().optional(),
+    date: z.coerce.date().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -262,12 +264,12 @@ export const ChecklistItemSchema = z
   .object({
     status: StatusSchema,
     priority: PrioritySchema,
-    id: z.string(),
-    task: z.string(),
-    assignedTo: z.string(),
-    dueDate: z.coerce.date(),
-    milestoneId: z.string(),
-    projectId: z.string(),
+    id: z.string().optional(),
+    task: z.string().optional(),
+    assignedTo: z.string().optional(),
+    dueDate: z.coerce.date().optional(),
+    milestoneId: z.string().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -279,12 +281,12 @@ export type ChecklistItem = z.infer<typeof ChecklistItemSchema>;
 
 export const DocumentSchema = z
   .object({
-    id: z.string(),
-    title: z.string(),
-    fileUrl: z.string(),
-    fileName: z.string(),
-    date: z.coerce.date(),
-    projectId: z.string(),
+    id: z.string().optional(),
+    title: z.string().optional(),
+    fileUrl: z.string().optional(),
+    fileName: z.string().optional(),
+    date: z.coerce.date().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -298,12 +300,12 @@ export const SiteImageSchema = z
   .object({
     category: CategorySchema,
     id: z.string().optional(),
-    title: z.string(),
-    location: z.string(),
-    imageUrl: z.string(),
-    fileName: z.string(),
-    date: z.coerce.date(),
-    projectId: z.string(),
+    title: z.string().optional(),
+    location: z.string().optional(),
+    imageUrl: z.string().optional(),
+    fileName: z.string().optional(),
+    date: z.coerce.date().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -318,12 +320,12 @@ export const OutgoingLetterSchema = z
     priority: PrioritySchema,
     status: OutgoingStatusSchema,
     id: z.string().optional(),
-    recipient: z.string(),
-    subject: z.string(),
-    fileUrl: z.string(),
-    fileName: z.string(),
-    createdAt: z.coerce.date(),
-    projectId: z.string(),
+    recipient: z.string().optional(),
+    subject: z.string().optional(),
+    fileUrl: z.string().optional(),
+    fileName: z.string().optional(),
+    createdAt: z.coerce.date().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -338,12 +340,12 @@ export const IncomingLetterSchema = z
     priority: PrioritySchema,
     status: IncomingStatusSchema,
     id: z.string().optional(),
-    sender: z.string(),
-    subject: z.string(),
-    fileUrl: z.string(),
-    fileName: z.string(),
-    createdAt: z.coerce.date(),
-    projectId: z.string(),
+    sender: z.string().optional(),
+    subject: z.string().optional(),
+    fileUrl: z.string().optional(),
+    fileName: z.string().optional(),
+    createdAt: z.coerce.date().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
@@ -358,13 +360,13 @@ export const ReportSchema = z
     reportType: ReportTypeSchema,
     status: ReportStatusSchema,
     id: z.string().optional(),
-    title: z.string(),
-    publisher: z.string(),
-    version: z.string(),
-    fileUrl: z.string(),
-    fileName: z.string(),
-    uploadedDate: z.coerce.date(),
-    projectId: z.string(),
+    title: z.string().optional(),
+    publisher: z.string().optional(),
+    version: z.string().optional(),
+    fileUrl: z.string().optional(),
+    fileName: z.string().optional(),
+    uploadedDate: z.coerce.date().optional(),
+    projectId: z.string().optional(),
   })
   .optional();
 
