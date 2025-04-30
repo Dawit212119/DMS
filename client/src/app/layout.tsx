@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import MuiProvider from "@/components/mui-provider";
 import Providers from "./provider";
+import { PersistGate } from "redux-persist/integration/react";
 
 const inter = Inter({ subsets: ["latin"] });
 

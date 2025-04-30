@@ -1,6 +1,6 @@
 "use client";
 
-import ProjectChecklist, { ChecklistItem } from "./checklistTable";
+import ProjectChecklist from "./checklistTable";
 import { RootState } from "@/state/store";
 import { Project } from "@/state/project/projectSlice";
 import { useSelector } from "react-redux";
