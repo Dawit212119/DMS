@@ -20,12 +20,13 @@ import { toast } from "sonner";
 // FormData type remains the same as in the previous version
 export type FormData = {
   // Project Info
-  projectName: string;
-  clientName: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-
+  project: {
+    projectName: string;
+    clientName: string;
+    location: string;
+    startDate: string;
+    endDate: string;
+  };
   // Budget Info
   budget: { totalBudget: string; amountSpent: string };
 
@@ -115,11 +116,14 @@ export type FormData = {
 };
 
 const initialFormData: FormData = {
-  projectName: "",
-  clientName: "",
-  location: "",
-  startDate: "",
-  endDate: "",
+  project: {
+    projectName: "",
+    clientName: "",
+    location: "",
+    startDate: "",
+    endDate: "",
+  },
+
   budget: {
     totalBudget: "",
     amountSpent: "",
@@ -165,11 +169,13 @@ export default function ProjectForm() {
   const validateFirstStep = (): boolean => {
     const errors: string[] = [];
 
-    if (!formData.projectName.trim()) errors.push("Project Name is required");
-    if (!formData.clientName.trim()) errors.push("Client Name is required");
-    if (!formData.location.trim()) errors.push("Location is required");
-    if (!formData.startDate) errors.push("Start Date is required");
-    if (!formData.endDate) errors.push("End Date is required");
+    if (!formData.project.projectName.trim())
+      errors.push("Project Name is required");
+    if (!formData.project.clientName.trim())
+      errors.push("Client Name is required");
+    if (!formData.project.location.trim()) errors.push("Location is required");
+    if (!formData.project.startDate) errors.push("Start Date is required");
+    if (!formData.project.endDate) errors.push("End Date is required");
 
     setValidationErrors(errors);
     return errors.length === 0;

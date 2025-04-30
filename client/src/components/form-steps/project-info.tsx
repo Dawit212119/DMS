@@ -62,8 +62,15 @@ export default function ProjectInfo({
             </Label>
             <Input
               id="projectName"
-              value={formData.projectName}
-              onChange={(e) => updateFormData({ projectName: e.target.value })}
+              value={formData.project.projectName}
+              onChange={(e) =>
+                updateFormData({
+                  project: {
+                    ...formData.project,
+                    projectName: e.target.value,
+                  },
+                })
+              }
               placeholder="Enter project name"
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               required
@@ -76,8 +83,15 @@ export default function ProjectInfo({
             </Label>
             <Input
               id="clientName"
-              value={formData.clientName}
-              onChange={(e) => updateFormData({ clientName: e.target.value })}
+              value={formData.project.clientName}
+              onChange={(e) =>
+                updateFormData({
+                  project: {
+                    ...formData.project,
+                    clientName: e.target.value,
+                  },
+                })
+              }
               placeholder="Enter client name"
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               required
@@ -90,8 +104,15 @@ export default function ProjectInfo({
             </Label>
             <Input
               id="location"
-              value={formData.location}
-              onChange={(e) => updateFormData({ location: e.target.value })}
+              value={formData.project.location}
+              onChange={(e) =>
+                updateFormData({
+                  project: {
+                    ...formData.project,
+                    location: e.target.value,
+                  },
+                })
+              }
               placeholder="Enter project location"
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               required
@@ -105,8 +126,15 @@ export default function ProjectInfo({
             <Input
               id="startDate"
               type="date"
-              value={formData.startDate}
-              onChange={(e) => updateFormData({ startDate: e.target.value })}
+              value={formData.project.startDate}
+              onChange={(e) =>
+                updateFormData({
+                  project: {
+                    ...formData.project,
+                    startDate: e.target.value,
+                  },
+                })
+              }
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               required
             />
@@ -119,8 +147,15 @@ export default function ProjectInfo({
             <Input
               id="endDate"
               type="date"
-              value={formData.endDate}
-              onChange={(e) => updateFormData({ endDate: e.target.value })}
+              value={formData.project.endDate}
+              onChange={(e) =>
+                updateFormData({
+                  project: {
+                    ...formData.project,
+                    endDate: e.target.value,
+                  },
+                })
+              }
               className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
               required
             />

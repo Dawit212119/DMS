@@ -39,7 +39,7 @@ export async function createProject(
     const project = await prismaClient.project.create({
       data: {
         projectName: projectData?.projectName || "Default Project Name",
-        userId: req.user?.id,
+        // userId: req.user?.id ?? "123456789012",
         clientName: projectData?.clientName || "Default Client Name",
         location: projectData?.location || "Default Location",
         startDate: projectData?.startDate || new Date(),
@@ -60,18 +60,21 @@ export async function createProject(
 
     // Validate and Create Team
     const teamData = TeamSchema.parse(req.body?.team);
-    const team = await prismaClient.team.create({
-      data: {
-        ...teamData,
-        projectManager: teamData?.projectManager || "Unknown Manager",
-        siteManager: teamData?.siteManager || "Unknown Manager",
-        civilManager: teamData?.civilManager || "Unknown Manager",
-        architecturalLead: teamData?.architecturalLead || "Unknown",
-        totalWorkers: teamData?.totalWorkers || 0,
-        projectId: project.id,
-      },
-    });
-
+    if (teamData) {
+      const team = await prismaClient.team.create({
+        data: {
+          ...teamData,
+          projectManager: teamData?.projectManager || "Unknown Manager",
+          siteManager: teamData?.siteManager || "Unknown Manager",
+          civilManager: teamData?.civilManager || "Unknown Manager",
+          architecturalLead: teamData?.architecturalLead || "Unknown",
+          totalWorkers: teamData?.totalWorkers || 0,
+          projectId: project.id,
+        },
+      });
+    } else {
+      console.log("No milestones to insert.");
+    }
     const milestonesData = req.body?.milestones?.map((milestone: any) =>
       MilestoneSchema.parse(milestone)
     );
@@ -194,7 +197,7 @@ export async function createProject(
     const documentsValidation = DocumentSchema.array().safeParse(
       req.body?.documents
     );
-    if (documentsValidation.success) {
+    if (documentsValidation.success && documentsValidation.data.length > 0) {
       await prismaClient.document.createMany({
         data: documentsValidation.data
           .filter((doc) => doc !== undefined)
@@ -205,6 +208,8 @@ export async function createProject(
             projectId: project.id,
           })),
       });
+    } else {
+      console.log("not doucment");
     }
     console.log("PROJECT   ", project);
     res.status(201).json({
