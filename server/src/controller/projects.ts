@@ -99,7 +99,12 @@ export async function createProject(
     if (checklistData.length > 0) {
       const checklist = await prismaClient.checklistItem.createMany({
         data: checklistData.map((item: any) => ({
-          ...item,
+          task: item.task || "ddd",
+          assignedTo: item.assignedTo || "dd",
+          dueDate: item.dueDate,
+          status: item.status || "ontrack",
+          priority: item.priority || "low",
+          milestoneId: item.milestoneId,
           projectId: project.id,
         })),
       });
@@ -114,7 +119,6 @@ export async function createProject(
     if (reportsValidation.success && reportsValidation.data.length > 0) {
       await prismaClient.report.createMany({
         data: reportsValidation.data.map((report) => ({
-          ...report,
           projectId: project.id,
           status: report?.status ?? "approved", // default value
           title: report?.title || "",
@@ -141,7 +145,6 @@ export async function createProject(
     ) {
       await prismaClient.outgoingLetter.createMany({
         data: outgoingLettersValidation.data.map((letter) => ({
-          ...letter,
           recipient: letter?.recipient ?? "",
           subject: letter?.subject || "",
           fileUrl: letter?.fileUrl || "",
@@ -166,7 +169,6 @@ export async function createProject(
     ) {
       await prismaClient.incomingLetter.createMany({
         data: incomingLettersValidation.data.map((letter) => ({
-          ...letter,
           sender: letter?.sender ?? "", // Provide default value for sender
           subject: letter?.subject || "", // Provide default value for subject
           fileUrl: letter?.fileUrl || "", // Provide default value for fileUrl
@@ -189,7 +191,6 @@ export async function createProject(
         data: documentsValidation.data
           .filter((doc) => doc !== undefined)
           .map((doc) => ({
-            ...doc,
             title: doc.title || " ", // Provide default value for title
             fileUrl: doc.fileUrl || "", // Provide default value for fileUrl
             fileName: doc.fileName || "Unnamed File", // Provide default value for fileName

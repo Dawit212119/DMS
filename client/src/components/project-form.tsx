@@ -43,7 +43,7 @@ export type FormData = {
     id: string;
     name: string;
     date: string;
-    status: "on track" | "at risk";
+    status: "ontrack" | "atrisk";
   }>;
 
   // Checklist
@@ -52,7 +52,7 @@ export type FormData = {
     task: string;
     assignedTo: string;
     dueDate: string;
-    status: "on track" | "at risk";
+    status: "ontrack" | "atrisk";
     priority: "high" | "medium" | "low";
     milestoneId: string;
   }>;
