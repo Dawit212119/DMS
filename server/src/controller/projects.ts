@@ -27,6 +27,7 @@ export async function createProject(
       return;
     }
     console.log("project ", req.body);
+    console.log(req.user);
     if (!req.user) {
       return next(
         new BadRequestException("Unauthorized", ErrorCodes.UnAUTHORIZED)
@@ -39,7 +40,7 @@ export async function createProject(
     const project = await prismaClient.project.create({
       data: {
         projectName: projectData?.projectName || "Default Project Name",
-        // userId: req.user?.id ?? "123456789012",
+        userId: req.user.id,
         clientName: projectData?.clientName || "Default Client Name",
         location: projectData?.location || "Default Location",
         startDate: projectData?.startDate || new Date(),
