@@ -12,7 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Container from "./container";
-import { useGetMeQuery, useLogoutUserMutation } from "@/state/features/authApi";
+import authApi, {
+  useGetMeQuery,
+  useLogoutUserMutation,
+} from "@/state/features/authApi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 
 export default function Header() {
   const { data: user, error } = useGetMeQuery();
@@ -46,14 +50,19 @@ export default function Header() {
   };
   const router = useRouter();
   const [logoutUser] = useLogoutUserMutation();
+  const dispatch = useDispatch();
+
   const handleLogout = async () => {
     try {
       await logoutUser().unwrap();
-      router.push("/sign-in"); // Redirect to login page after logout
+
+      dispatch(authApi.util.resetApiState()); // Clears all cached queries/mutations
+      router.push("/sign-in");
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.log(error);
     }
   };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#f9f7f0] py-2 sm:py-3 md:py-4">
       <Container>
@@ -92,8 +101,9 @@ export default function Header() {
                 <User />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>My Projects</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push("/myprojects")}>
+                  My Projects
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
                   sign out
                 </DropdownMenuItem>

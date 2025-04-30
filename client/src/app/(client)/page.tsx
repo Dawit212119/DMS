@@ -19,9 +19,11 @@ import {
 } from "lucide-react";
 import Container from "@/components/container";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const router = useRouter();
+
   return (
     <Container>
       <div className="flex min-h-screen flex-col scroll-smooth">
