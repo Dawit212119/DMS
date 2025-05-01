@@ -1,4 +1,7 @@
+"use client";
 import { Document, DocumentTable } from "@/components/document-table";
+import { RootState } from "@/state/store";
+import { useSelector } from "react-redux";
 
 const dailyReports: Document[] = [
   {
@@ -24,6 +27,13 @@ const dailyReports: Document[] = [
 ];
 
 const DailyPage = () => {
+  const project = useSelector(
+    (state: RootState) => state.project.currentProject
+  );
+  const dailyReports =
+    project?.reports.filter((report) => {
+      report.reportType == "daily";
+    }) || [];
   return (
     <div>
       <DocumentTable documents={dailyReports} title="Daily Reports" />

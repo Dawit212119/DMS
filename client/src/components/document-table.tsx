@@ -55,6 +55,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+import { Report } from "@/state/project/projectSlice";
+
 // Define the type for our document data
 export type Document = {
   id: string;
@@ -68,58 +70,58 @@ export type Document = {
 };
 
 // Sample data
-const sampleDocuments: Document[] = [
-  {
-    id: "1",
-    projectName: "Annual Financial Report",
-    publisher: "John Smith",
-    uploadDate: new Date("2023-10-15"),
-    lastModified: new Date("2023-11-02"),
-    status: "Approved",
-    version: "v2.1",
-    downloadUrl: "#",
-  },
-  {
-    id: "2",
-    projectName: "Marketing Strategy",
-    publisher: "Emma Johnson",
-    uploadDate: new Date("2023-11-05"),
-    lastModified: new Date("2023-11-05"),
-    status: "Pending",
-    version: "v1.0",
-    downloadUrl: "#",
-  },
-  {
-    id: "3",
-    projectName: "Product Development Plan",
-    publisher: "Michael Brown",
-    uploadDate: new Date("2023-09-20"),
-    lastModified: new Date("2023-10-30"),
-    status: "Rejected",
-    version: "v1.2",
-    downloadUrl: "#",
-  },
-  {
-    id: "4",
-    projectName: "Q3 Performance Review",
-    publisher: "Sarah Davis",
-    uploadDate: new Date("2023-10-01"),
-    lastModified: new Date("2023-10-15"),
-    status: "Approved",
-    version: "v1.1",
-    downloadUrl: "#",
-  },
-  {
-    id: "5",
-    projectName: "HR Policy Update",
-    publisher: "David Wilson",
-    uploadDate: new Date("2023-11-10"),
-    lastModified: new Date("2023-11-10"),
-    status: "Pending",
-    version: "v3.0",
-    downloadUrl: "#",
-  },
-];
+// const sampleDocuments: Document[] = [
+//   {
+//     id: "1",
+//     projectName: "Annual Financial Report",
+//     publisher: "John Smith",
+//     uploadDate: new Date("2023-10-15"),
+//     lastModified: new Date("2023-11-02"),
+//     status: "Approved",
+//     version: "v2.1",
+//     downloadUrl: "#",
+//   },
+//   {
+//     id: "2",
+//     projectName: "Marketing Strategy",
+//     publisher: "Emma Johnson",
+//     uploadDate: new Date("2023-11-05"),
+//     lastModified: new Date("2023-11-05"),
+//     status: "Pending",
+//     version: "v1.0",
+//     downloadUrl: "#",
+//   },
+//   {
+//     id: "3",
+//     projectName: "Product Development Plan",
+//     publisher: "Michael Brown",
+//     uploadDate: new Date("2023-09-20"),
+//     lastModified: new Date("2023-10-30"),
+//     status: "Rejected",
+//     version: "v1.2",
+//     downloadUrl: "#",
+//   },
+//   {
+//     id: "4",
+//     projectName: "Q3 Performance Review",
+//     publisher: "Sarah Davis",
+//     uploadDate: new Date("2023-10-01"),
+//     lastModified: new Date("2023-10-15"),
+//     status: "Approved",
+//     version: "v1.1",
+//     downloadUrl: "#",
+//   },
+//   {
+//     id: "5",
+//     projectName: "HR Policy Update",
+//     publisher: "David Wilson",
+//     uploadDate: new Date("2023-11-10"),
+//     lastModified: new Date("2023-11-10"),
+//     status: "Pending",
+//     version: "v3.0",
+//     downloadUrl: "#",
+//   },
+// ];
 
 // Status badge component with appropriate colors
 const StatusBadge = ({ status }: { status: Document["status"] }) => {
@@ -138,12 +140,12 @@ const StatusBadge = ({ status }: { status: Document["status"] }) => {
 
 // Define props for the DocumentTable component
 interface DocumentTableProps {
-  documents?: Document[];
+  documents?: Report[];
   title?: string;
 }
 
 export function DocumentTable({
-  documents = sampleDocuments,
+  documents,
   title = "Documents",
 }: DocumentTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);

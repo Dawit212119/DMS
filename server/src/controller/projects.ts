@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ZodError } from "zod";
 import {
+  SiteImageSchema,
   ProjectSchema,
   BudgetSchema,
   TeamSchema,
@@ -233,47 +234,67 @@ export async function createProject(
 }
 
 // Get All Projects with Pagination
-export const getProjects = async (req: Request, res: Response) => {
+export const getProjects = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
+    console.log("present");
+    // Parse pagination parameters
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 6;
     const skip = (page - 1) * pageSize;
 
+    // Get total count for pagination metadata
     const totalProjects = await prismaClient.project.count();
 
+    // Fetch projects with all relations
     const projects = await prismaClient.project.findMany({
       skip,
       take: pageSize,
       include: {
         budget: true,
         team: true,
-        milestones: true,
-        checklist: true,
+        milestones: true, // Changed from upcomingMilstone
+        checklist: true, // Changed from checkList
         documents: true,
-        outgoingLetters: true,
-        reports: true,
-        siteImages: { take: 1, orderBy: { date: "desc" } },
+        incomingLetters: true, // Changed from theIncomingLetter
+        outgoingLetters: true, // Changed from theOutgoingLetter
+        reports: true, // Changed from report
+        siteImages: {
+          // Changed from constructionSiteImage
+          take: 1, // Only get first image for thumbnail
+          orderBy: {
+            date: "desc",
+          },
+        },
       },
-      orderBy: { startDate: "desc" },
+      orderBy: {
+        startDate: "desc",
+      },
     });
 
-    const formattedProjects = projects.map((project) => ({
-      id: project.id,
-      projectName: project.projectName,
-      clientName: project.clientName,
-      location: project.location,
-      startDate: project.startDate.toISOString().split("T")[0],
-      dueDate: project.endDate.toISOString().split("T")[0],
-      progress: 33, // Placeholder for progress
-      thumbnail: project.siteImages[0]?.imageUrl || "/default-construction.jpg",
-      budget: project.budget,
-      team: project.team,
-    }));
+    // Format dates and construct response
+    // const formattedProjects = projects.map((project) => ({
+    //   id: project.id,
+    //   projectName: project.projectName,
+    //   clientName: project.clientName,
+    //   location: project.location,
+    //   startDate: project.startDate.toISOString().split("T")[0],
+    //   endDate: project.endDate.toISOString().split("T")[0], // Changed from dueDate
+    //   thumbnail:
+    //     project.siteImages[0]?.imageUrl || // Changed from constructionSiteImage
+    //     "/default-construction.jpg",
+    //   budget: project.budget,
+    //   team: project.team,
+    //   // Removed progress as it's not in the model
+    // }));
 
-    return res.status(200).json({
+    // console.log("formated: ", formattedProjects);
+    res.status(200).json({
       success: true,
       data: {
-        projects: formattedProjects,
+        projects: projects,
         pagination: {
           totalItems: totalProjects,
           totalPages: Math.ceil(totalProjects / pageSize),
@@ -284,57 +305,255 @@ export const getProjects = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching projects:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Failed to fetch projects",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   } finally {
     await prismaClient.$disconnect();
   }
 };
 
-// Get Project by ID
-export async function getProjectById(req: Request, res: Response) {
-  const projectId = req.params.id;
-
-  if (!projectId) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Project ID missing" });
-  }
-
+export const getProjectById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
+    const { id } = req.params;
+
+    // Fetch project with all relations
     const project = await prismaClient.project.findUnique({
-      where: { id: projectId },
+      where: { id },
       include: {
-        team: true,
         budget: true,
+        team: true,
         milestones: true,
         checklist: true,
         documents: true,
         incomingLetters: true,
         outgoingLetters: true,
         reports: true,
+        siteImages: true,
       },
     });
 
+    // Return 404 if project not found
     if (!project) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Project not found" });
+      res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+      return;
     }
 
-    return res.status(200).json({ success: true, data: project });
+    // Format response (optional)
+    const formattedProject = {
+      id: project.id,
+      projectName: project.projectName,
+      clientName: project.clientName,
+      location: project.location,
+      startDate: project.startDate.toISOString().split("T")[0],
+      endDate: project.endDate.toISOString().split("T")[0],
+      budget: project.budget,
+      team: project.team,
+      milestones: project.milestones,
+      checklist: project.checklist,
+      documents: project.documents,
+      incomingLetters: project.incomingLetters,
+      outgoingLetters: project.outgoingLetters,
+      reports: project.reports,
+      siteImages: project.siteImages,
+    };
+
+    // Success response
+    res.status(200).json({
+      success: true,
+      data: formattedProject,
+    });
   } catch (error) {
-    console.error("Error fetching project by ID:", error);
-    return res.status(500).json({
+    // Error handling (matches getProjects)
+    console.error("Error fetching project:", error);
+    res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Failed to fetch project",
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   } finally {
     await prismaClient.$disconnect();
   }
-}
+};
+// export async function Projects(req: Request, res: Response) {
+//   try {
+//     if (!req.body) {
+//       res.json({
+//         msg: "not data found",
+//         status: STATUS_CODES,
+//       });
+//       return;
+//     }
+//     const validatedProjectData = ProjectSchema.parse(req.body?.project);
+
+//     const { projectName, clientName, location, startDate, dueDate, progress } =
+//       validatedProjectData;
+
+//     const project = await prismaClient.project.create({
+//       data: {
+//         projectName,
+//         clientName,
+//         location,
+//         startDate,
+//         dueDate,
+//         progress,
+//       },
+//     });
+
+//     const validatedBudgetData = BudgetSchema.parse(req.body?.budget);
+//     const { total, spent } = validatedBudgetData;
+//     const budget = await prismaClient.budget.create({
+//       data: {
+//         total,
+//         spent,
+//         projectId: project.id,
+//       },
+//     });
+
+//     const validatedTeamData = TeamSchema.parse(req.body?.team);
+//     const {
+//       projectManger,
+//       siteManger,
+//       civilManger,
+//       architecturalLoad,
+//       totalWorker,
+//     } = validatedTeamData;
+//     const team = await prismaClient.team.create({
+//       data: {
+//         projectManger,
+//         siteManger,
+//         civilManger,
+//         architecturalLoad,
+//         totalWorker,
+//         projectId: project.id,
+//       },
+//     });
+//     const validatedUpcomingMilstoneData = UpcomingMilstoneSchema.parse(
+//       req.body.upcomingMilstone
+//     );
+//     const { title, status, date } = validatedUpcomingMilstoneData;
+//     const UpcomingMilstone = await prismaClient.upcomingMilstone.create({
+//       data: {
+//         title,
+//         status,
+//         date,
+//         projectId: project.id,
+//       },
+//     });
+//     const validatedChecklistUData = CheckListSchema.parse(req.body?.checkList);
+//     const { task, assignedTo, dueData, priority, completed } =
+//       validatedChecklistUData;
+//     const checkList = await prismaClient.checkList.create({
+//       data: {
+//         task,
+//         assignedTo,
+//         dueData,
+//         priority,
+//         completed,
+//         projectId: project.id,
+//       },
+//     });
+
+//     const validationReportData = ReportSchema.safeParse(req.body?.report);
+//     if (!validationReportData.success || !validationReportData.data) {
+//       throw new Error("Invalid report data");
+//     }
+//     const {
+//       publisher,
+//       version,
+//       status: reportstatus,
+//       reportType,
+//       downloadedUrl,
+//     } = validationReportData.data;
+//     if (!downloadedUrl) {
+//       throw new Error("url need");
+//     }
+//     const report = await prismaClient.report.createMany({
+//       data: {
+//         projectId: project.id,
+//         publisher,
+//         status: reportstatus || "draft", // Provide a default value for status
+//         version,
+//         reportType,
+//         downloadedUrl,
+//       },
+//     });
+
+//     const validatedData = z.array(TheOutgoingLetterSchema).safeParse(req.body);
+//     if (!validatedData.success) {
+//       res.json({
+//         msg: validatedData.error.flatten().fieldErrors,
+//       });
+//       return;
+//     }
+
+//     const outgoingletter = await prismaClient.theOutgoingLetter.createMany({
+//       data: validatedData.data.map((letter: letterProps) => ({
+//         recipent: letter.recipent,
+//         projectId: project.id,
+//         subject: letter.subject,
+//         downloadedUrl: letter.downloadedUrl,
+//         status: letter.status,
+//         priority: letter.priority,
+//       })),
+//     });
+
+//     const validatedDocumentData = z
+//       .array(DocumentsSchema)
+//       .safeParse(req.body?.documents);
+//     if (!validatedDocumentData.success) {
+//       res.json({ msg: validatedDocumentData.error.flatten().fieldErrors });
+//       return;
+//     }
+//     const document = await prismaClient.documents.createMany({
+//       data: validatedDocumentData.data.map((doc: documentProps) => ({
+//         name: doc.name,
+//         downloadedUrl: doc.downloadedUrl,
+//         date: doc.date,
+//         projectId: project.id,
+//       })),
+//     });
+//     res.json({
+//       success: true,
+//       projectId: project.id,
+//       project,
+//       checkList,
+//       UpcomingMilstone,
+//       team,
+//       budget,
+//       outgoingletter,
+//       report,
+//       document,
+//     });
+//   } catch (error) {
+//     if (error instanceof ZodError) {
+//       res.json({
+//         msg: error.flatten().fieldErrors,
+//         status: STATUS_CODES,
+//       });
+//       return;
+//     }
+//     if (error instanceof Error) {
+//       res.json({
+//         msg: error.message,
+//         status: STATUS_CODES,
+//       });
+//       return;
+//     }
+//     res.json({
+//       msg: "server error",
+//       status: 500,
+//     });
+//   }
+// }
 
 // export async function UpdateProject(req: Request, res: Response) {
 //   const projectId = req.params.id;

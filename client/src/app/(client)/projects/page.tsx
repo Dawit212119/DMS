@@ -10,21 +10,7 @@ import { fetchProjects } from "@/state/project/projectSlice";
 export default function ProjectsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { projects, status, error } = useSelector((state: RootState) => {
-    console.log("state:", state);
-    console.log("project:", state.project);
-    return state.project as {
-      projects: Array<{
-        id: string;
-        projectName: string;
-        clientName: string;
-        location: string;
-        startDate: string;
-        dueDate: string;
-        progress: number;
-      }>;
-      status: string;
-      error: string | null;
-    };
+    return state.project;
   });
 
   useEffect(() => {
@@ -79,9 +65,8 @@ export default function ProjectsPage() {
               client={project.clientName}
               location={project.location}
               startDate={new Date(project.startDate).toLocaleDateString()}
-              endDate={new Date(project.dueDate).toLocaleDateString()}
+              endDate={new Date(project.endDate).toLocaleDateString()}
               imageUrl="/placeholder.svg?height=200&width=400"
-              progress={project.progress}
             />
           ))}
         </div>

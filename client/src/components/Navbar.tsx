@@ -25,7 +25,6 @@ import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { data: user, error } = useGetMeQuery();
-  console.log("Here is the user", user);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Prevent scrolling when menu is open

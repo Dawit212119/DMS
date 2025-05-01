@@ -20,10 +20,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { RecentImages } from "@/components/recent-images";
 import { useSelector } from "react-redux";
-import { AppDispatch } from "@/state/store";
-import { useDispatch } from "react-redux";
 import { RootState } from "@/state/store";
-import { Project } from "@/state/project/projectSlice";
 
 export default function ProjectOverview() {
   const {
@@ -31,12 +28,10 @@ export default function ProjectOverview() {
     status,
     error,
   } = useSelector((state: RootState) => {
-    return state.project as {
-      currentProject: Project;
-      status: string;
-      error: string | null;
-    };
+    return state.project;
   });
+
+  console.log(projectData);
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -59,7 +54,7 @@ export default function ProjectOverview() {
   // Calculate days remaining
   const calculateDaysRemaining = () => {
     const today = new Date();
-    const completionDate = new Date(projectData.dueDate);
+    const completionDate = new Date(projectData.endDate);
     const diffTime = completionDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -79,7 +74,6 @@ export default function ProjectOverview() {
             </p>
           </div>
         </div>
-
         {/* Project Info Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -104,23 +98,12 @@ export default function ProjectOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(
-                  projectData.budget.reduce((total, b) => total + b.spent, 0)
-                )}
+                {formatCurrency(projectData.budget.spent)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                of{" "}
-                {formatCurrency(
-                  projectData.budget.reduce((total, b) => total + b.total, 0)
-                )}{" "}
-                (
+                of {formatCurrency(projectData.budget.total)} (
                 {Math.round(
-                  (projectData.budget.reduce((total, b) => total + b.spent, 0) /
-                    projectData.budget.reduce(
-                      (total, b) => total + b.total,
-                      0
-                    )) *
-                    100
+                  (projectData.budget.spent / projectData.budget.total) * 100
                 )}
                 %)
               </p>
@@ -147,10 +130,7 @@ export default function ProjectOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {projectData.team.reduce(
-                  (total, member) => total + member.totalWorker,
-                  0
-                )}
+                {projectData.team.totalWorkers}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 workers on site
@@ -158,7 +138,6 @@ export default function ProjectOverview() {
             </CardContent>
           </Card>
         </div>
-
         {/* Project Details and Recent Images */}
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="md:col-span-1">
@@ -179,7 +158,7 @@ export default function ProjectOverview() {
                     </span>
                     <span>
                       {projectData.team
-                        ? projectData.team[0].projectManger
+                        ? projectData.team.projectManager
                         : "None"}
                     </span>
                   </li>
@@ -188,9 +167,7 @@ export default function ProjectOverview() {
                       Site Engineer:
                     </span>
                     <span>
-                      {projectData.team
-                        ? projectData.team[0].siteManger
-                        : "None"}
+                      {projectData.team ? projectData.team.siteManager : "None"}
                     </span>
                   </li>
                   <li className="flex justify-between">
@@ -199,7 +176,7 @@ export default function ProjectOverview() {
                     </span>
                     <span>
                       {projectData.team
-                        ? projectData.team[0].civilManger
+                        ? projectData.team.civilManager
                         : "None"}
                     </span>
                   </li>
@@ -209,7 +186,7 @@ export default function ProjectOverview() {
                     </span>
                     <span>
                       {projectData.team
-                        ? projectData.team[0].architecturalLoad
+                        ? projectData.team.architecturalLead
                         : "None"}
                     </span>
                   </li>
@@ -223,16 +200,15 @@ export default function ProjectOverview() {
             </CardFooter>
           </Card>
         </div>
-
-        {/* Upcoming Milestones */}
+        Upcoming Milestones
         <Card>
           <CardHeader>
             <CardTitle>Upcoming Milestones</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Array.isArray(projectData.upcomingMilstone) &&
-                projectData.upcomingMilstone.map((milestone, index) => (
+              {Array.isArray(projectData.milestones) &&
+                projectData.milestones.map((milestone, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
