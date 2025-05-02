@@ -178,6 +178,7 @@ function transformProjectData(formData: FormData) {
       date: new Date(m.date).toISOString(),
       status: m.status?.replace(/\s/g, "").toLowerCase(),
     })),
+    checklist: raw.checklist,
     reports: (raw.reports || []).map((r) => ({
       title: r.title,
       publisher: r.publisher,

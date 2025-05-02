@@ -264,15 +264,14 @@ export const getProjects = async (
       include: {
         budget: true,
         team: true,
-        milestones: true, // Changed from upcomingMilstone
-        checklist: true, // Changed from checkList
+        milestones: true,
+        checklist: true,
         documents: true,
-        incomingLetters: true, // Changed from theIncomingLetter
-        outgoingLetters: true, // Changed from theOutgoingLetter
-        reports: true, // Changed from report
+        incomingLetters: true,
+        outgoingLetters: true,
+        reports: true,
         siteImages: {
-          // Changed from constructionSiteImage
-          take: 1, // Only get first image for thumbnail
+          take: 1,
           orderBy: {
             date: "desc",
           },

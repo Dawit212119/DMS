@@ -181,7 +181,10 @@ export const fetchProjects = createAsyncThunk(
   "project/fetchProjects",
   async (page: number = 1, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:8000/project?page=1`);
+      const response = await fetch("http://localhost:8000/project?page=1", {
+        credentials: "include",
+      });
+
       console.log("response:", response);
 
       if (!response.ok) {
