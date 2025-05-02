@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
 // ==================== ENUMS ====================
 enum Status {
   ONTRACK = "ontrack",
@@ -18,8 +17,8 @@ enum IncomingStatus {
 }
 
 enum OutgoingStatus {
-  SENT = "sent",
   DRAFT = "draft",
+  SENT = "sent",
 }
 
 enum ReportStatus {
@@ -31,8 +30,8 @@ enum ReportType {
   DAILY = "daily",
   WEEKLY = "weekly",
   MONTHLY = "monthly",
-  ANNUALLY = "annually",
   QUARTERLY = "quarterly",
+  ANNUALLY = "annually",
 }
 
 enum Category {
@@ -54,107 +53,112 @@ interface Budget {
 
 interface Team {
   id: string;
-  projectManger: string;
-  siteManger: string;
-  civilManger: string;
-  architecturalLoad: string;
-  totalWorker: number;
+  projectManager: string;
+  siteManager: string;
+  civilManager: string;
+  architecturalLead: string;
+  totalWorkers: number;
   projectId: string;
 }
 
-interface UpcomingMilstone {
+interface Milestone {
   id: string;
-  title: string;
-  date: string;
+  name: string;
+  date: Date;
   status: Status;
   projectId: string;
 }
 
-interface CheckList {
+interface ChecklistItem {
   id: string;
-  task: Status;
+  task: string;
   assignedTo: string;
-  dueData: string;
+  dueDate: Date;
+  status: Status;
   priority: Priority;
-  completed: boolean;
+  milestoneId: string;
   projectId: string;
 }
 
-interface Documents {
+interface Document {
   id: string;
-  name: string;
-  date: string;
+  title: string;
+  fileUrl: string;
+  fileName: string;
+  date: Date;
   projectId: string;
-  downloadedUrl: string;
 }
 
-interface TheIncomingLetter {
+interface SiteImage {
+  id: string;
+  title: string;
+  location: string;
+  category: Category;
+  imageUrl: string;
+  fileName: string;
+  date: Date;
+  projectId: string;
+}
+
+interface OutgoingLetter {
+  id: string;
+  recipient: string;
+  subject: string;
+  priority: Priority;
+  status: OutgoingStatus;
+  fileUrl: string;
+  fileName: string;
+  createdAt: Date;
+  projectId: string;
+}
+
+interface IncomingLetter {
   id: string;
   sender: string;
   subject: string;
   priority: Priority;
   status: IncomingStatus;
-  projectId: string;
-  createdAt: string;
-  downloadedUrl: string;
-  updatedAt: string;
-}
-
-interface TheOutgoingLetter {
-  id: string;
-  recipent: string;
-  subject: string;
-  status: OutgoingStatus;
-  priority: Priority;
-  createdAt: string;
-  downloadedUrl: string;
+  fileUrl: string;
+  fileName: string;
+  createdAt: Date;
   projectId: string;
 }
 
-interface Report {
-  id: string;
-  publisher: string;
-  status: ReportStatus;
-  uploadedDate: string;
-  lastModified: string;
-  version: string;
-  downloadedUrl: string;
-  reportType: ReportType;
-  projectId: string;
-}
-
-interface ConstructionSiteImage {
+export interface Report {
   id: string;
   title: string;
-  imagesrc: string;
-  location: string;
-  date: string;
-  category: Category;
+  publisher: string;
+  reportType: ReportType;
+  version: string;
+  status: ReportStatus;
+  fileUrl: string;
+  fileName: string;
+  uploadedDate: Date;
   projectId: string;
 }
 
 // Main Project interface with all relations
-interface Project {
+export interface Project {
   id: string;
   projectName: string;
   clientName: string;
   location: string;
-  startDate: string;
-  dueDate: string;
-  progress: number;
-  budget: Budget[];
-  team: Team[];
-  upcomingMilstone?: UpcomingMilstone;
-  checkList: CheckList[];
-  documents: Documents[];
-  theIncomingLetter: TheIncomingLetter[];
-  theOutgoingLetter: TheOutgoingLetter[];
-  report: Report[];
-  constructionSiteImage: ConstructionSiteImage[];
+  startDate: Date;
+  endDate: Date;
+  budget?: Budget;
+  team?: Team;
+  milestones: Milestone[];
+  checklist: ChecklistItem[];
+  documents: Document[];
+  outgoingLetters: OutgoingLetter[];
+  incomingLetters: IncomingLetter[];
+  reports: Report[];
+  siteImages: SiteImage[];
+  createdAt: Date;
+  updatedAt: Date;
 }
-
 // ==================== REDUX STATE ====================
-interface ProjectState {
+export interface ProjectState {
   projects: Project[];
   currentProject: Project | null;
   totalPages: number;
@@ -178,10 +182,9 @@ export const fetchProjects = createAsyncThunk(
   async (page: number = 1, { rejectWithValue }) => {
     try {
       const response = await fetch(`http://localhost:8000/project?page=1`);
-      console.log(response);
+      console.log("response:", response);
 
       if (!response.ok) {
-        console.log("get");
         const error = await response.text();
         throw new Error(error || "Request failed");
       }
@@ -189,7 +192,7 @@ export const fetchProjects = createAsyncThunk(
       return await response.json();
     } catch (error) {
       console.log(error);
-      return rejectWithValue(error.message);
+      return rejectWithValue((error as Error).message);
     }
   }
 );
@@ -199,7 +202,9 @@ export const fetchProjectById = createAsyncThunk(
   async (id: string) => {
     const response = await fetch(`/api/projects/${id}`);
     if (!response.ok) throw new Error("Failed to fetch project");
-    return await response.json();
+    const data = await response.json();
+    console.log("data:", data);
+    return data;
   }
 );
 
@@ -264,6 +269,7 @@ const projectSlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchProjects.fulfilled, (state, action) => {
+        console.log(action.payload?.totalPages);
         state.status = "succeeded";
         state.projects = action.payload?.data.projects || [];
         state.totalPages = action.payload?.totalPages || 1;
@@ -293,13 +299,19 @@ const projectSlice = createSlice({
           (p) => p.id === action.payload.id
         );
         if (index !== -1) state.projects[index] = action.payload;
-        if (state.currentProject?.id === action.payload.id) {
+        if (
+          typeof state.currentProject !== "string" &&
+          state.currentProject?.id === action.payload.id
+        ) {
           state.currentProject = action.payload;
         }
       })
       .addCase(deleteProject.fulfilled, (state, action) => {
         state.projects = state.projects.filter((p) => p.id !== action.payload);
-        if (state.currentProject?.id === action.payload) {
+        if (
+          typeof state.currentProject !== "string" &&
+          state.currentProject?.id === action.payload
+        ) {
           state.currentProject = null;
         }
       });

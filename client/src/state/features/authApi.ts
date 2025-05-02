@@ -1,15 +1,24 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import build from "next/dist/build";
 
 type FormData = {
   email: string;
   password: string;
 };
 
-const authApi = createApi({
+type User = {
+  id: string;
+  email: string;
+  name: string;
+  password: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://document-management-system-1-u01g.onrender.com/api/auth",
+    baseUrl: "http://localhost:8000/api",
+    credentials: "include", // very important for sending cookies
   }),
   endpoints: (builder) => ({
     signinUser: builder.mutation<{ token: string; id: string }, FormData>({
@@ -28,8 +37,24 @@ const authApi = createApi({
         body: data,
       }),
     }),
+    logoutUser: builder.mutation<{ message: string }, void>({
+      query: () => ({
+        url: "/logout",
+        method: "POST",
+      }),
+    }),
+    getMe: builder.query<User, void>({
+      query: () => ({
+        url: "/me",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useSigninUserMutation, useSignupUserMutation } = authApi;
-export default authApi;
+export const {
+  useSigninUserMutation,
+  useSignupUserMutation,
+  useGetMeQuery,
+  useLogoutUserMutation,
+} = authApi;

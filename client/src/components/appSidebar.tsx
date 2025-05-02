@@ -36,6 +36,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/state/store";
+import { Project } from "@/state/project/projectSlice";
 
 // Define the route type
 type Route = {
@@ -46,62 +49,13 @@ type Route = {
 };
 
 // Define the routes array
-const routes: Route[] = [
-  {
-    name: "Overview",
-    path: "/project",
-    icon: LayoutDashboard,
-  },
-  {
-    name: "Checklist",
-    path: "/project/checklist",
-    icon: CheckSquare,
-  },
-  {
-    name: "Reports",
-    path: "/project/reports",
-    icon: ClipboardList,
-    children: [
-      {
-        name: "Daily",
-        path: "/project/reports/daily",
-      },
-      {
-        name: "Weekly",
-        path: "/project/reports/weekly",
-      },
-      {
-        name: "Monthly",
-        path: "/project/reports/monthly",
-      },
-      {
-        name: "Quarterly",
-        path: "/project/reports/quarterly",
-      },
-      {
-        name: "Annually",
-        path: "/project/reports/annually",
-      },
-    ],
-  },
-  {
-    name: "Letters",
-    path: "/project/letter",
-    icon: Mail,
-  },
-  {
-    name: "Site Images",
-    path: "/project/siteImages",
-    icon: Image,
-  },
-  {
-    name: "Documents",
-    path: "/project/documents",
-    icon: FileText,
-  },
-];
 
 export function AppSidebar() {
+  const { currentProject } = useSelector((state: RootState) => {
+    return state.project as {
+      currentProject: Project;
+    };
+  });
   const pathname = usePathname();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     "/reports": true, // Default open state for Reports
@@ -113,6 +67,61 @@ export function AppSidebar() {
       [path]: !prev[path],
     }));
   };
+
+  const routes: Route[] = [
+    {
+      name: "Overview",
+      path: `/project/${currentProject.id}/overview`,
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Checklist",
+      path: `/project/${currentProject.id}/checklist`,
+      icon: CheckSquare,
+    },
+    {
+      name: "Reports",
+      path: `/project/${currentProject.id}/reports`,
+      icon: ClipboardList,
+      children: [
+        {
+          name: "Daily",
+          path: `/project/${currentProject.id}/reports/daily`,
+        },
+        {
+          name: "Weekly",
+          path: `/project/${currentProject.id}/reports/weekly`,
+        },
+        {
+          name: "Monthly",
+          path: `/project/${currentProject.id}/reports/monthly`,
+        },
+        {
+          name: "Quarterly",
+          path: `/project/${currentProject.id}/reports/quarterly`,
+        },
+        {
+          name: "Annually",
+          path: `/project/${currentProject.id}/reports/annually`,
+        },
+      ],
+    },
+    {
+      name: "Letters",
+      path: `/project/${currentProject.id}/letter`,
+      icon: Mail,
+    },
+    {
+      name: "Site Images",
+      path: `/project/${currentProject.id}/siteImages`,
+      icon: Image,
+    },
+    {
+      name: "Documents",
+      path: `/project/${currentProject.id}/documents`,
+      icon: FileText,
+    },
+  ];
 
   return (
     <Sidebar className="border-r border-[#1a2e3d]">

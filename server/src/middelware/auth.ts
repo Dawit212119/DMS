@@ -9,7 +9,8 @@ const authMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization;
+  const token = req.cookies.jwt;
+  console.log(token);
   if (!token) {
     return next(
       new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED)
@@ -19,7 +20,7 @@ const authMiddleware = async (
     if (!process.env.JWT_SECRET) {
       return next(
         new UnauthorizedException(
-          "no jwt secret provided!",
+          "No JWT secret provided!",
           ErrorCodes.UnAUTHORIZED
         )
       );
@@ -29,18 +30,18 @@ const authMiddleware = async (
       where: { id: payload.userId },
     });
     if (!user) {
-      if (!user) {
-        return next(
-          new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED)
-        );
-      }
-      req.user = user;
-      next();
+      return next(
+        new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED)
+      );
     }
+    req.user = user;
+    console.log(user);
+    next();
   } catch (error) {
     return next(
       new UnauthorizedException("Unauthorized!", ErrorCodes.UnAUTHORIZED, error)
     );
   }
 };
+
 export default authMiddleware;

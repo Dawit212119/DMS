@@ -1,8 +1,10 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 // import { persistStore, persistReducer } from "redux-persist";
 // import storage from "redux-persist/lib/storage"; // Defaults to localStorage for web
-import authApi from "./features/authApi";
+import { authApi } from "./features/authApi";
 import projectReducer from "./project/projectSlice";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage"; // defaults to localStorage
 
 // Configuration for Redux Persist
 // const persistConfig = {
@@ -21,14 +23,30 @@ import projectReducer from "./project/projectSlice";
 
 // Create the store
 
-export const store = configureStore({
-  reducer: {
-    [authApi.reducerPath]: authApi.reducer,
+// src/app/store.ts
+
+const persistConfig = {
+  key: "root",
+  storage,
+  whitelist: ["project"], // Only persist project reducer
+};
+
+const persistedReducer = persistReducer(
+  persistConfig,
+  combineReducers({
     project: projectReducer,
-  },
+    [authApi.reducerPath]: authApi.reducer,
+  })
+);
+
+export const store = configureStore({
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat(authApi.middleware),
 });
+
 // export const store = configureStore({
 //   reducer: persistedReducer,
 //   middleware: (getDefaultMiddleware) =>
@@ -42,5 +60,6 @@ export const store = configureStore({
 
 // TypeScript types for store
 export type RootState = ReturnType<typeof store.getState>;
+// console.log(RootState);
 export type AppDispatch = typeof store.dispatch;
-export default store;
+export const persistor = persistStore(store);

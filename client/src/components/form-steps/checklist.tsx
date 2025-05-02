@@ -30,7 +30,7 @@ export default function Checklist({
     task: "",
     assignedTo: "",
     dueDate: "",
-    status: "on track" as "on track" | "at risk",
+    status: "ontrack" as "ontrack" | "atrisk",
     priority: "medium" as "high" | "medium" | "low",
     milestoneId: "",
   });
@@ -54,7 +54,7 @@ export default function Checklist({
         task: "",
         assignedTo: "",
         dueDate: "",
-        status: "on track",
+        status: "ontrack",
         priority: "medium",
         milestoneId: "",
       });
@@ -137,7 +137,7 @@ export default function Checklist({
                     onValueChange={(value) =>
                       setNewTask({
                         ...newTask,
-                        status: value as "on track" | "at risk",
+                        status: value as "ontrack" | "atrisk",
                       })
                     }
                   >
@@ -145,8 +145,8 @@ export default function Checklist({
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="on track">On Track</SelectItem>
-                      <SelectItem value="at risk">At Risk</SelectItem>
+                      <SelectItem value="ontrack">On Track</SelectItem>
+                      <SelectItem value="atrisk">At Risk</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -2,6 +2,9 @@ import Link from "next/link";
 import { Calendar, MapPin, User } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
+import { Project, setCurrentProject } from "@/state/project/projectSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/state/store";
 
 interface ProjectCardProps {
   id: string;
@@ -23,6 +26,15 @@ export default function ProjectCard({
   imageUrl = "/placeholder.svg?height=200&width=400",
 }: ProjectCardProps) {
   // Format dates for display
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { currentProject, projects } = useSelector((state: RootState) => {
+    return state.project as {
+      projects: Project[];
+      currentProject: Project | string;
+    };
+  });
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -34,8 +46,13 @@ export default function ProjectCard({
 
   return (
     <Link
-      href={`/project/${id}`}
+      href={`/project/${id}/overview`}
       className="block transition-all hover:shadow-md"
+      onClick={() =>
+        dispatch(
+          setCurrentProject(projects.find((project) => project.id === id))
+        )
+      }
     >
       <Card className="h-full overflow-hidden border-slate-200 hover:border-slate-300">
         <div className="relative h-48 w-full">

@@ -27,22 +27,23 @@ export type FormData = {
   endDate: string;
 
   // Budget Info
-  totalBudget: string;
-  amountSpent: string;
+  budget: { totalBudget: string; amountSpent: string };
 
   // Team Info
-  projectManager: string;
-  siteManager: string;
-  civilManager: string;
-  architecturalLead: string;
-  totalWorkers: number;
+  team: {
+    projectManager: string;
+    siteManager: string;
+    civilManager: string;
+    architecturalLead: string;
+    totalWorkers: number;
+  };
 
   // Milestones
   milestones: Array<{
     id: string;
     name: string;
     date: string;
-    status: "on track" | "at risk";
+    status: "ontrack" | "atrisk";
   }>;
 
   // Checklist
@@ -51,7 +52,7 @@ export type FormData = {
     task: string;
     assignedTo: string;
     dueDate: string;
-    status: "on track" | "at risk";
+    status: "ontrack" | "atrisk";
     priority: "high" | "medium" | "low";
     milestoneId: string;
   }>;
@@ -119,13 +120,17 @@ const initialFormData: FormData = {
   location: "",
   startDate: "",
   endDate: "",
-  totalBudget: "",
-  amountSpent: "",
-  projectManager: "",
-  siteManager: "",
-  civilManager: "",
-  architecturalLead: "",
-  totalWorkers: 0,
+  budget: {
+    totalBudget: "",
+    amountSpent: "",
+  },
+  team: {
+    projectManager: "",
+    siteManager: "",
+    civilManager: "",
+    architecturalLead: "",
+    totalWorkers: 0,
+  },
   milestones: [],
   checklist: [],
   documents: [],
