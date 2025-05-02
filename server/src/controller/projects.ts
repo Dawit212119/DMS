@@ -24,7 +24,7 @@ export async function createProject(
       res.status(400).json({ message: "No data provided" });
       return;
     }
-    console.log("project ", req.body);
+    console.log("the structured format for project>>>>>>>", req.body);
     // Validate Project Data
     const projectData = ProjectSchema.parse(req.body.project);
 
@@ -321,6 +321,7 @@ export const getProjectById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    p;
 
     // Fetch project with all relations
     const project = await prismaClient.project.findUnique({

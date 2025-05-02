@@ -163,15 +163,15 @@ function transformProjectData(formData: FormData) {
       endDate: new Date(raw.endDate).toISOString(),
     },
     budget: {
-      total: parseFloat(raw.totalBudget),
-      spent: parseFloat(raw.amountSpent),
+      total: parseFloat(raw.budget.totalBudget),
+      spent: parseFloat(raw.budget.amountSpent),
     },
     team: {
-      projectManager: raw.projectManager,
-      siteManager: raw.siteManager,
-      civilManager: raw.civilManager,
-      architecturalLead: raw.architecturalLead,
-      totalWorkers: raw.totalWorkers,
+      projectManager: raw.team.projectManager,
+      siteManager: raw.team.siteManager,
+      civilManager: raw.team.civilManager,
+      architecturalLead: raw.team.architecturalLead,
+      totalWorkers: raw.team.totalWorkers,
     },
     milestones: (raw.milestones || []).map((m) => ({
       name: m.name,
@@ -273,6 +273,7 @@ export default function ProjectForm() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(structuredData),
+      credentials: "include",
     });
     if (res.ok) {
       toast("Project submitted successfully!");
