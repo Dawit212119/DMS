@@ -10,7 +10,7 @@ import authMiddleware from "../middelware/auth";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, createProject);
+router.post("/", createProject);
 // router.get("/:id", GetProject);
 // router.put("/:id", authMiddleware, UpdateProject);
 // router.delete("/:id");

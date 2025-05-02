@@ -111,7 +111,9 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                 reportType: newReport.reportType,
                 version: newReport.version,
                 status: newReport.status,
-                fileUrl: fileres.upload.map((url: any) => url.qrPDFURL || url),
+                fileUrl: fileres.upload.map(
+                  (url: any) => url.value.qrPDFURL || ""
+                ),
                 fileName: newReport.files.map((file) => file.name).join(", "),
               },
             ];

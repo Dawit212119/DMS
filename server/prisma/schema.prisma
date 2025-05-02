@@ -133,17 +133,21 @@ enum Category {
 }
 
 model OutgoingLetter {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  recipient   String
-  subject     String
-  priority    Priority
-  status      OutgoingStatus
-  fileUrl     String
-  fileName    String
-  createdAt   DateTime @default(now())
-  project     Project  @relation(fields: [projectId], references: [id])
-  projectId   String   @db.ObjectId
-  @@index([projectId])
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  recipient String
+  subject   String
+  priority  Priority    @default(low)
+  status    OutgoingStatus @default(draft)
+  project   Project     @relation(fields: [projectId], references: [id])
+  projectId String      @db.ObjectId
+  files     LetterFile[]
+}
+
+model LetterFile {
+  id       String         @id @default(auto()) @map("_id") @db.ObjectId
+  url      String
+  letter   OutgoingLetter @relation(fields: [letterId], references: [id])
+  letterId String         @db.ObjectId
 }
 
 enum OutgoingStatus {
@@ -152,17 +156,21 @@ enum OutgoingStatus {
 }
 
 model IncomingLetter {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  sender      String
-  subject     String
-  priority    Priority
-  status      IncomingStatus
-  fileUrl     String
-  fileName    String
-  createdAt   DateTime @default(now())
-  project     Project  @relation(fields: [projectId], references: [id])
-  projectId   String   @db.ObjectId
-  @@index([projectId])
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  sender    String
+  subject   String
+  priority  Priority    @default (low)
+  status    IncomingStatus @default(unread)
+  project   Project     @relation(fields: [projectId], references: [id])
+  projectId String      @db.ObjectId
+  files    InLetterFile[]  // One-to-many relationship with files
+}
+
+model InLetterFile {
+  id       String         @id @default(auto()) @map("_id") @db.ObjectId
+  url      String
+  letter   IncomingLetter @relation(fields: [letterId], references: [id])
+  letterId String         @db.ObjectId
 }
 
 enum IncomingStatus {
@@ -171,18 +179,24 @@ enum IncomingStatus {
 }
 
 model Report {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   publisher     String
   reportType    ReportType
   version       String
   status        ReportStatus
-  fileUrl       String
-  fileName      String
-  uploadedDate  DateTime @default(now())
-  project       Project  @relation(fields: [projectId], references: [id])
-  projectId     String   @db.ObjectId
+  uploadedDate  DateTime    @default(now())
+  project       Project     @relation(fields: [projectId], references: [id])
+  projectId     String      @db.ObjectId
+  files         ReportFile[]
   @@index([projectId])
+}
+
+model ReportFile {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  url      String   // Only keeping the URL field
+  report   Report   @relation(fields: [reportId], references: [id])
+  reportId String   @db.ObjectId
 }
 
 enum ReportStatus {

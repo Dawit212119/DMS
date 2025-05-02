@@ -29,11 +29,11 @@ export async function createProject(
     console.log("project ", req.body);
     console.log(req?.user?.id);
 
-    if (!req.user) {
-      return next(
-        new BadRequestException("Unauthorized", ErrorCodes.UnAUTHORIZED)
-      );
-    }
+    // if (!req.user) {
+    //   return next(
+    //     new BadRequestException("Unauthorized", ErrorCodes.UnAUTHORIZED)
+    //   );
+    // }
     // Validate Project Data
     const projectData = ProjectSchema.parse(req.body.project);
 
@@ -131,86 +131,163 @@ export async function createProject(
     // console.log("report ",reportsValidation.data);
     console.log("Reposrt funcking>>>>>>>>>>>>>>>>>>", req.body?.reports);
     // const urls = req.body.reports.fileUrl((item) => item.vaue.qrPDFURL);
-    console.log(
-      "the url>>>>>>.",
-      req.body?.reports[0].fileUrl[0].vaue.qrPDFURL
-    );
+    // Validate and Create Reports
     if (req.body?.reports) {
-      await prismaClient.report.createMany({
-        data: req.body?.reports.map((report: any) => ({
-          projectId: project.id,
-          status: report?.status ?? "approved", // default value
-          title: report?.title || "",
-          publisher: report?.publisher || "",
-          version: report?.version || "",
-          fileUrl: report?.fileUrl || "",
-          fileName: report?.fileName || "",
-          uploadedDate: report?.uploadedDate || new Date(),
-          reportType: report?.reportType || "daily",
-        })),
-      });
-      console.log("Reports created successfully");
-    } else {
-      console.log("No reports to insert.");
-    }
+      try {
+        const reportsInput = Array.isArray(req.body.reports)
+          ? req.body.reports
+          : [req.body.reports];
 
-    // Validate and Create Outgoing Letters
+        for (const report of reportsInput) {
+          // Create the report
+          const createdReport = await prismaClient.report.create({
+            data: {
+              projectId: project.id,
+              title: report.title || "Untitled Report",
+              publisher: report.publisher || "Unknown Publisher",
+              reportType: report.reportType || "daily",
+              status: report.status || "approved",
+              version: report.version || "1.0",
+              // fileName is now stored at the Report level if needed
+              // or omitted completely if you only need URLs
+            },
+          });
+
+          // Handle file URLs - normalize to array
+          const fileUrls = Array.isArray(report.fileUrl)
+            ? report.fileUrl
+            : report.fileUrl
+            ? [report.fileUrl]
+            : [];
+
+          // Create associated files (only storing URLs)
+          if (fileUrls.length > 0) {
+            const reportFileData: { url: string; reportId: string }[] =
+              fileUrls.map((url: string) => ({
+                url,
+                reportId: createdReport.id,
+              }));
+
+            await prismaClient.reportFile.createMany({
+              data: reportFileData,
+            });
+          }
+        }
+        console.log("Reports with file URLs created successfully");
+      } catch (error) {
+        console.error("Error creating reports:", error);
+      }
+    }
     const outgoingLettersValidation = OutgoingLetterSchema.array().safeParse(
       req.body?.outgoingLetters
     );
-    console.log("outgoingLetters ", outgoingLettersValidation.data);
     if (
       outgoingLettersValidation.success &&
       outgoingLettersValidation.data.length > 0
     ) {
-      await prismaClient.outgoingLetter.createMany({
-        data: outgoingLettersValidation.data.map((letter) => ({
-          recipient: letter?.recipient ?? "",
-          subject: letter?.subject || "",
-          fileUrl: letter?.fileUrl || "",
-          fileName: letter?.fileName || "",
-          priority: letter?.priority || "low",
-          status: letter?.status || "draft",
-          projectId: project.id,
-        })),
-      });
-    } else {
-      console.error("No valid outgoing letters to insert");
-    }
+      await Promise.all(
+        outgoingLettersValidation.data.map(async (letter) => {
+          const createdLetter = await prismaClient.outgoingLetter.create({
+            data: {
+              recipient: letter?.recipient || "",
+              subject: letter?.subject || "",
+              priority: letter?.priority || "low",
+              status: letter?.status || "draft",
+              projectId: project.id,
+              fileUrl: letter?.fileUrl || "", // Provide default value for fileUrl
+              fileName: letter?.fileName || "Unnamed File", // Provide default value for fileName
+            },
+          });
 
-    // Validate Incoming Letters
+          const fileUrls = Array.isArray(letter?.fileUrl)
+            ? letter.fileUrl
+            : [letter?.fileUrl || ""];
+
+          if (fileUrls.length > 0) {
+            const letterFileData: { url: string; letterId: string }[] =
+              fileUrls.map((url: string) => ({
+                url,
+                letterId: createdLetter.id,
+              }));
+
+            await prismaClient.letterFile.createMany({
+              data: letterFileData,
+            });
+          }
+        })
+      );
+    }
     const incomingLettersValidation = IncomingLetterSchema.array().safeParse(
       req.body?.incomingLetters
     );
-    console.log("incomingLetters  ", incomingLettersValidation);
+
     if (
       incomingLettersValidation.success &&
       incomingLettersValidation.data.length > 0
     ) {
-      await prismaClient.incomingLetter.createMany({
-        data: incomingLettersValidation.data.map((letter) => ({
-          sender: letter?.sender ?? "", // Provide default value for sender
-          subject: letter?.subject || "", // Provide default value for subject
-          fileUrl: letter?.fileUrl || "", // Provide default value for fileUrl
-          fileName: letter?.fileName || "", // Provide default value for fileName
-          priority: letter?.priority || "low", // Provide default value for priority
-          status: letter?.status || "unread", // Provide default value for status
-          projectId: project.id,
-        })),
-      });
-    } else {
-      console.error("No valid incoming letters to insert");
-    }
+      try {
+        await Promise.all(
+          incomingLettersValidation.data.map(async (letter) => {
+            // Create the incoming letter
+            const createdLetter = await prismaClient.incomingLetter.create({
+              data: {
+                sender: letter?.sender || "",
+                subject: letter?.subject || "",
+                priority: letter?.priority || "low",
+                status: letter?.status || "unread",
+                projectId: project.id,
+                fileUrl: letter?.fileUrl || "", // Provide default value for fileUrl
+                fileName: letter?.fileName || "Unnamed File", // Provide default value for fileName
+              },
+            });
 
+            // Handle file URLs - normalize to array
+            const fileUrls = Array.isArray(letter?.fileUrl)
+              ? letter.fileUrl
+              : letter?.fileUrl
+              ? [letter.fileUrl]
+              : [];
+
+            // Create associated files
+            if (fileUrls.length > 0) {
+              await prismaClient.letterFile.createMany({
+                data: fileUrls.map((url) => ({
+                  url,
+                  letterId: createdLetter.id,
+                })),
+              });
+            }
+          })
+        );
+        console.log("Incoming letters with files created successfully");
+      } catch (error) {
+        console.error("Error creating incoming letters:", error);
+        // Continue with project creation even if letters fail
+      }
+    } else {
+      console.error(
+        "No valid incoming letters to insert",
+        incomingLettersValidation.error
+      );
+    }
     // Validate and Create Documents
     const documentsValidation = DocumentSchema.array().safeParse(
       req.body?.documents
     );
     if (documentsValidation.success && documentsValidation.data.length > 0) {
+      interface DocumentData {
+        title?: string;
+        fileUrl?: string;
+        fileName?: string;
+      }
+
       await prismaClient.document.createMany({
         data: documentsValidation.data
-          .filter((doc) => doc !== undefined)
-          .map((doc) => ({
+          .filter(
+            (doc: DocumentData | undefined): doc is DocumentData =>
+              doc !== undefined
+          )
+          .map((doc: DocumentData) => ({
             title: doc.title || " ", // Provide default value for title
             fileUrl: doc.fileUrl || "", // Provide default value for fileUrl
             fileName: doc.fileName || "Unnamed File", // Provide default value for fileName

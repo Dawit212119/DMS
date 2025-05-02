@@ -92,10 +92,13 @@ export const OutgoingLetterScalarFieldEnumSchema = z.enum([
   "subject",
   "priority",
   "status",
-  "fileUrl",
-  "fileName",
-  "createdAt",
   "projectId",
+]);
+
+export const LetterFileScalarFieldEnumSchema = z.enum([
+  "id",
+  "url",
+  "letterId",
 ]);
 
 export const IncomingLetterScalarFieldEnumSchema = z.enum([
@@ -104,10 +107,13 @@ export const IncomingLetterScalarFieldEnumSchema = z.enum([
   "subject",
   "priority",
   "status",
-  "fileUrl",
-  "fileName",
-  "createdAt",
   "projectId",
+]);
+
+export const InLetterFileScalarFieldEnumSchema = z.enum([
+  "id",
+  "url",
+  "letterId",
 ]);
 
 export const ReportScalarFieldEnumSchema = z.enum([
@@ -117,10 +123,14 @@ export const ReportScalarFieldEnumSchema = z.enum([
   "reportType",
   "version",
   "status",
-  "fileUrl",
-  "fileName",
   "uploadedDate",
   "projectId",
+]);
+
+export const ReportFileScalarFieldEnumSchema = z.enum([
+  "id",
+  "url",
+  "reportId",
 ]);
 
 export const SortOrderSchema = z.enum(["asc", "desc"]);
@@ -194,12 +204,12 @@ export type User = z.infer<typeof UserSchema>;
 export const ProjectSchema = z
   .object({
     id: z.string().optional(),
-    projectName: z.string(),
-    clientName: z.string(),
-    location: z.string(),
+    projectName: z.string().optional(),
+    clientName: z.string().optional(),
+    location: z.string().optional(),
     startDate: z.coerce.date().optional(),
     endDate: z.coerce.date().optional(),
-    userId: z.string().optional(),
+    userId: z.string().nullable().optional(),
     createdAt: z.coerce.date().optional(),
     updatedAt: z.coerce.date().optional(),
   })
@@ -211,14 +221,12 @@ export type Project = z.infer<typeof ProjectSchema>;
 // BUDGET SCHEMA
 /////////////////////////////////////////
 
-export const BudgetSchema = z
-  .object({
-    id: z.string().optional(),
-    total: z.number().optional(),
-    spent: z.number().optional(),
-    projectId: z.string().optional(),
-  })
-  .optional();
+export const BudgetSchema = z.object({
+  id: z.string().optional(),
+  total: z.number().optional(),
+  spent: z.number().optional(),
+  projectId: z.string().optional(),
+});
 
 export type Budget = z.infer<typeof BudgetSchema>;
 
@@ -228,7 +236,7 @@ export type Budget = z.infer<typeof BudgetSchema>;
 
 export const TeamSchema = z
   .object({
-    id: z.string().optional().optional(),
+    id: z.string().optional(),
     projectManager: z.string().optional(),
     siteManager: z.string().optional(),
     civilManager: z.string().optional(),
@@ -237,7 +245,6 @@ export const TeamSchema = z
     projectId: z.string().optional(),
   })
   .optional();
-
 export type Team = z.infer<typeof TeamSchema>;
 
 /////////////////////////////////////////
@@ -253,7 +260,6 @@ export const MilestoneSchema = z
     projectId: z.string().optional(),
   })
   .optional();
-
 export type Milestone = z.infer<typeof MilestoneSchema>;
 
 /////////////////////////////////////////
@@ -322,14 +328,25 @@ export const OutgoingLetterSchema = z
     id: z.string().optional(),
     recipient: z.string().optional(),
     subject: z.string().optional(),
-    fileUrl: z.string().optional(),
-    fileName: z.string().optional(),
-    createdAt: z.coerce.date().optional(),
     projectId: z.string().optional(),
   })
   .optional();
 
 export type OutgoingLetter = z.infer<typeof OutgoingLetterSchema>;
+
+/////////////////////////////////////////
+// LETTER FILE SCHEMA
+/////////////////////////////////////////
+
+export const LetterFileSchema = z
+  .object({
+    id: z.string().optional(),
+    url: z.string().optional(),
+    letterId: z.string().optional(),
+  })
+  .optional();
+
+export type LetterFile = z.infer<typeof LetterFileSchema>;
 
 /////////////////////////////////////////
 // INCOMING LETTER SCHEMA
@@ -342,14 +359,25 @@ export const IncomingLetterSchema = z
     id: z.string().optional(),
     sender: z.string().optional(),
     subject: z.string().optional(),
-    fileUrl: z.string().optional(),
-    fileName: z.string().optional(),
-    createdAt: z.coerce.date().optional(),
     projectId: z.string().optional(),
   })
   .optional();
 
 export type IncomingLetter = z.infer<typeof IncomingLetterSchema>;
+
+/////////////////////////////////////////
+// IN LETTER FILE SCHEMA
+/////////////////////////////////////////
+
+export const InLetterFileSchema = z
+  .object({
+    id: z.string().optional(),
+    url: z.string().optional(),
+    letterId: z.string().optional(),
+  })
+  .optional();
+
+export type InLetterFile = z.infer<typeof InLetterFileSchema>;
 
 /////////////////////////////////////////
 // REPORT SCHEMA
@@ -363,14 +391,23 @@ export const ReportSchema = z
     title: z.string().optional(),
     publisher: z.string().optional(),
     version: z.string().optional(),
-    fileUrl: z.string().optional(),
-    fileName: z.string().optional(),
     uploadedDate: z.coerce.date().optional(),
     projectId: z.string().optional(),
   })
   .optional();
-
 export type Report = z.infer<typeof ReportSchema>;
+
+/////////////////////////////////////////
+// REPORT FILE SCHEMA
+/////////////////////////////////////////
+
+export const ReportFileSchema = z.object({
+  id: z.string().optional(),
+  url: z.string().optional(),
+  reportId: z.string().optional(),
+});
+
+export type ReportFile = z.infer<typeof ReportFileSchema>;
 
 /////////////////////////////////////////
 // SELECT & INCLUDE
@@ -669,6 +706,20 @@ export const OutgoingLetterArgsSchema: z.ZodType<Prisma.OutgoingLetterDefaultArg
     })
     .strict();
 
+export const OutgoingLetterCountOutputTypeArgsSchema: z.ZodType<Prisma.OutgoingLetterCountOutputTypeDefaultArgs> =
+  z
+    .object({
+      select: z.lazy(() => OutgoingLetterCountOutputTypeSelectSchema).nullish(),
+    })
+    .strict();
+
+export const OutgoingLetterCountOutputTypeSelectSchema: z.ZodType<Prisma.OutgoingLetterCountOutputTypeSelect> =
+  z
+    .object({
+      files: z.boolean().optional(),
+    })
+    .strict();
+
 export const OutgoingLetterSelectSchema: z.ZodType<Prisma.OutgoingLetterSelect> =
   z
     .object({
@@ -677,15 +728,46 @@ export const OutgoingLetterSelectSchema: z.ZodType<Prisma.OutgoingLetterSelect> 
       subject: z.boolean().optional(),
       priority: z.boolean().optional(),
       status: z.boolean().optional(),
-      fileUrl: z.boolean().optional(),
-      fileName: z.boolean().optional(),
-      createdAt: z.boolean().optional(),
       projectId: z.boolean().optional(),
       project: z
         .union([z.boolean(), z.lazy(() => ProjectArgsSchema)])
         .optional(),
+      files: z
+        .union([z.boolean(), z.lazy(() => LetterFileArgsSchema)])
+        .optional(),
+      _count: z
+        .union([
+          z.boolean(),
+          z.lazy(() => OutgoingLetterCountOutputTypeArgsSchema),
+        ])
+        .optional(),
     })
     .strict();
+
+// LETTER FILE
+//------------------------------------------------------
+
+export const LetterFileIncludeSchema: z.ZodType<Prisma.LetterFileInclude> = z
+  .object({})
+  .strict();
+
+export const LetterFileArgsSchema: z.ZodType<Prisma.LetterFileDefaultArgs> = z
+  .object({
+    select: z.lazy(() => LetterFileSelectSchema).optional(),
+    include: z.lazy(() => LetterFileIncludeSchema).optional(),
+  })
+  .strict();
+
+export const LetterFileSelectSchema: z.ZodType<Prisma.LetterFileSelect> = z
+  .object({
+    id: z.boolean().optional(),
+    url: z.boolean().optional(),
+    letterId: z.boolean().optional(),
+    letter: z
+      .union([z.boolean(), z.lazy(() => OutgoingLetterArgsSchema)])
+      .optional(),
+  })
+  .strict();
 
 // INCOMING LETTER
 //------------------------------------------------------
@@ -701,6 +783,20 @@ export const IncomingLetterArgsSchema: z.ZodType<Prisma.IncomingLetterDefaultArg
     })
     .strict();
 
+export const IncomingLetterCountOutputTypeArgsSchema: z.ZodType<Prisma.IncomingLetterCountOutputTypeDefaultArgs> =
+  z
+    .object({
+      select: z.lazy(() => IncomingLetterCountOutputTypeSelectSchema).nullish(),
+    })
+    .strict();
+
+export const IncomingLetterCountOutputTypeSelectSchema: z.ZodType<Prisma.IncomingLetterCountOutputTypeSelect> =
+  z
+    .object({
+      files: z.boolean().optional(),
+    })
+    .strict();
+
 export const IncomingLetterSelectSchema: z.ZodType<Prisma.IncomingLetterSelect> =
   z
     .object({
@@ -709,15 +805,46 @@ export const IncomingLetterSelectSchema: z.ZodType<Prisma.IncomingLetterSelect> 
       subject: z.boolean().optional(),
       priority: z.boolean().optional(),
       status: z.boolean().optional(),
-      fileUrl: z.boolean().optional(),
-      fileName: z.boolean().optional(),
-      createdAt: z.boolean().optional(),
       projectId: z.boolean().optional(),
       project: z
         .union([z.boolean(), z.lazy(() => ProjectArgsSchema)])
         .optional(),
+      files: z
+        .union([z.boolean(), z.lazy(() => InLetterFileArgsSchema)])
+        .optional(),
+      _count: z
+        .union([
+          z.boolean(),
+          z.lazy(() => IncomingLetterCountOutputTypeArgsSchema),
+        ])
+        .optional(),
     })
     .strict();
+
+// IN LETTER FILE
+//------------------------------------------------------
+
+export const InLetterFileIncludeSchema: z.ZodType<Prisma.InLetterFileInclude> =
+  z.object({}).strict();
+
+export const InLetterFileArgsSchema: z.ZodType<Prisma.InLetterFileDefaultArgs> =
+  z
+    .object({
+      select: z.lazy(() => InLetterFileSelectSchema).optional(),
+      include: z.lazy(() => InLetterFileIncludeSchema).optional(),
+    })
+    .strict();
+
+export const InLetterFileSelectSchema: z.ZodType<Prisma.InLetterFileSelect> = z
+  .object({
+    id: z.boolean().optional(),
+    url: z.boolean().optional(),
+    letterId: z.boolean().optional(),
+    letter: z
+      .union([z.boolean(), z.lazy(() => IncomingLetterArgsSchema)])
+      .optional(),
+  })
+  .strict();
 
 // REPORT
 //------------------------------------------------------
@@ -733,6 +860,20 @@ export const ReportArgsSchema: z.ZodType<Prisma.ReportDefaultArgs> = z
   })
   .strict();
 
+export const ReportCountOutputTypeArgsSchema: z.ZodType<Prisma.ReportCountOutputTypeDefaultArgs> =
+  z
+    .object({
+      select: z.lazy(() => ReportCountOutputTypeSelectSchema).nullish(),
+    })
+    .strict();
+
+export const ReportCountOutputTypeSelectSchema: z.ZodType<Prisma.ReportCountOutputTypeSelect> =
+  z
+    .object({
+      files: z.boolean().optional(),
+    })
+    .strict();
+
 export const ReportSelectSchema: z.ZodType<Prisma.ReportSelect> = z
   .object({
     id: z.boolean().optional(),
@@ -741,11 +882,38 @@ export const ReportSelectSchema: z.ZodType<Prisma.ReportSelect> = z
     reportType: z.boolean().optional(),
     version: z.boolean().optional(),
     status: z.boolean().optional(),
-    fileUrl: z.boolean().optional(),
-    fileName: z.boolean().optional(),
     uploadedDate: z.boolean().optional(),
     projectId: z.boolean().optional(),
     project: z.union([z.boolean(), z.lazy(() => ProjectArgsSchema)]).optional(),
+    files: z
+      .union([z.boolean(), z.lazy(() => ReportFileArgsSchema)])
+      .optional(),
+    _count: z
+      .union([z.boolean(), z.lazy(() => ReportCountOutputTypeArgsSchema)])
+      .optional(),
+  })
+  .strict();
+
+// REPORT FILE
+//------------------------------------------------------
+
+export const ReportFileIncludeSchema: z.ZodType<Prisma.ReportFileInclude> = z
+  .object({})
+  .strict();
+
+export const ReportFileArgsSchema: z.ZodType<Prisma.ReportFileDefaultArgs> = z
+  .object({
+    select: z.lazy(() => ReportFileSelectSchema).optional(),
+    include: z.lazy(() => ReportFileIncludeSchema).optional(),
+  })
+  .strict();
+
+export const ReportFileSelectSchema: z.ZodType<Prisma.ReportFileSelect> = z
+  .object({
+    id: z.boolean().optional(),
+    url: z.boolean().optional(),
+    reportId: z.boolean().optional(),
+    report: z.union([z.boolean(), z.lazy(() => ReportArgsSchema)]).optional(),
   })
   .strict();
 
@@ -949,7 +1117,10 @@ export const ProjectWhereInputSchema: z.ZodType<Prisma.ProjectWhereInput> = z
     endDate: z
       .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
       .optional(),
-    userId: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+    userId: z
+      .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+      .optional()
+      .nullable(),
     createdAt: z
       .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
       .optional(),
@@ -958,10 +1129,11 @@ export const ProjectWhereInputSchema: z.ZodType<Prisma.ProjectWhereInput> = z
       .optional(),
     user: z
       .union([
-        z.lazy(() => UserScalarRelationFilterSchema),
+        z.lazy(() => UserNullableScalarRelationFilterSchema),
         z.lazy(() => UserWhereInputSchema),
       ])
-      .optional(),
+      .optional()
+      .nullable(),
     budget: z
       .union([
         z.lazy(() => BudgetNullableScalarRelationFilterSchema),
@@ -1070,8 +1242,9 @@ export const ProjectWhereUniqueInputSchema: z.ZodType<Prisma.ProjectWhereUniqueI
             .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
             .optional(),
           userId: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
+            .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+            .optional()
+            .nullable(),
           createdAt: z
             .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
             .optional(),
@@ -1080,10 +1253,11 @@ export const ProjectWhereUniqueInputSchema: z.ZodType<Prisma.ProjectWhereUniqueI
             .optional(),
           user: z
             .union([
-              z.lazy(() => UserScalarRelationFilterSchema),
+              z.lazy(() => UserNullableScalarRelationFilterSchema),
               z.lazy(() => UserWhereInputSchema),
             ])
-            .optional(),
+            .optional()
+            .nullable(),
           budget: z
             .union([
               z.lazy(() => BudgetNullableScalarRelationFilterSchema),
@@ -1181,8 +1355,12 @@ export const ProjectScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Proje
         ])
         .optional(),
       userId: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
+        .union([
+          z.lazy(() => StringNullableWithAggregatesFilterSchema),
+          z.string(),
+        ])
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.lazy(() => DateTimeWithAggregatesFilterSchema),
@@ -2293,15 +2471,6 @@ export const OutgoingLetterWhereInputSchema: z.ZodType<Prisma.OutgoingLetterWher
           z.lazy(() => OutgoingStatusSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      fileName: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      createdAt: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-        .optional(),
       projectId: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
@@ -2311,6 +2480,7 @@ export const OutgoingLetterWhereInputSchema: z.ZodType<Prisma.OutgoingLetterWher
           z.lazy(() => ProjectWhereInputSchema),
         ])
         .optional(),
+      files: z.lazy(() => LetterFileListRelationFilterSchema).optional(),
     })
     .strict();
 
@@ -2322,11 +2492,11 @@ export const OutgoingLetterOrderByWithRelationInputSchema: z.ZodType<Prisma.Outg
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
       project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional(),
+      files: z
+        .lazy(() => LetterFileOrderByRelationAggregateInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -2373,15 +2543,6 @@ export const OutgoingLetterWhereUniqueInputSchema: z.ZodType<Prisma.OutgoingLett
               z.lazy(() => OutgoingStatusSchema),
             ])
             .optional(),
-          fileUrl: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          fileName: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          createdAt: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-            .optional(),
           projectId: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
@@ -2391,6 +2552,7 @@ export const OutgoingLetterWhereUniqueInputSchema: z.ZodType<Prisma.OutgoingLett
               z.lazy(() => ProjectWhereInputSchema),
             ])
             .optional(),
+          files: z.lazy(() => LetterFileListRelationFilterSchema).optional(),
         })
         .strict()
     );
@@ -2403,9 +2565,6 @@ export const OutgoingLetterOrderByWithAggregationInputSchema: z.ZodType<Prisma.O
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
       _count: z
         .lazy(() => OutgoingLetterCountOrderByAggregateInputSchema)
@@ -2463,19 +2622,138 @@ export const OutgoingLetterScalarWhereWithAggregatesInputSchema: z.ZodType<Prism
           z.lazy(() => OutgoingStatusSchema),
         ])
         .optional(),
-      fileUrl: z
+      projectId: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
-      fileName: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      createdAt: z
+    })
+    .strict();
+
+export const LetterFileWhereInputSchema: z.ZodType<Prisma.LetterFileWhereInput> =
+  z
+    .object({
+      AND: z
         .union([
-          z.lazy(() => DateTimeWithAggregatesFilterSchema),
-          z.coerce.date(),
+          z.lazy(() => LetterFileWhereInputSchema),
+          z.lazy(() => LetterFileWhereInputSchema).array(),
         ])
         .optional(),
-      projectId: z
+      OR: z
+        .lazy(() => LetterFileWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => LetterFileWhereInputSchema),
+          z.lazy(() => LetterFileWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      url: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      letterId: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+      letter: z
+        .union([
+          z.lazy(() => OutgoingLetterScalarRelationFilterSchema),
+          z.lazy(() => OutgoingLetterWhereInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileOrderByWithRelationInputSchema: z.ZodType<Prisma.LetterFileOrderByWithRelationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+      letter: z
+        .lazy(() => OutgoingLetterOrderByWithRelationInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileWhereUniqueInputSchema: z.ZodType<Prisma.LetterFileWhereUniqueInput> =
+  z
+    .object({
+      id: z.string(),
+    })
+    .and(
+      z
+        .object({
+          id: z.string().optional(),
+          AND: z
+            .union([
+              z.lazy(() => LetterFileWhereInputSchema),
+              z.lazy(() => LetterFileWhereInputSchema).array(),
+            ])
+            .optional(),
+          OR: z
+            .lazy(() => LetterFileWhereInputSchema)
+            .array()
+            .optional(),
+          NOT: z
+            .union([
+              z.lazy(() => LetterFileWhereInputSchema),
+              z.lazy(() => LetterFileWhereInputSchema).array(),
+            ])
+            .optional(),
+          url: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          letterId: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          letter: z
+            .union([
+              z.lazy(() => OutgoingLetterScalarRelationFilterSchema),
+              z.lazy(() => OutgoingLetterWhereInputSchema),
+            ])
+            .optional(),
+        })
+        .strict()
+    );
+
+export const LetterFileOrderByWithAggregationInputSchema: z.ZodType<Prisma.LetterFileOrderByWithAggregationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+      _count: z
+        .lazy(() => LetterFileCountOrderByAggregateInputSchema)
+        .optional(),
+      _max: z.lazy(() => LetterFileMaxOrderByAggregateInputSchema).optional(),
+      _min: z.lazy(() => LetterFileMinOrderByAggregateInputSchema).optional(),
+    })
+    .strict();
+
+export const LetterFileScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.LetterFileScalarWhereWithAggregatesInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => LetterFileScalarWhereWithAggregatesInputSchema),
+          z.lazy(() => LetterFileScalarWhereWithAggregatesInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => LetterFileScalarWhereWithAggregatesInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => LetterFileScalarWhereWithAggregatesInputSchema),
+          z.lazy(() => LetterFileScalarWhereWithAggregatesInputSchema).array(),
+        ])
+        .optional(),
+      id: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      url: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      letterId: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
     })
@@ -2519,15 +2797,6 @@ export const IncomingLetterWhereInputSchema: z.ZodType<Prisma.IncomingLetterWher
           z.lazy(() => IncomingStatusSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      fileName: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      createdAt: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-        .optional(),
       projectId: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
@@ -2537,6 +2806,7 @@ export const IncomingLetterWhereInputSchema: z.ZodType<Prisma.IncomingLetterWher
           z.lazy(() => ProjectWhereInputSchema),
         ])
         .optional(),
+      files: z.lazy(() => InLetterFileListRelationFilterSchema).optional(),
     })
     .strict();
 
@@ -2548,11 +2818,11 @@ export const IncomingLetterOrderByWithRelationInputSchema: z.ZodType<Prisma.Inco
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
       project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional(),
+      files: z
+        .lazy(() => InLetterFileOrderByRelationAggregateInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -2599,15 +2869,6 @@ export const IncomingLetterWhereUniqueInputSchema: z.ZodType<Prisma.IncomingLett
               z.lazy(() => IncomingStatusSchema),
             ])
             .optional(),
-          fileUrl: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          fileName: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          createdAt: z
-            .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-            .optional(),
           projectId: z
             .union([z.lazy(() => StringFilterSchema), z.string()])
             .optional(),
@@ -2617,6 +2878,7 @@ export const IncomingLetterWhereUniqueInputSchema: z.ZodType<Prisma.IncomingLett
               z.lazy(() => ProjectWhereInputSchema),
             ])
             .optional(),
+          files: z.lazy(() => InLetterFileListRelationFilterSchema).optional(),
         })
         .strict()
     );
@@ -2629,9 +2891,6 @@ export const IncomingLetterOrderByWithAggregationInputSchema: z.ZodType<Prisma.I
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
       _count: z
         .lazy(() => IncomingLetterCountOrderByAggregateInputSchema)
@@ -2689,19 +2948,142 @@ export const IncomingLetterScalarWhereWithAggregatesInputSchema: z.ZodType<Prism
           z.lazy(() => IncomingStatusSchema),
         ])
         .optional(),
-      fileUrl: z
+      projectId: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
-      fileName: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      createdAt: z
+    })
+    .strict();
+
+export const InLetterFileWhereInputSchema: z.ZodType<Prisma.InLetterFileWhereInput> =
+  z
+    .object({
+      AND: z
         .union([
-          z.lazy(() => DateTimeWithAggregatesFilterSchema),
-          z.coerce.date(),
+          z.lazy(() => InLetterFileWhereInputSchema),
+          z.lazy(() => InLetterFileWhereInputSchema).array(),
         ])
         .optional(),
-      projectId: z
+      OR: z
+        .lazy(() => InLetterFileWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => InLetterFileWhereInputSchema),
+          z.lazy(() => InLetterFileWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      url: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      letterId: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+      letter: z
+        .union([
+          z.lazy(() => IncomingLetterScalarRelationFilterSchema),
+          z.lazy(() => IncomingLetterWhereInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileOrderByWithRelationInputSchema: z.ZodType<Prisma.InLetterFileOrderByWithRelationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+      letter: z
+        .lazy(() => IncomingLetterOrderByWithRelationInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileWhereUniqueInputSchema: z.ZodType<Prisma.InLetterFileWhereUniqueInput> =
+  z
+    .object({
+      id: z.string(),
+    })
+    .and(
+      z
+        .object({
+          id: z.string().optional(),
+          AND: z
+            .union([
+              z.lazy(() => InLetterFileWhereInputSchema),
+              z.lazy(() => InLetterFileWhereInputSchema).array(),
+            ])
+            .optional(),
+          OR: z
+            .lazy(() => InLetterFileWhereInputSchema)
+            .array()
+            .optional(),
+          NOT: z
+            .union([
+              z.lazy(() => InLetterFileWhereInputSchema),
+              z.lazy(() => InLetterFileWhereInputSchema).array(),
+            ])
+            .optional(),
+          url: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          letterId: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          letter: z
+            .union([
+              z.lazy(() => IncomingLetterScalarRelationFilterSchema),
+              z.lazy(() => IncomingLetterWhereInputSchema),
+            ])
+            .optional(),
+        })
+        .strict()
+    );
+
+export const InLetterFileOrderByWithAggregationInputSchema: z.ZodType<Prisma.InLetterFileOrderByWithAggregationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+      _count: z
+        .lazy(() => InLetterFileCountOrderByAggregateInputSchema)
+        .optional(),
+      _max: z.lazy(() => InLetterFileMaxOrderByAggregateInputSchema).optional(),
+      _min: z.lazy(() => InLetterFileMinOrderByAggregateInputSchema).optional(),
+    })
+    .strict();
+
+export const InLetterFileScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.InLetterFileScalarWhereWithAggregatesInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => InLetterFileScalarWhereWithAggregatesInputSchema),
+          z
+            .lazy(() => InLetterFileScalarWhereWithAggregatesInputSchema)
+            .array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => InLetterFileScalarWhereWithAggregatesInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => InLetterFileScalarWhereWithAggregatesInputSchema),
+          z
+            .lazy(() => InLetterFileScalarWhereWithAggregatesInputSchema)
+            .array(),
+        ])
+        .optional(),
+      id: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      url: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      letterId: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
     })
@@ -2743,10 +3125,6 @@ export const ReportWhereInputSchema: z.ZodType<Prisma.ReportWhereInput> = z
         z.lazy(() => ReportStatusSchema),
       ])
       .optional(),
-    fileUrl: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
-    fileName: z
-      .union([z.lazy(() => StringFilterSchema), z.string()])
-      .optional(),
     uploadedDate: z
       .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
       .optional(),
@@ -2759,6 +3137,7 @@ export const ReportWhereInputSchema: z.ZodType<Prisma.ReportWhereInput> = z
         z.lazy(() => ProjectWhereInputSchema),
       ])
       .optional(),
+    files: z.lazy(() => ReportFileListRelationFilterSchema).optional(),
   })
   .strict();
 
@@ -2771,11 +3150,12 @@ export const ReportOrderByWithRelationInputSchema: z.ZodType<Prisma.ReportOrderB
       reportType: z.lazy(() => SortOrderSchema).optional(),
       version: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
       uploadedDate: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
       project: z.lazy(() => ProjectOrderByWithRelationInputSchema).optional(),
+      files: z
+        .lazy(() => ReportFileOrderByRelationAggregateInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -2825,12 +3205,6 @@ export const ReportWhereUniqueInputSchema: z.ZodType<Prisma.ReportWhereUniqueInp
               z.lazy(() => ReportStatusSchema),
             ])
             .optional(),
-          fileUrl: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
-          fileName: z
-            .union([z.lazy(() => StringFilterSchema), z.string()])
-            .optional(),
           uploadedDate: z
             .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
             .optional(),
@@ -2843,6 +3217,7 @@ export const ReportWhereUniqueInputSchema: z.ZodType<Prisma.ReportWhereUniqueInp
               z.lazy(() => ProjectWhereInputSchema),
             ])
             .optional(),
+          files: z.lazy(() => ReportFileListRelationFilterSchema).optional(),
         })
         .strict()
     );
@@ -2856,8 +3231,6 @@ export const ReportOrderByWithAggregationInputSchema: z.ZodType<Prisma.ReportOrd
       reportType: z.lazy(() => SortOrderSchema).optional(),
       version: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
       uploadedDate: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
       _count: z.lazy(() => ReportCountOrderByAggregateInputSchema).optional(),
@@ -2909,12 +3282,6 @@ export const ReportScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Report
           z.lazy(() => ReportStatusSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
-      fileName: z
-        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
-        .optional(),
       uploadedDate: z
         .union([
           z.lazy(() => DateTimeWithAggregatesFilterSchema),
@@ -2922,6 +3289,135 @@ export const ReportScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.Report
         ])
         .optional(),
       projectId: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileWhereInputSchema: z.ZodType<Prisma.ReportFileWhereInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => ReportFileWhereInputSchema),
+          z.lazy(() => ReportFileWhereInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => ReportFileWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => ReportFileWhereInputSchema),
+          z.lazy(() => ReportFileWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      url: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      reportId: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+      report: z
+        .union([
+          z.lazy(() => ReportScalarRelationFilterSchema),
+          z.lazy(() => ReportWhereInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileOrderByWithRelationInputSchema: z.ZodType<Prisma.ReportFileOrderByWithRelationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      reportId: z.lazy(() => SortOrderSchema).optional(),
+      report: z.lazy(() => ReportOrderByWithRelationInputSchema).optional(),
+    })
+    .strict();
+
+export const ReportFileWhereUniqueInputSchema: z.ZodType<Prisma.ReportFileWhereUniqueInput> =
+  z
+    .object({
+      id: z.string(),
+    })
+    .and(
+      z
+        .object({
+          id: z.string().optional(),
+          AND: z
+            .union([
+              z.lazy(() => ReportFileWhereInputSchema),
+              z.lazy(() => ReportFileWhereInputSchema).array(),
+            ])
+            .optional(),
+          OR: z
+            .lazy(() => ReportFileWhereInputSchema)
+            .array()
+            .optional(),
+          NOT: z
+            .union([
+              z.lazy(() => ReportFileWhereInputSchema),
+              z.lazy(() => ReportFileWhereInputSchema).array(),
+            ])
+            .optional(),
+          url: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          reportId: z
+            .union([z.lazy(() => StringFilterSchema), z.string()])
+            .optional(),
+          report: z
+            .union([
+              z.lazy(() => ReportScalarRelationFilterSchema),
+              z.lazy(() => ReportWhereInputSchema),
+            ])
+            .optional(),
+        })
+        .strict()
+    );
+
+export const ReportFileOrderByWithAggregationInputSchema: z.ZodType<Prisma.ReportFileOrderByWithAggregationInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      reportId: z.lazy(() => SortOrderSchema).optional(),
+      _count: z
+        .lazy(() => ReportFileCountOrderByAggregateInputSchema)
+        .optional(),
+      _max: z.lazy(() => ReportFileMaxOrderByAggregateInputSchema).optional(),
+      _min: z.lazy(() => ReportFileMinOrderByAggregateInputSchema).optional(),
+    })
+    .strict();
+
+export const ReportFileScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.ReportFileScalarWhereWithAggregatesInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => ReportFileScalarWhereWithAggregatesInputSchema),
+          z.lazy(() => ReportFileScalarWhereWithAggregatesInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => ReportFileScalarWhereWithAggregatesInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => ReportFileScalarWhereWithAggregatesInputSchema),
+          z.lazy(() => ReportFileScalarWhereWithAggregatesInputSchema).array(),
+        ])
+        .optional(),
+      id: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      url: z
+        .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
+        .optional(),
+      reportId: z
         .union([z.lazy(() => StringWithAggregatesFilterSchema), z.string()])
         .optional(),
     })
@@ -3118,7 +3614,9 @@ export const ProjectCreateInputSchema: z.ZodType<Prisma.ProjectCreateInput> = z
     endDate: z.coerce.date(),
     createdAt: z.coerce.date().optional(),
     updatedAt: z.coerce.date().optional(),
-    user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+    user: z
+      .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+      .optional(),
     budget: z
       .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
       .optional(),
@@ -3156,7 +3654,7 @@ export const ProjectUncheckedCreateInputSchema: z.ZodType<Prisma.ProjectUnchecke
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -3231,7 +3729,7 @@ export const ProjectUpdateInputSchema: z.ZodType<Prisma.ProjectUpdateInput> = z
       ])
       .optional(),
     user: z
-      .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+      .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
       .optional(),
     budget: z
       .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -3297,9 +3795,10 @@ export const ProjectUncheckedUpdateInputSchema: z.ZodType<Prisma.ProjectUnchecke
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -3357,7 +3856,7 @@ export const ProjectCreateManyInputSchema: z.ZodType<Prisma.ProjectCreateManyInp
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
     })
@@ -3447,9 +3946,10 @@ export const ProjectUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ProjectUnch
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -4529,14 +5029,14 @@ export const OutgoingLetterCreateInputSchema: z.ZodType<Prisma.OutgoingLetterCre
       id: z.string().optional(),
       recipient: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => OutgoingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
       project: z.lazy(
         () => ProjectCreateNestedOneWithoutOutgoingLettersInputSchema
       ),
+      files: z
+        .lazy(() => LetterFileCreateNestedManyWithoutLetterInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -4546,12 +5046,12 @@ export const OutgoingLetterUncheckedCreateInputSchema: z.ZodType<Prisma.Outgoing
       id: z.string().optional(),
       recipient: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => OutgoingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
       projectId: z.string(),
+      files: z
+        .lazy(() => LetterFileUncheckedCreateNestedManyWithoutLetterInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -4582,28 +5082,13 @@ export const OutgoingLetterUpdateInputSchema: z.ZodType<Prisma.OutgoingLetterUpd
           z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       project: z
         .lazy(
           () => ProjectUpdateOneRequiredWithoutOutgoingLettersNestedInputSchema
         )
+        .optional(),
+      files: z
+        .lazy(() => LetterFileUpdateManyWithoutLetterNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -4635,29 +5120,14 @@ export const OutgoingLetterUncheckedUpdateInputSchema: z.ZodType<Prisma.Outgoing
           z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       projectId: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      files: z
+        .lazy(() => LetterFileUncheckedUpdateManyWithoutLetterNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -4668,11 +5138,8 @@ export const OutgoingLetterCreateManyInputSchema: z.ZodType<Prisma.OutgoingLette
       id: z.string().optional(),
       recipient: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => OutgoingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
       projectId: z.string(),
     })
     .strict();
@@ -4702,24 +5169,6 @@ export const OutgoingLetterUpdateManyMutationInputSchema: z.ZodType<Prisma.Outgo
         .union([
           z.lazy(() => OutgoingStatusSchema),
           z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
     })
@@ -4752,25 +5201,101 @@ export const OutgoingLetterUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Outg
           z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       projectId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileCreateInputSchema: z.ZodType<Prisma.LetterFileCreateInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      letter: z.lazy(
+        () => OutgoingLetterCreateNestedOneWithoutFilesInputSchema
+      ),
+    })
+    .strict();
+
+export const LetterFileUncheckedCreateInputSchema: z.ZodType<Prisma.LetterFileUncheckedCreateInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      letterId: z.string(),
+    })
+    .strict();
+
+export const LetterFileUpdateInputSchema: z.ZodType<Prisma.LetterFileUpdateInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      letter: z
+        .lazy(
+          () => OutgoingLetterUpdateOneRequiredWithoutFilesNestedInputSchema
+        )
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileUncheckedUpdateInputSchema: z.ZodType<Prisma.LetterFileUncheckedUpdateInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      letterId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileCreateManyInputSchema: z.ZodType<Prisma.LetterFileCreateManyInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      letterId: z.string(),
+    })
+    .strict();
+
+export const LetterFileUpdateManyMutationInputSchema: z.ZodType<Prisma.LetterFileUpdateManyMutationInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileUncheckedUpdateManyInputSchema: z.ZodType<Prisma.LetterFileUncheckedUpdateManyInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      letterId: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -4785,14 +5310,14 @@ export const IncomingLetterCreateInputSchema: z.ZodType<Prisma.IncomingLetterCre
       id: z.string().optional(),
       sender: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => IncomingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
       project: z.lazy(
         () => ProjectCreateNestedOneWithoutIncomingLettersInputSchema
       ),
+      files: z
+        .lazy(() => InLetterFileCreateNestedManyWithoutLetterInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -4802,12 +5327,14 @@ export const IncomingLetterUncheckedCreateInputSchema: z.ZodType<Prisma.Incoming
       id: z.string().optional(),
       sender: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => IncomingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
       projectId: z.string(),
+      files: z
+        .lazy(
+          () => InLetterFileUncheckedCreateNestedManyWithoutLetterInputSchema
+        )
+        .optional(),
     })
     .strict();
 
@@ -4838,28 +5365,13 @@ export const IncomingLetterUpdateInputSchema: z.ZodType<Prisma.IncomingLetterUpd
           z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       project: z
         .lazy(
           () => ProjectUpdateOneRequiredWithoutIncomingLettersNestedInputSchema
         )
+        .optional(),
+      files: z
+        .lazy(() => InLetterFileUpdateManyWithoutLetterNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -4891,29 +5403,16 @@ export const IncomingLetterUncheckedUpdateInputSchema: z.ZodType<Prisma.Incoming
           z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       projectId: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      files: z
+        .lazy(
+          () => InLetterFileUncheckedUpdateManyWithoutLetterNestedInputSchema
+        )
         .optional(),
     })
     .strict();
@@ -4924,11 +5423,8 @@ export const IncomingLetterCreateManyInputSchema: z.ZodType<Prisma.IncomingLette
       id: z.string().optional(),
       sender: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => IncomingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
       projectId: z.string(),
     })
     .strict();
@@ -4958,24 +5454,6 @@ export const IncomingLetterUpdateManyMutationInputSchema: z.ZodType<Prisma.Incom
         .union([
           z.lazy(() => IncomingStatusSchema),
           z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
     })
@@ -5008,25 +5486,101 @@ export const IncomingLetterUncheckedUpdateManyInputSchema: z.ZodType<Prisma.Inco
           z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       projectId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileCreateInputSchema: z.ZodType<Prisma.InLetterFileCreateInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      letter: z.lazy(
+        () => IncomingLetterCreateNestedOneWithoutFilesInputSchema
+      ),
+    })
+    .strict();
+
+export const InLetterFileUncheckedCreateInputSchema: z.ZodType<Prisma.InLetterFileUncheckedCreateInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      letterId: z.string(),
+    })
+    .strict();
+
+export const InLetterFileUpdateInputSchema: z.ZodType<Prisma.InLetterFileUpdateInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      letter: z
+        .lazy(
+          () => IncomingLetterUpdateOneRequiredWithoutFilesNestedInputSchema
+        )
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileUncheckedUpdateInputSchema: z.ZodType<Prisma.InLetterFileUncheckedUpdateInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      letterId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileCreateManyInputSchema: z.ZodType<Prisma.InLetterFileCreateManyInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      letterId: z.string(),
+    })
+    .strict();
+
+export const InLetterFileUpdateManyMutationInputSchema: z.ZodType<Prisma.InLetterFileUpdateManyMutationInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileUncheckedUpdateManyInputSchema: z.ZodType<Prisma.InLetterFileUncheckedUpdateManyInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      letterId: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -5043,10 +5597,11 @@ export const ReportCreateInputSchema: z.ZodType<Prisma.ReportCreateInput> = z
     reportType: z.lazy(() => ReportTypeSchema),
     version: z.string(),
     status: z.lazy(() => ReportStatusSchema),
-    fileUrl: z.string(),
-    fileName: z.string(),
     uploadedDate: z.coerce.date().optional(),
     project: z.lazy(() => ProjectCreateNestedOneWithoutReportsInputSchema),
+    files: z
+      .lazy(() => ReportFileCreateNestedManyWithoutReportInputSchema)
+      .optional(),
   })
   .strict();
 
@@ -5059,10 +5614,11 @@ export const ReportUncheckedCreateInputSchema: z.ZodType<Prisma.ReportUncheckedC
       reportType: z.lazy(() => ReportTypeSchema),
       version: z.string(),
       status: z.lazy(() => ReportStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
       uploadedDate: z.coerce.date().optional(),
       projectId: z.string(),
+      files: z
+        .lazy(() => ReportFileUncheckedCreateNestedManyWithoutReportInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -5089,12 +5645,6 @@ export const ReportUpdateInputSchema: z.ZodType<Prisma.ReportUpdateInput> = z
         z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
       ])
       .optional(),
-    fileUrl: z
-      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
-      .optional(),
-    fileName: z
-      .union([z.string(), z.lazy(() => StringFieldUpdateOperationsInputSchema)])
-      .optional(),
     uploadedDate: z
       .union([
         z.coerce.date(),
@@ -5103,6 +5653,9 @@ export const ReportUpdateInputSchema: z.ZodType<Prisma.ReportUpdateInput> = z
       .optional(),
     project: z
       .lazy(() => ProjectUpdateOneRequiredWithoutReportsNestedInputSchema)
+      .optional(),
+    files: z
+      .lazy(() => ReportFileUpdateManyWithoutReportNestedInputSchema)
       .optional(),
   })
   .strict();
@@ -5140,18 +5693,6 @@ export const ReportUncheckedUpdateInputSchema: z.ZodType<Prisma.ReportUncheckedU
           z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       uploadedDate: z
         .union([
           z.coerce.date(),
@@ -5163,6 +5704,9 @@ export const ReportUncheckedUpdateInputSchema: z.ZodType<Prisma.ReportUncheckedU
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      files: z
+        .lazy(() => ReportFileUncheckedUpdateManyWithoutReportNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -5176,8 +5720,6 @@ export const ReportCreateManyInputSchema: z.ZodType<Prisma.ReportCreateManyInput
       reportType: z.lazy(() => ReportTypeSchema),
       version: z.string(),
       status: z.lazy(() => ReportStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
       uploadedDate: z.coerce.date().optional(),
       projectId: z.string(),
     })
@@ -5214,18 +5756,6 @@ export const ReportUpdateManyMutationInputSchema: z.ZodType<Prisma.ReportUpdateM
         .union([
           z.lazy(() => ReportStatusSchema),
           z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       uploadedDate: z
@@ -5270,18 +5800,6 @@ export const ReportUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ReportUnchec
           z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       uploadedDate: z
         .union([
           z.coerce.date(),
@@ -5289,6 +5807,96 @@ export const ReportUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ReportUnchec
         ])
         .optional(),
       projectId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileCreateInputSchema: z.ZodType<Prisma.ReportFileCreateInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      report: z.lazy(() => ReportCreateNestedOneWithoutFilesInputSchema),
+    })
+    .strict();
+
+export const ReportFileUncheckedCreateInputSchema: z.ZodType<Prisma.ReportFileUncheckedCreateInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      reportId: z.string(),
+    })
+    .strict();
+
+export const ReportFileUpdateInputSchema: z.ZodType<Prisma.ReportFileUpdateInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      report: z
+        .lazy(() => ReportUpdateOneRequiredWithoutFilesNestedInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUncheckedUpdateInputSchema: z.ZodType<Prisma.ReportFileUncheckedUpdateInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      reportId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileCreateManyInputSchema: z.ZodType<Prisma.ReportFileCreateManyInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+      reportId: z.string(),
+    })
+    .strict();
+
+export const ReportFileUpdateManyMutationInputSchema: z.ZodType<Prisma.ReportFileUpdateManyMutationInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ReportFileUncheckedUpdateManyInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      reportId: z
         .union([
           z.string(),
           z.lazy(() => StringFieldUpdateOperationsInputSchema),
@@ -5431,11 +6039,39 @@ export const DateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.DateTimeWithAg
     })
     .strict();
 
-export const UserScalarRelationFilterSchema: z.ZodType<Prisma.UserScalarRelationFilter> =
+export const StringNullableFilterSchema: z.ZodType<Prisma.StringNullableFilter> =
   z
     .object({
-      is: z.lazy(() => UserWhereInputSchema).optional(),
-      isNot: z.lazy(() => UserWhereInputSchema).optional(),
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      mode: z.lazy(() => QueryModeSchema).optional(),
+      not: z
+        .union([z.string(), z.lazy(() => NestedStringNullableFilterSchema)])
+        .optional()
+        .nullable(),
+      isSet: z.boolean().optional(),
+    })
+    .strict();
+
+export const UserNullableScalarRelationFilterSchema: z.ZodType<Prisma.UserNullableScalarRelationFilter> =
+  z
+    .object({
+      is: z
+        .lazy(() => UserWhereInputSchema)
+        .optional()
+        .nullable(),
+      isNot: z
+        .lazy(() => UserWhereInputSchema)
+        .optional()
+        .nullable(),
     })
     .strict();
 
@@ -5621,6 +6257,34 @@ export const ProjectMinOrderByAggregateInputSchema: z.ZodType<Prisma.ProjectMinO
       userId: z.lazy(() => SortOrderSchema).optional(),
       createdAt: z.lazy(() => SortOrderSchema).optional(),
       updatedAt: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const StringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.StringNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      mode: z.lazy(() => QueryModeSchema).optional(),
+      not: z
+        .union([
+          z.string(),
+          z.lazy(() => NestedStringNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+      isSet: z.boolean().optional(),
     })
     .strict();
 
@@ -6110,6 +6774,22 @@ export const EnumOutgoingStatusFilterSchema: z.ZodType<Prisma.EnumOutgoingStatus
     })
     .strict();
 
+export const LetterFileListRelationFilterSchema: z.ZodType<Prisma.LetterFileListRelationFilter> =
+  z
+    .object({
+      every: z.lazy(() => LetterFileWhereInputSchema).optional(),
+      some: z.lazy(() => LetterFileWhereInputSchema).optional(),
+      none: z.lazy(() => LetterFileWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const LetterFileOrderByRelationAggregateInputSchema: z.ZodType<Prisma.LetterFileOrderByRelationAggregateInput> =
+  z
+    .object({
+      _count: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
 export const OutgoingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.OutgoingLetterCountOrderByAggregateInput> =
   z
     .object({
@@ -6118,9 +6798,6 @@ export const OutgoingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.Ou
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -6133,9 +6810,6 @@ export const OutgoingLetterMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Outg
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -6148,9 +6822,6 @@ export const OutgoingLetterMinOrderByAggregateInputSchema: z.ZodType<Prisma.Outg
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -6179,6 +6850,41 @@ export const EnumOutgoingStatusWithAggregatesFilterSchema: z.ZodType<Prisma.Enum
     })
     .strict();
 
+export const OutgoingLetterScalarRelationFilterSchema: z.ZodType<Prisma.OutgoingLetterScalarRelationFilter> =
+  z
+    .object({
+      is: z.lazy(() => OutgoingLetterWhereInputSchema).optional(),
+      isNot: z.lazy(() => OutgoingLetterWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const LetterFileCountOrderByAggregateInputSchema: z.ZodType<Prisma.LetterFileCountOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const LetterFileMaxOrderByAggregateInputSchema: z.ZodType<Prisma.LetterFileMaxOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const LetterFileMinOrderByAggregateInputSchema: z.ZodType<Prisma.LetterFileMinOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
 export const EnumIncomingStatusFilterSchema: z.ZodType<Prisma.EnumIncomingStatusFilter> =
   z
     .object({
@@ -6200,6 +6906,22 @@ export const EnumIncomingStatusFilterSchema: z.ZodType<Prisma.EnumIncomingStatus
     })
     .strict();
 
+export const InLetterFileListRelationFilterSchema: z.ZodType<Prisma.InLetterFileListRelationFilter> =
+  z
+    .object({
+      every: z.lazy(() => InLetterFileWhereInputSchema).optional(),
+      some: z.lazy(() => InLetterFileWhereInputSchema).optional(),
+      none: z.lazy(() => InLetterFileWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const InLetterFileOrderByRelationAggregateInputSchema: z.ZodType<Prisma.InLetterFileOrderByRelationAggregateInput> =
+  z
+    .object({
+      _count: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
 export const IncomingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.IncomingLetterCountOrderByAggregateInput> =
   z
     .object({
@@ -6208,9 +6930,6 @@ export const IncomingLetterCountOrderByAggregateInputSchema: z.ZodType<Prisma.In
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -6223,9 +6942,6 @@ export const IncomingLetterMaxOrderByAggregateInputSchema: z.ZodType<Prisma.Inco
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -6238,9 +6954,6 @@ export const IncomingLetterMinOrderByAggregateInputSchema: z.ZodType<Prisma.Inco
       subject: z.lazy(() => SortOrderSchema).optional(),
       priority: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
-      createdAt: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
@@ -6266,6 +6979,41 @@ export const EnumIncomingStatusWithAggregatesFilterSchema: z.ZodType<Prisma.Enum
       _count: z.lazy(() => NestedIntFilterSchema).optional(),
       _min: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional(),
       _max: z.lazy(() => NestedEnumIncomingStatusFilterSchema).optional(),
+    })
+    .strict();
+
+export const IncomingLetterScalarRelationFilterSchema: z.ZodType<Prisma.IncomingLetterScalarRelationFilter> =
+  z
+    .object({
+      is: z.lazy(() => IncomingLetterWhereInputSchema).optional(),
+      isNot: z.lazy(() => IncomingLetterWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const InLetterFileCountOrderByAggregateInputSchema: z.ZodType<Prisma.InLetterFileCountOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const InLetterFileMaxOrderByAggregateInputSchema: z.ZodType<Prisma.InLetterFileMaxOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const InLetterFileMinOrderByAggregateInputSchema: z.ZodType<Prisma.InLetterFileMinOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      letterId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -6311,6 +7059,22 @@ export const EnumReportStatusFilterSchema: z.ZodType<Prisma.EnumReportStatusFilt
     })
     .strict();
 
+export const ReportFileListRelationFilterSchema: z.ZodType<Prisma.ReportFileListRelationFilter> =
+  z
+    .object({
+      every: z.lazy(() => ReportFileWhereInputSchema).optional(),
+      some: z.lazy(() => ReportFileWhereInputSchema).optional(),
+      none: z.lazy(() => ReportFileWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const ReportFileOrderByRelationAggregateInputSchema: z.ZodType<Prisma.ReportFileOrderByRelationAggregateInput> =
+  z
+    .object({
+      _count: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
 export const ReportCountOrderByAggregateInputSchema: z.ZodType<Prisma.ReportCountOrderByAggregateInput> =
   z
     .object({
@@ -6320,8 +7084,6 @@ export const ReportCountOrderByAggregateInputSchema: z.ZodType<Prisma.ReportCoun
       reportType: z.lazy(() => SortOrderSchema).optional(),
       version: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
       uploadedDate: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -6336,8 +7098,6 @@ export const ReportMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ReportMaxOrd
       reportType: z.lazy(() => SortOrderSchema).optional(),
       version: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
       uploadedDate: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -6352,8 +7112,6 @@ export const ReportMinOrderByAggregateInputSchema: z.ZodType<Prisma.ReportMinOrd
       reportType: z.lazy(() => SortOrderSchema).optional(),
       version: z.lazy(() => SortOrderSchema).optional(),
       status: z.lazy(() => SortOrderSchema).optional(),
-      fileUrl: z.lazy(() => SortOrderSchema).optional(),
-      fileName: z.lazy(() => SortOrderSchema).optional(),
       uploadedDate: z.lazy(() => SortOrderSchema).optional(),
       projectId: z.lazy(() => SortOrderSchema).optional(),
     })
@@ -6404,6 +7162,41 @@ export const EnumReportStatusWithAggregatesFilterSchema: z.ZodType<Prisma.EnumRe
       _count: z.lazy(() => NestedIntFilterSchema).optional(),
       _min: z.lazy(() => NestedEnumReportStatusFilterSchema).optional(),
       _max: z.lazy(() => NestedEnumReportStatusFilterSchema).optional(),
+    })
+    .strict();
+
+export const ReportScalarRelationFilterSchema: z.ZodType<Prisma.ReportScalarRelationFilter> =
+  z
+    .object({
+      is: z.lazy(() => ReportWhereInputSchema).optional(),
+      isNot: z.lazy(() => ReportWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const ReportFileCountOrderByAggregateInputSchema: z.ZodType<Prisma.ReportFileCountOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      reportId: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const ReportFileMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ReportFileMaxOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      reportId: z.lazy(() => SortOrderSchema).optional(),
+    })
+    .strict();
+
+export const ReportFileMinOrderByAggregateInputSchema: z.ZodType<Prisma.ReportFileMinOrderByAggregateInput> =
+  z
+    .object({
+      id: z.lazy(() => SortOrderSchema).optional(),
+      url: z.lazy(() => SortOrderSchema).optional(),
+      reportId: z.lazy(() => SortOrderSchema).optional(),
     })
     .strict();
 
@@ -7167,7 +7960,7 @@ export const SiteImageUncheckedCreateNestedManyWithoutProjectInputSchema: z.ZodT
     })
     .strict();
 
-export const UserUpdateOneRequiredWithoutProjectsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput> =
+export const UserUpdateOneWithoutProjectsNestedInputSchema: z.ZodType<Prisma.UserUpdateOneWithoutProjectsNestedInput> =
   z
     .object({
       create: z
@@ -7180,6 +7973,10 @@ export const UserUpdateOneRequiredWithoutProjectsNestedInputSchema: z.ZodType<Pr
         .lazy(() => UserCreateOrConnectWithoutProjectsInputSchema)
         .optional(),
       upsert: z.lazy(() => UserUpsertWithoutProjectsInputSchema).optional(),
+      disconnect: z.boolean().optional(),
+      delete: z
+        .union([z.boolean(), z.lazy(() => UserWhereInputSchema)])
+        .optional(),
       connect: z.lazy(() => UserWhereUniqueInputSchema).optional(),
       update: z
         .union([
@@ -7847,6 +8644,14 @@ export const SiteImageUpdateManyWithoutProjectNestedInputSchema: z.ZodType<Prism
           z.lazy(() => SiteImageScalarWhereInputSchema).array(),
         ])
         .optional(),
+    })
+    .strict();
+
+export const NullableStringFieldUpdateOperationsInputSchema: z.ZodType<Prisma.NullableStringFieldUpdateOperationsInput> =
+  z
+    .object({
+      set: z.string().optional().nullable(),
+      unset: z.boolean().optional(),
     })
     .strict();
 
@@ -8812,6 +9617,72 @@ export const ProjectCreateNestedOneWithoutOutgoingLettersInputSchema: z.ZodType<
     })
     .strict();
 
+export const LetterFileCreateNestedManyWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileCreateNestedManyWithoutLetterInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => LetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileUncheckedCreateNestedManyWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUncheckedCreateNestedManyWithoutLetterInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => LetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
 export const EnumOutgoingStatusFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumOutgoingStatusFieldUpdateOperationsInput> =
   z
     .object({
@@ -8847,6 +9718,212 @@ export const ProjectUpdateOneRequiredWithoutOutgoingLettersNestedInputSchema: z.
     })
     .strict();
 
+export const LetterFileUpdateManyWithoutLetterNestedInputSchema: z.ZodType<Prisma.LetterFileUpdateManyWithoutLetterNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => LetterFileUpsertWithWhereUniqueWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUpsertWithWhereUniqueWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => LetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => LetterFileUpdateWithWhereUniqueWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUpdateWithWhereUniqueWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => LetterFileUpdateManyWithWhereWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUpdateManyWithWhereWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => LetterFileScalarWhereInputSchema),
+          z.lazy(() => LetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileUncheckedUpdateManyWithoutLetterNestedInputSchema: z.ZodType<Prisma.LetterFileUncheckedUpdateManyWithoutLetterNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => LetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => LetterFileUpsertWithWhereUniqueWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUpsertWithWhereUniqueWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => LetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => LetterFileWhereUniqueInputSchema),
+          z.lazy(() => LetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => LetterFileUpdateWithWhereUniqueWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUpdateWithWhereUniqueWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => LetterFileUpdateManyWithWhereWithoutLetterInputSchema),
+          z
+            .lazy(() => LetterFileUpdateManyWithWhereWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => LetterFileScalarWhereInputSchema),
+          z.lazy(() => LetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const OutgoingLetterCreateNestedOneWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterCreateNestedOneWithoutFilesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => OutgoingLetterCreateWithoutFilesInputSchema),
+          z.lazy(() => OutgoingLetterUncheckedCreateWithoutFilesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => OutgoingLetterCreateOrConnectWithoutFilesInputSchema)
+        .optional(),
+      connect: z.lazy(() => OutgoingLetterWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
+export const OutgoingLetterUpdateOneRequiredWithoutFilesNestedInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateOneRequiredWithoutFilesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => OutgoingLetterCreateWithoutFilesInputSchema),
+          z.lazy(() => OutgoingLetterUncheckedCreateWithoutFilesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => OutgoingLetterCreateOrConnectWithoutFilesInputSchema)
+        .optional(),
+      upsert: z
+        .lazy(() => OutgoingLetterUpsertWithoutFilesInputSchema)
+        .optional(),
+      connect: z.lazy(() => OutgoingLetterWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(
+            () => OutgoingLetterUpdateToOneWithWhereWithoutFilesInputSchema
+          ),
+          z.lazy(() => OutgoingLetterUpdateWithoutFilesInputSchema),
+          z.lazy(() => OutgoingLetterUncheckedUpdateWithoutFilesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
 export const ProjectCreateNestedOneWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutIncomingLettersInput> =
   z
     .object({
@@ -8860,6 +9937,72 @@ export const ProjectCreateNestedOneWithoutIncomingLettersInputSchema: z.ZodType<
         .lazy(() => ProjectCreateOrConnectWithoutIncomingLettersInputSchema)
         .optional(),
       connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
+export const InLetterFileCreateNestedManyWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileCreateNestedManyWithoutLetterInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => InLetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileUncheckedCreateNestedManyWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUncheckedCreateNestedManyWithoutLetterInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => InLetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
     })
     .strict();
 
@@ -8898,6 +10041,228 @@ export const ProjectUpdateOneRequiredWithoutIncomingLettersNestedInputSchema: z.
     })
     .strict();
 
+export const InLetterFileUpdateManyWithoutLetterNestedInputSchema: z.ZodType<Prisma.InLetterFileUpdateManyWithoutLetterNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(
+            () => InLetterFileUpsertWithWhereUniqueWithoutLetterInputSchema
+          ),
+          z
+            .lazy(
+              () => InLetterFileUpsertWithWhereUniqueWithoutLetterInputSchema
+            )
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => InLetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(
+            () => InLetterFileUpdateWithWhereUniqueWithoutLetterInputSchema
+          ),
+          z
+            .lazy(
+              () => InLetterFileUpdateWithWhereUniqueWithoutLetterInputSchema
+            )
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => InLetterFileUpdateManyWithWhereWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileUpdateManyWithWhereWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => InLetterFileScalarWhereInputSchema),
+          z.lazy(() => InLetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileUncheckedUpdateManyWithoutLetterNestedInputSchema: z.ZodType<Prisma.InLetterFileUncheckedUpdateManyWithoutLetterNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema),
+          z.lazy(() => InLetterFileCreateWithoutLetterInputSchema).array(),
+          z.lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileCreateOrConnectWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(
+            () => InLetterFileUpsertWithWhereUniqueWithoutLetterInputSchema
+          ),
+          z
+            .lazy(
+              () => InLetterFileUpsertWithWhereUniqueWithoutLetterInputSchema
+            )
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => InLetterFileCreateManyLetterInputEnvelopeSchema)
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => InLetterFileWhereUniqueInputSchema),
+          z.lazy(() => InLetterFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(
+            () => InLetterFileUpdateWithWhereUniqueWithoutLetterInputSchema
+          ),
+          z
+            .lazy(
+              () => InLetterFileUpdateWithWhereUniqueWithoutLetterInputSchema
+            )
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => InLetterFileUpdateManyWithWhereWithoutLetterInputSchema),
+          z
+            .lazy(() => InLetterFileUpdateManyWithWhereWithoutLetterInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => InLetterFileScalarWhereInputSchema),
+          z.lazy(() => InLetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const IncomingLetterCreateNestedOneWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterCreateNestedOneWithoutFilesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => IncomingLetterCreateWithoutFilesInputSchema),
+          z.lazy(() => IncomingLetterUncheckedCreateWithoutFilesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => IncomingLetterCreateOrConnectWithoutFilesInputSchema)
+        .optional(),
+      connect: z.lazy(() => IncomingLetterWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
+export const IncomingLetterUpdateOneRequiredWithoutFilesNestedInputSchema: z.ZodType<Prisma.IncomingLetterUpdateOneRequiredWithoutFilesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => IncomingLetterCreateWithoutFilesInputSchema),
+          z.lazy(() => IncomingLetterUncheckedCreateWithoutFilesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => IncomingLetterCreateOrConnectWithoutFilesInputSchema)
+        .optional(),
+      upsert: z
+        .lazy(() => IncomingLetterUpsertWithoutFilesInputSchema)
+        .optional(),
+      connect: z.lazy(() => IncomingLetterWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(
+            () => IncomingLetterUpdateToOneWithWhereWithoutFilesInputSchema
+          ),
+          z.lazy(() => IncomingLetterUpdateWithoutFilesInputSchema),
+          z.lazy(() => IncomingLetterUncheckedUpdateWithoutFilesInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
 export const ProjectCreateNestedOneWithoutReportsInputSchema: z.ZodType<Prisma.ProjectCreateNestedOneWithoutReportsInput> =
   z
     .object({
@@ -8911,6 +10276,72 @@ export const ProjectCreateNestedOneWithoutReportsInputSchema: z.ZodType<Prisma.P
         .lazy(() => ProjectCreateOrConnectWithoutReportsInputSchema)
         .optional(),
       connect: z.lazy(() => ProjectWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
+export const ReportFileCreateNestedManyWithoutReportInputSchema: z.ZodType<Prisma.ReportFileCreateNestedManyWithoutReportInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema),
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema).array(),
+          z.lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => ReportFileCreateManyReportInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUncheckedCreateNestedManyWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUncheckedCreateNestedManyWithoutReportInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema),
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema).array(),
+          z.lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => ReportFileCreateManyReportInputEnvelopeSchema)
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
     })
     .strict();
 
@@ -8947,6 +10378,208 @@ export const ProjectUpdateOneRequiredWithoutReportsNestedInputSchema: z.ZodType<
           z.lazy(() => ProjectUpdateToOneWithWhereWithoutReportsInputSchema),
           z.lazy(() => ProjectUpdateWithoutReportsInputSchema),
           z.lazy(() => ProjectUncheckedUpdateWithoutReportsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUpdateManyWithoutReportNestedInputSchema: z.ZodType<Prisma.ReportFileUpdateManyWithoutReportNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema),
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema).array(),
+          z.lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => ReportFileUpsertWithWhereUniqueWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUpsertWithWhereUniqueWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => ReportFileCreateManyReportInputEnvelopeSchema)
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => ReportFileUpdateWithWhereUniqueWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUpdateWithWhereUniqueWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => ReportFileUpdateManyWithWhereWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUpdateManyWithWhereWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => ReportFileScalarWhereInputSchema),
+          z.lazy(() => ReportFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUncheckedUpdateManyWithoutReportNestedInputSchema: z.ZodType<Prisma.ReportFileUncheckedUpdateManyWithoutReportNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema),
+          z.lazy(() => ReportFileCreateWithoutReportInputSchema).array(),
+          z.lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .union([
+          z.lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileCreateOrConnectWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      upsert: z
+        .union([
+          z.lazy(() => ReportFileUpsertWithWhereUniqueWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUpsertWithWhereUniqueWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      createMany: z
+        .lazy(() => ReportFileCreateManyReportInputEnvelopeSchema)
+        .optional(),
+      set: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      disconnect: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      delete: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      connect: z
+        .union([
+          z.lazy(() => ReportFileWhereUniqueInputSchema),
+          z.lazy(() => ReportFileWhereUniqueInputSchema).array(),
+        ])
+        .optional(),
+      update: z
+        .union([
+          z.lazy(() => ReportFileUpdateWithWhereUniqueWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUpdateWithWhereUniqueWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      updateMany: z
+        .union([
+          z.lazy(() => ReportFileUpdateManyWithWhereWithoutReportInputSchema),
+          z
+            .lazy(() => ReportFileUpdateManyWithWhereWithoutReportInputSchema)
+            .array(),
+        ])
+        .optional(),
+      deleteMany: z
+        .union([
+          z.lazy(() => ReportFileScalarWhereInputSchema),
+          z.lazy(() => ReportFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportCreateNestedOneWithoutFilesInputSchema: z.ZodType<Prisma.ReportCreateNestedOneWithoutFilesInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReportCreateWithoutFilesInputSchema),
+          z.lazy(() => ReportUncheckedCreateWithoutFilesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => ReportCreateOrConnectWithoutFilesInputSchema)
+        .optional(),
+      connect: z.lazy(() => ReportWhereUniqueInputSchema).optional(),
+    })
+    .strict();
+
+export const ReportUpdateOneRequiredWithoutFilesNestedInputSchema: z.ZodType<Prisma.ReportUpdateOneRequiredWithoutFilesNestedInput> =
+  z
+    .object({
+      create: z
+        .union([
+          z.lazy(() => ReportCreateWithoutFilesInputSchema),
+          z.lazy(() => ReportUncheckedCreateWithoutFilesInputSchema),
+        ])
+        .optional(),
+      connectOrCreate: z
+        .lazy(() => ReportCreateOrConnectWithoutFilesInputSchema)
+        .optional(),
+      upsert: z.lazy(() => ReportUpsertWithoutFilesInputSchema).optional(),
+      connect: z.lazy(() => ReportWhereUniqueInputSchema).optional(),
+      update: z
+        .union([
+          z.lazy(() => ReportUpdateToOneWithWhereWithoutFilesInputSchema),
+          z.lazy(() => ReportUpdateWithoutFilesInputSchema),
+          z.lazy(() => ReportUncheckedUpdateWithoutFilesInputSchema),
         ])
         .optional(),
     })
@@ -9043,6 +10676,72 @@ export const NestedDateTimeWithAggregatesFilterSchema: z.ZodType<Prisma.NestedDa
       _count: z.lazy(() => NestedIntFilterSchema).optional(),
       _min: z.lazy(() => NestedDateTimeFilterSchema).optional(),
       _max: z.lazy(() => NestedDateTimeFilterSchema).optional(),
+    })
+    .strict();
+
+export const NestedStringNullableFilterSchema: z.ZodType<Prisma.NestedStringNullableFilter> =
+  z
+    .object({
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      not: z
+        .union([z.string(), z.lazy(() => NestedStringNullableFilterSchema)])
+        .optional()
+        .nullable(),
+      isSet: z.boolean().optional(),
+    })
+    .strict();
+
+export const NestedStringNullableWithAggregatesFilterSchema: z.ZodType<Prisma.NestedStringNullableWithAggregatesFilter> =
+  z
+    .object({
+      equals: z.string().optional().nullable(),
+      in: z.string().array().optional().nullable(),
+      notIn: z.string().array().optional().nullable(),
+      lt: z.string().optional(),
+      lte: z.string().optional(),
+      gt: z.string().optional(),
+      gte: z.string().optional(),
+      contains: z.string().optional(),
+      startsWith: z.string().optional(),
+      endsWith: z.string().optional(),
+      not: z
+        .union([
+          z.string(),
+          z.lazy(() => NestedStringNullableWithAggregatesFilterSchema),
+        ])
+        .optional()
+        .nullable(),
+      _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
+      _min: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+      _max: z.lazy(() => NestedStringNullableFilterSchema).optional(),
+      isSet: z.boolean().optional(),
+    })
+    .strict();
+
+export const NestedIntNullableFilterSchema: z.ZodType<Prisma.NestedIntNullableFilter> =
+  z
+    .object({
+      equals: z.number().optional().nullable(),
+      in: z.number().array().optional().nullable(),
+      notIn: z.number().array().optional().nullable(),
+      lt: z.number().optional(),
+      lte: z.number().optional(),
+      gt: z.number().optional(),
+      gte: z.number().optional(),
+      not: z
+        .union([z.number(), z.lazy(() => NestedIntNullableFilterSchema)])
+        .optional()
+        .nullable(),
+      isSet: z.boolean().optional(),
     })
     .strict();
 
@@ -9603,8 +11302,9 @@ export const ProjectScalarWhereInputSchema: z.ZodType<Prisma.ProjectScalarWhereI
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
         .optional(),
       userId: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
+        .union([z.lazy(() => StringNullableFilterSchema), z.string()])
+        .optional()
+        .nullable(),
       createdAt: z
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
         .optional(),
@@ -9850,11 +11550,11 @@ export const OutgoingLetterCreateWithoutProjectInputSchema: z.ZodType<Prisma.Out
       id: z.string().optional(),
       recipient: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => OutgoingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
+      files: z
+        .lazy(() => LetterFileCreateNestedManyWithoutLetterInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -9864,11 +11564,11 @@ export const OutgoingLetterUncheckedCreateWithoutProjectInputSchema: z.ZodType<P
       id: z.string().optional(),
       recipient: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => OutgoingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
+      files: z
+        .lazy(() => LetterFileUncheckedCreateNestedManyWithoutLetterInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -9899,11 +11599,11 @@ export const IncomingLetterCreateWithoutProjectInputSchema: z.ZodType<Prisma.Inc
       id: z.string().optional(),
       sender: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => IncomingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
+      files: z
+        .lazy(() => InLetterFileCreateNestedManyWithoutLetterInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -9913,11 +11613,13 @@ export const IncomingLetterUncheckedCreateWithoutProjectInputSchema: z.ZodType<P
       id: z.string().optional(),
       sender: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => IncomingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
+      files: z
+        .lazy(
+          () => InLetterFileUncheckedCreateNestedManyWithoutLetterInputSchema
+        )
+        .optional(),
     })
     .strict();
 
@@ -9951,9 +11653,10 @@ export const ReportCreateWithoutProjectInputSchema: z.ZodType<Prisma.ReportCreat
       reportType: z.lazy(() => ReportTypeSchema),
       version: z.string(),
       status: z.lazy(() => ReportStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
       uploadedDate: z.coerce.date().optional(),
+      files: z
+        .lazy(() => ReportFileCreateNestedManyWithoutReportInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -9966,9 +11669,10 @@ export const ReportUncheckedCreateWithoutProjectInputSchema: z.ZodType<Prisma.Re
       reportType: z.lazy(() => ReportTypeSchema),
       version: z.string(),
       status: z.lazy(() => ReportStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
       uploadedDate: z.coerce.date().optional(),
+      files: z
+        .lazy(() => ReportFileUncheckedCreateNestedManyWithoutReportInputSchema)
+        .optional(),
     })
     .strict();
 
@@ -10606,15 +12310,6 @@ export const OutgoingLetterScalarWhereInputSchema: z.ZodType<Prisma.OutgoingLett
           z.lazy(() => OutgoingStatusSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      fileName: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      createdAt: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-        .optional(),
       projectId: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
@@ -10698,15 +12393,6 @@ export const IncomingLetterScalarWhereInputSchema: z.ZodType<Prisma.IncomingLett
           z.lazy(() => IncomingStatusSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      fileName: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      createdAt: z
-        .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
-        .optional(),
       projectId: z
         .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
@@ -10788,12 +12474,6 @@ export const ReportScalarWhereInputSchema: z.ZodType<Prisma.ReportScalarWhereInp
           z.lazy(() => EnumReportStatusFilterSchema),
           z.lazy(() => ReportStatusSchema),
         ])
-        .optional(),
-      fileUrl: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
-        .optional(),
-      fileName: z
-        .union([z.lazy(() => StringFilterSchema), z.string()])
         .optional(),
       uploadedDate: z
         .union([z.lazy(() => DateTimeFilterSchema), z.coerce.date()])
@@ -10897,7 +12577,9 @@ export const ProjectCreateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectCrea
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       team: z
         .lazy(() => TeamCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -10934,7 +12616,7 @@ export const ProjectUncheckedCreateWithoutBudgetInputSchema: z.ZodType<Prisma.Pr
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       team: z
@@ -11053,7 +12735,7 @@ export const ProjectUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.ProjectUpda
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       team: z
         .lazy(() => TeamUpdateOneWithoutProjectNestedInputSchema)
@@ -11118,9 +12800,10 @@ export const ProjectUncheckedUpdateWithoutBudgetInputSchema: z.ZodType<Prisma.Pr
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -11177,7 +12860,9 @@ export const ProjectCreateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectCreate
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -11214,7 +12899,7 @@ export const ProjectUncheckedCreateWithoutTeamInputSchema: z.ZodType<Prisma.Proj
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -11333,7 +13018,7 @@ export const ProjectUpdateWithoutTeamInputSchema: z.ZodType<Prisma.ProjectUpdate
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -11398,9 +13083,10 @@ export const ProjectUncheckedUpdateWithoutTeamInputSchema: z.ZodType<Prisma.Proj
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -11457,7 +13143,9 @@ export const ProjectCreateWithoutMilestonesInputSchema: z.ZodType<Prisma.Project
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -11494,7 +13182,7 @@ export const ProjectUncheckedCreateWithoutMilestonesInputSchema: z.ZodType<Prism
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -11613,7 +13301,7 @@ export const ProjectUpdateWithoutMilestonesInputSchema: z.ZodType<Prisma.Project
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -11678,9 +13366,10 @@ export const ProjectUncheckedUpdateWithoutMilestonesInputSchema: z.ZodType<Prism
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -11737,7 +13426,9 @@ export const ProjectCreateWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectC
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -11774,7 +13465,7 @@ export const ProjectUncheckedCreateWithoutChecklistInputSchema: z.ZodType<Prisma
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -11891,7 +13582,7 @@ export const ProjectUpdateWithoutChecklistInputSchema: z.ZodType<Prisma.ProjectU
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -11956,9 +13647,10 @@ export const ProjectUncheckedUpdateWithoutChecklistInputSchema: z.ZodType<Prisma
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -12013,7 +13705,9 @@ export const ProjectCreateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectC
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -12050,7 +13744,7 @@ export const ProjectUncheckedCreateWithoutDocumentsInputSchema: z.ZodType<Prisma
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -12169,7 +13863,7 @@ export const ProjectUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma.ProjectU
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -12234,9 +13928,10 @@ export const ProjectUncheckedUpdateWithoutDocumentsInputSchema: z.ZodType<Prisma
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -12293,7 +13988,9 @@ export const ProjectCreateWithoutSiteImagesInputSchema: z.ZodType<Prisma.Project
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -12330,7 +14027,7 @@ export const ProjectUncheckedCreateWithoutSiteImagesInputSchema: z.ZodType<Prism
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -12449,7 +14146,7 @@ export const ProjectUpdateWithoutSiteImagesInputSchema: z.ZodType<Prisma.Project
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -12514,9 +14211,10 @@ export const ProjectUncheckedUpdateWithoutSiteImagesInputSchema: z.ZodType<Prism
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -12573,7 +14271,9 @@ export const ProjectCreateWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.Pr
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -12610,7 +14310,7 @@ export const ProjectUncheckedCreateWithoutOutgoingLettersInputSchema: z.ZodType<
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -12651,6 +14351,43 @@ export const ProjectCreateOrConnectWithoutOutgoingLettersInputSchema: z.ZodType<
       create: z.union([
         z.lazy(() => ProjectCreateWithoutOutgoingLettersInputSchema),
         z.lazy(() => ProjectUncheckedCreateWithoutOutgoingLettersInputSchema),
+      ]),
+    })
+    .strict();
+
+export const LetterFileCreateWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileCreateWithoutLetterInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const LetterFileUncheckedCreateWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUncheckedCreateWithoutLetterInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const LetterFileCreateOrConnectWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileCreateOrConnectWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => LetterFileWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => LetterFileCreateWithoutLetterInputSchema),
+        z.lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const LetterFileCreateManyLetterInputEnvelopeSchema: z.ZodType<Prisma.LetterFileCreateManyLetterInputEnvelope> =
+  z
+    .object({
+      data: z.union([
+        z.lazy(() => LetterFileCreateManyLetterInputSchema),
+        z.lazy(() => LetterFileCreateManyLetterInputSchema).array(),
       ]),
     })
     .strict();
@@ -12727,7 +14464,7 @@ export const ProjectUpdateWithoutOutgoingLettersInputSchema: z.ZodType<Prisma.Pr
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -12792,9 +14529,10 @@ export const ProjectUncheckedUpdateWithoutOutgoingLettersInputSchema: z.ZodType<
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -12838,6 +14576,204 @@ export const ProjectUncheckedUpdateWithoutOutgoingLettersInputSchema: z.ZodType<
     })
     .strict();
 
+export const LetterFileUpsertWithWhereUniqueWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUpsertWithWhereUniqueWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => LetterFileWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => LetterFileUpdateWithoutLetterInputSchema),
+        z.lazy(() => LetterFileUncheckedUpdateWithoutLetterInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => LetterFileCreateWithoutLetterInputSchema),
+        z.lazy(() => LetterFileUncheckedCreateWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const LetterFileUpdateWithWhereUniqueWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUpdateWithWhereUniqueWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => LetterFileWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => LetterFileUpdateWithoutLetterInputSchema),
+        z.lazy(() => LetterFileUncheckedUpdateWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const LetterFileUpdateManyWithWhereWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUpdateManyWithWhereWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => LetterFileScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => LetterFileUpdateManyMutationInputSchema),
+        z.lazy(() => LetterFileUncheckedUpdateManyWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const LetterFileScalarWhereInputSchema: z.ZodType<Prisma.LetterFileScalarWhereInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => LetterFileScalarWhereInputSchema),
+          z.lazy(() => LetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => LetterFileScalarWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => LetterFileScalarWhereInputSchema),
+          z.lazy(() => LetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      url: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      letterId: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+    })
+    .strict();
+
+export const OutgoingLetterCreateWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterCreateWithoutFilesInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      recipient: z.string(),
+      subject: z.string(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
+      project: z.lazy(
+        () => ProjectCreateNestedOneWithoutOutgoingLettersInputSchema
+      ),
+    })
+    .strict();
+
+export const OutgoingLetterUncheckedCreateWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedCreateWithoutFilesInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      recipient: z.string(),
+      subject: z.string(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
+      projectId: z.string(),
+    })
+    .strict();
+
+export const OutgoingLetterCreateOrConnectWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterCreateOrConnectWithoutFilesInput> =
+  z
+    .object({
+      where: z.lazy(() => OutgoingLetterWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => OutgoingLetterCreateWithoutFilesInputSchema),
+        z.lazy(() => OutgoingLetterUncheckedCreateWithoutFilesInputSchema),
+      ]),
+    })
+    .strict();
+
+export const OutgoingLetterUpsertWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterUpsertWithoutFilesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => OutgoingLetterUpdateWithoutFilesInputSchema),
+        z.lazy(() => OutgoingLetterUncheckedUpdateWithoutFilesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => OutgoingLetterCreateWithoutFilesInputSchema),
+        z.lazy(() => OutgoingLetterUncheckedCreateWithoutFilesInputSchema),
+      ]),
+      where: z.lazy(() => OutgoingLetterWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const OutgoingLetterUpdateToOneWithWhereWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateToOneWithWhereWithoutFilesInput> =
+  z
+    .object({
+      where: z.lazy(() => OutgoingLetterWhereInputSchema).optional(),
+      data: z.union([
+        z.lazy(() => OutgoingLetterUpdateWithoutFilesInputSchema),
+        z.lazy(() => OutgoingLetterUncheckedUpdateWithoutFilesInputSchema),
+      ]),
+    })
+    .strict();
+
+export const OutgoingLetterUpdateWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterUpdateWithoutFilesInput> =
+  z
+    .object({
+      recipient: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      subject: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      priority: z
+        .union([
+          z.lazy(() => PrioritySchema),
+          z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => OutgoingStatusSchema),
+          z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      project: z
+        .lazy(
+          () => ProjectUpdateOneRequiredWithoutOutgoingLettersNestedInputSchema
+        )
+        .optional(),
+    })
+    .strict();
+
+export const OutgoingLetterUncheckedUpdateWithoutFilesInputSchema: z.ZodType<Prisma.OutgoingLetterUncheckedUpdateWithoutFilesInput> =
+  z
+    .object({
+      recipient: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      subject: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      priority: z
+        .union([
+          z.lazy(() => PrioritySchema),
+          z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => OutgoingStatusSchema),
+          z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      projectId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
 export const ProjectCreateWithoutIncomingLettersInputSchema: z.ZodType<Prisma.ProjectCreateWithoutIncomingLettersInput> =
   z
     .object({
@@ -12849,7 +14785,9 @@ export const ProjectCreateWithoutIncomingLettersInputSchema: z.ZodType<Prisma.Pr
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -12886,7 +14824,7 @@ export const ProjectUncheckedCreateWithoutIncomingLettersInputSchema: z.ZodType<
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -12927,6 +14865,43 @@ export const ProjectCreateOrConnectWithoutIncomingLettersInputSchema: z.ZodType<
       create: z.union([
         z.lazy(() => ProjectCreateWithoutIncomingLettersInputSchema),
         z.lazy(() => ProjectUncheckedCreateWithoutIncomingLettersInputSchema),
+      ]),
+    })
+    .strict();
+
+export const InLetterFileCreateWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileCreateWithoutLetterInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const InLetterFileUncheckedCreateWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUncheckedCreateWithoutLetterInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const InLetterFileCreateOrConnectWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileCreateOrConnectWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => InLetterFileWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => InLetterFileCreateWithoutLetterInputSchema),
+        z.lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const InLetterFileCreateManyLetterInputEnvelopeSchema: z.ZodType<Prisma.InLetterFileCreateManyLetterInputEnvelope> =
+  z
+    .object({
+      data: z.union([
+        z.lazy(() => InLetterFileCreateManyLetterInputSchema),
+        z.lazy(() => InLetterFileCreateManyLetterInputSchema).array(),
       ]),
     })
     .strict();
@@ -13003,7 +14978,7 @@ export const ProjectUpdateWithoutIncomingLettersInputSchema: z.ZodType<Prisma.Pr
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -13068,9 +15043,10 @@ export const ProjectUncheckedUpdateWithoutIncomingLettersInputSchema: z.ZodType<
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -13114,6 +15090,204 @@ export const ProjectUncheckedUpdateWithoutIncomingLettersInputSchema: z.ZodType<
     })
     .strict();
 
+export const InLetterFileUpsertWithWhereUniqueWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUpsertWithWhereUniqueWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => InLetterFileWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => InLetterFileUpdateWithoutLetterInputSchema),
+        z.lazy(() => InLetterFileUncheckedUpdateWithoutLetterInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => InLetterFileCreateWithoutLetterInputSchema),
+        z.lazy(() => InLetterFileUncheckedCreateWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const InLetterFileUpdateWithWhereUniqueWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUpdateWithWhereUniqueWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => InLetterFileWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => InLetterFileUpdateWithoutLetterInputSchema),
+        z.lazy(() => InLetterFileUncheckedUpdateWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const InLetterFileUpdateManyWithWhereWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUpdateManyWithWhereWithoutLetterInput> =
+  z
+    .object({
+      where: z.lazy(() => InLetterFileScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => InLetterFileUpdateManyMutationInputSchema),
+        z.lazy(() => InLetterFileUncheckedUpdateManyWithoutLetterInputSchema),
+      ]),
+    })
+    .strict();
+
+export const InLetterFileScalarWhereInputSchema: z.ZodType<Prisma.InLetterFileScalarWhereInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => InLetterFileScalarWhereInputSchema),
+          z.lazy(() => InLetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => InLetterFileScalarWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => InLetterFileScalarWhereInputSchema),
+          z.lazy(() => InLetterFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      url: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      letterId: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+    })
+    .strict();
+
+export const IncomingLetterCreateWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterCreateWithoutFilesInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      sender: z.string(),
+      subject: z.string(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
+      project: z.lazy(
+        () => ProjectCreateNestedOneWithoutIncomingLettersInputSchema
+      ),
+    })
+    .strict();
+
+export const IncomingLetterUncheckedCreateWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedCreateWithoutFilesInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      sender: z.string(),
+      subject: z.string(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
+      projectId: z.string(),
+    })
+    .strict();
+
+export const IncomingLetterCreateOrConnectWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterCreateOrConnectWithoutFilesInput> =
+  z
+    .object({
+      where: z.lazy(() => IncomingLetterWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => IncomingLetterCreateWithoutFilesInputSchema),
+        z.lazy(() => IncomingLetterUncheckedCreateWithoutFilesInputSchema),
+      ]),
+    })
+    .strict();
+
+export const IncomingLetterUpsertWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterUpsertWithoutFilesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => IncomingLetterUpdateWithoutFilesInputSchema),
+        z.lazy(() => IncomingLetterUncheckedUpdateWithoutFilesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => IncomingLetterCreateWithoutFilesInputSchema),
+        z.lazy(() => IncomingLetterUncheckedCreateWithoutFilesInputSchema),
+      ]),
+      where: z.lazy(() => IncomingLetterWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const IncomingLetterUpdateToOneWithWhereWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterUpdateToOneWithWhereWithoutFilesInput> =
+  z
+    .object({
+      where: z.lazy(() => IncomingLetterWhereInputSchema).optional(),
+      data: z.union([
+        z.lazy(() => IncomingLetterUpdateWithoutFilesInputSchema),
+        z.lazy(() => IncomingLetterUncheckedUpdateWithoutFilesInputSchema),
+      ]),
+    })
+    .strict();
+
+export const IncomingLetterUpdateWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterUpdateWithoutFilesInput> =
+  z
+    .object({
+      sender: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      subject: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      priority: z
+        .union([
+          z.lazy(() => PrioritySchema),
+          z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => IncomingStatusSchema),
+          z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      project: z
+        .lazy(
+          () => ProjectUpdateOneRequiredWithoutIncomingLettersNestedInputSchema
+        )
+        .optional(),
+    })
+    .strict();
+
+export const IncomingLetterUncheckedUpdateWithoutFilesInputSchema: z.ZodType<Prisma.IncomingLetterUncheckedUpdateWithoutFilesInput> =
+  z
+    .object({
+      sender: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      subject: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      priority: z
+        .union([
+          z.lazy(() => PrioritySchema),
+          z.lazy(() => EnumPriorityFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => IncomingStatusSchema),
+          z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      projectId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
 export const ProjectCreateWithoutReportsInputSchema: z.ZodType<Prisma.ProjectCreateWithoutReportsInput> =
   z
     .object({
@@ -13125,7 +15299,9 @@ export const ProjectCreateWithoutReportsInputSchema: z.ZodType<Prisma.ProjectCre
       endDate: z.coerce.date(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
-      user: z.lazy(() => UserCreateNestedOneWithoutProjectsInputSchema),
+      user: z
+        .lazy(() => UserCreateNestedOneWithoutProjectsInputSchema)
+        .optional(),
       budget: z
         .lazy(() => BudgetCreateNestedOneWithoutProjectInputSchema)
         .optional(),
@@ -13162,7 +15338,7 @@ export const ProjectUncheckedCreateWithoutReportsInputSchema: z.ZodType<Prisma.P
       location: z.string(),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      userId: z.string(),
+      userId: z.string().optional().nullable(),
       createdAt: z.coerce.date().optional(),
       updatedAt: z.coerce.date().optional(),
       budget: z
@@ -13205,6 +15381,43 @@ export const ProjectCreateOrConnectWithoutReportsInputSchema: z.ZodType<Prisma.P
       create: z.union([
         z.lazy(() => ProjectCreateWithoutReportsInputSchema),
         z.lazy(() => ProjectUncheckedCreateWithoutReportsInputSchema),
+      ]),
+    })
+    .strict();
+
+export const ReportFileCreateWithoutReportInputSchema: z.ZodType<Prisma.ReportFileCreateWithoutReportInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const ReportFileUncheckedCreateWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUncheckedCreateWithoutReportInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const ReportFileCreateOrConnectWithoutReportInputSchema: z.ZodType<Prisma.ReportFileCreateOrConnectWithoutReportInput> =
+  z
+    .object({
+      where: z.lazy(() => ReportFileWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => ReportFileCreateWithoutReportInputSchema),
+        z.lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema),
+      ]),
+    })
+    .strict();
+
+export const ReportFileCreateManyReportInputEnvelopeSchema: z.ZodType<Prisma.ReportFileCreateManyReportInputEnvelope> =
+  z
+    .object({
+      data: z.union([
+        z.lazy(() => ReportFileCreateManyReportInputSchema),
+        z.lazy(() => ReportFileCreateManyReportInputSchema).array(),
       ]),
     })
     .strict();
@@ -13281,7 +15494,7 @@ export const ProjectUpdateWithoutReportsInputSchema: z.ZodType<Prisma.ProjectUpd
         ])
         .optional(),
       user: z
-        .lazy(() => UserUpdateOneRequiredWithoutProjectsNestedInputSchema)
+        .lazy(() => UserUpdateOneWithoutProjectsNestedInputSchema)
         .optional(),
       budget: z
         .lazy(() => BudgetUpdateOneWithoutProjectNestedInputSchema)
@@ -13346,9 +15559,10 @@ export const ProjectUncheckedUpdateWithoutReportsInputSchema: z.ZodType<Prisma.P
       userId: z
         .union([
           z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+          z.lazy(() => NullableStringFieldUpdateOperationsInputSchema),
         ])
-        .optional(),
+        .optional()
+        .nullable(),
       createdAt: z
         .union([
           z.coerce.date(),
@@ -13390,6 +15604,228 @@ export const ProjectUncheckedUpdateWithoutReportsInputSchema: z.ZodType<Prisma.P
         .optional(),
       siteImages: z
         .lazy(() => SiteImageUncheckedUpdateManyWithoutProjectNestedInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUpsertWithWhereUniqueWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUpsertWithWhereUniqueWithoutReportInput> =
+  z
+    .object({
+      where: z.lazy(() => ReportFileWhereUniqueInputSchema),
+      update: z.union([
+        z.lazy(() => ReportFileUpdateWithoutReportInputSchema),
+        z.lazy(() => ReportFileUncheckedUpdateWithoutReportInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ReportFileCreateWithoutReportInputSchema),
+        z.lazy(() => ReportFileUncheckedCreateWithoutReportInputSchema),
+      ]),
+    })
+    .strict();
+
+export const ReportFileUpdateWithWhereUniqueWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUpdateWithWhereUniqueWithoutReportInput> =
+  z
+    .object({
+      where: z.lazy(() => ReportFileWhereUniqueInputSchema),
+      data: z.union([
+        z.lazy(() => ReportFileUpdateWithoutReportInputSchema),
+        z.lazy(() => ReportFileUncheckedUpdateWithoutReportInputSchema),
+      ]),
+    })
+    .strict();
+
+export const ReportFileUpdateManyWithWhereWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUpdateManyWithWhereWithoutReportInput> =
+  z
+    .object({
+      where: z.lazy(() => ReportFileScalarWhereInputSchema),
+      data: z.union([
+        z.lazy(() => ReportFileUpdateManyMutationInputSchema),
+        z.lazy(() => ReportFileUncheckedUpdateManyWithoutReportInputSchema),
+      ]),
+    })
+    .strict();
+
+export const ReportFileScalarWhereInputSchema: z.ZodType<Prisma.ReportFileScalarWhereInput> =
+  z
+    .object({
+      AND: z
+        .union([
+          z.lazy(() => ReportFileScalarWhereInputSchema),
+          z.lazy(() => ReportFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      OR: z
+        .lazy(() => ReportFileScalarWhereInputSchema)
+        .array()
+        .optional(),
+      NOT: z
+        .union([
+          z.lazy(() => ReportFileScalarWhereInputSchema),
+          z.lazy(() => ReportFileScalarWhereInputSchema).array(),
+        ])
+        .optional(),
+      id: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      url: z.union([z.lazy(() => StringFilterSchema), z.string()]).optional(),
+      reportId: z
+        .union([z.lazy(() => StringFilterSchema), z.string()])
+        .optional(),
+    })
+    .strict();
+
+export const ReportCreateWithoutFilesInputSchema: z.ZodType<Prisma.ReportCreateWithoutFilesInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      title: z.string(),
+      publisher: z.string(),
+      reportType: z.lazy(() => ReportTypeSchema),
+      version: z.string(),
+      status: z.lazy(() => ReportStatusSchema),
+      uploadedDate: z.coerce.date().optional(),
+      project: z.lazy(() => ProjectCreateNestedOneWithoutReportsInputSchema),
+    })
+    .strict();
+
+export const ReportUncheckedCreateWithoutFilesInputSchema: z.ZodType<Prisma.ReportUncheckedCreateWithoutFilesInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      title: z.string(),
+      publisher: z.string(),
+      reportType: z.lazy(() => ReportTypeSchema),
+      version: z.string(),
+      status: z.lazy(() => ReportStatusSchema),
+      uploadedDate: z.coerce.date().optional(),
+      projectId: z.string(),
+    })
+    .strict();
+
+export const ReportCreateOrConnectWithoutFilesInputSchema: z.ZodType<Prisma.ReportCreateOrConnectWithoutFilesInput> =
+  z
+    .object({
+      where: z.lazy(() => ReportWhereUniqueInputSchema),
+      create: z.union([
+        z.lazy(() => ReportCreateWithoutFilesInputSchema),
+        z.lazy(() => ReportUncheckedCreateWithoutFilesInputSchema),
+      ]),
+    })
+    .strict();
+
+export const ReportUpsertWithoutFilesInputSchema: z.ZodType<Prisma.ReportUpsertWithoutFilesInput> =
+  z
+    .object({
+      update: z.union([
+        z.lazy(() => ReportUpdateWithoutFilesInputSchema),
+        z.lazy(() => ReportUncheckedUpdateWithoutFilesInputSchema),
+      ]),
+      create: z.union([
+        z.lazy(() => ReportCreateWithoutFilesInputSchema),
+        z.lazy(() => ReportUncheckedCreateWithoutFilesInputSchema),
+      ]),
+      where: z.lazy(() => ReportWhereInputSchema).optional(),
+    })
+    .strict();
+
+export const ReportUpdateToOneWithWhereWithoutFilesInputSchema: z.ZodType<Prisma.ReportUpdateToOneWithWhereWithoutFilesInput> =
+  z
+    .object({
+      where: z.lazy(() => ReportWhereInputSchema).optional(),
+      data: z.union([
+        z.lazy(() => ReportUpdateWithoutFilesInputSchema),
+        z.lazy(() => ReportUncheckedUpdateWithoutFilesInputSchema),
+      ]),
+    })
+    .strict();
+
+export const ReportUpdateWithoutFilesInputSchema: z.ZodType<Prisma.ReportUpdateWithoutFilesInput> =
+  z
+    .object({
+      title: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      publisher: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      reportType: z
+        .union([
+          z.lazy(() => ReportTypeSchema),
+          z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      version: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => ReportStatusSchema),
+          z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      uploadedDate: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      project: z
+        .lazy(() => ProjectUpdateOneRequiredWithoutReportsNestedInputSchema)
+        .optional(),
+    })
+    .strict();
+
+export const ReportUncheckedUpdateWithoutFilesInputSchema: z.ZodType<Prisma.ReportUncheckedUpdateWithoutFilesInput> =
+  z
+    .object({
+      title: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      publisher: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      reportType: z
+        .union([
+          z.lazy(() => ReportTypeSchema),
+          z.lazy(() => EnumReportTypeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      version: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      status: z
+        .union([
+          z.lazy(() => ReportStatusSchema),
+          z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      uploadedDate: z
+        .union([
+          z.coerce.date(),
+          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+      projectId: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
         .optional(),
     })
     .strict();
@@ -13652,11 +16088,8 @@ export const OutgoingLetterCreateManyProjectInputSchema: z.ZodType<Prisma.Outgoi
       id: z.string().optional(),
       recipient: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => OutgoingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => OutgoingStatusSchema).optional(),
     })
     .strict();
 
@@ -13666,11 +16099,8 @@ export const IncomingLetterCreateManyProjectInputSchema: z.ZodType<Prisma.Incomi
       id: z.string().optional(),
       sender: z.string(),
       subject: z.string(),
-      priority: z.lazy(() => PrioritySchema),
-      status: z.lazy(() => IncomingStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
-      createdAt: z.coerce.date().optional(),
+      priority: z.lazy(() => PrioritySchema).optional(),
+      status: z.lazy(() => IncomingStatusSchema).optional(),
     })
     .strict();
 
@@ -13683,8 +16113,6 @@ export const ReportCreateManyProjectInputSchema: z.ZodType<Prisma.ReportCreateMa
       reportType: z.lazy(() => ReportTypeSchema),
       version: z.string(),
       status: z.lazy(() => ReportStatusSchema),
-      fileUrl: z.string(),
-      fileName: z.string(),
       uploadedDate: z.coerce.date().optional(),
     })
     .strict();
@@ -14017,23 +16445,8 @@ export const OutgoingLetterUpdateWithoutProjectInputSchema: z.ZodType<Prisma.Out
           z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
+      files: z
+        .lazy(() => LetterFileUpdateManyWithoutLetterNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -14065,23 +16478,8 @@ export const OutgoingLetterUncheckedUpdateWithoutProjectInputSchema: z.ZodType<P
           z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
+      files: z
+        .lazy(() => LetterFileUncheckedUpdateManyWithoutLetterNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -14111,24 +16509,6 @@ export const OutgoingLetterUncheckedUpdateManyWithoutProjectInputSchema: z.ZodTy
         .union([
           z.lazy(() => OutgoingStatusSchema),
           z.lazy(() => EnumOutgoingStatusFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
     })
@@ -14161,23 +16541,8 @@ export const IncomingLetterUpdateWithoutProjectInputSchema: z.ZodType<Prisma.Inc
           z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
+      files: z
+        .lazy(() => InLetterFileUpdateManyWithoutLetterNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -14209,23 +16574,10 @@ export const IncomingLetterUncheckedUpdateWithoutProjectInputSchema: z.ZodType<P
           z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
-        ])
+      files: z
+        .lazy(
+          () => InLetterFileUncheckedUpdateManyWithoutLetterNestedInputSchema
+        )
         .optional(),
     })
     .strict();
@@ -14255,24 +16607,6 @@ export const IncomingLetterUncheckedUpdateManyWithoutProjectInputSchema: z.ZodTy
         .union([
           z.lazy(() => IncomingStatusSchema),
           z.lazy(() => EnumIncomingStatusFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      createdAt: z
-        .union([
-          z.coerce.date(),
-          z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
         .optional(),
     })
@@ -14311,23 +16645,14 @@ export const ReportUpdateWithoutProjectInputSchema: z.ZodType<Prisma.ReportUpdat
           z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       uploadedDate: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      files: z
+        .lazy(() => ReportFileUpdateManyWithoutReportNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -14365,23 +16690,14 @@ export const ReportUncheckedUpdateWithoutProjectInputSchema: z.ZodType<Prisma.Re
           z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
         ])
         .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
       uploadedDate: z
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
         ])
+        .optional(),
+      files: z
+        .lazy(() => ReportFileUncheckedUpdateManyWithoutReportNestedInputSchema)
         .optional(),
     })
     .strict();
@@ -14417,18 +16733,6 @@ export const ReportUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Prism
         .union([
           z.lazy(() => ReportStatusSchema),
           z.lazy(() => EnumReportStatusFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileUrl: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
-        ])
-        .optional(),
-      fileName: z
-        .union([
-          z.string(),
-          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
       uploadedDate: z
@@ -14561,6 +16865,138 @@ export const SiteImageUncheckedUpdateManyWithoutProjectInputSchema: z.ZodType<Pr
         .union([
           z.coerce.date(),
           z.lazy(() => DateTimeFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileCreateManyLetterInputSchema: z.ZodType<Prisma.LetterFileCreateManyLetterInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const LetterFileUpdateWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUpdateWithoutLetterInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileUncheckedUpdateWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUncheckedUpdateWithoutLetterInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileUncheckedUpdateManyWithoutLetterInputSchema: z.ZodType<Prisma.LetterFileUncheckedUpdateManyWithoutLetterInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileCreateManyLetterInputSchema: z.ZodType<Prisma.InLetterFileCreateManyLetterInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const InLetterFileUpdateWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUpdateWithoutLetterInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileUncheckedUpdateWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUncheckedUpdateWithoutLetterInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileUncheckedUpdateManyWithoutLetterInputSchema: z.ZodType<Prisma.InLetterFileUncheckedUpdateManyWithoutLetterInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileCreateManyReportInputSchema: z.ZodType<Prisma.ReportFileCreateManyReportInput> =
+  z
+    .object({
+      id: z.string().optional(),
+      url: z.string(),
+    })
+    .strict();
+
+export const ReportFileUpdateWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUpdateWithoutReportInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUncheckedUpdateWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUncheckedUpdateWithoutReportInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileUncheckedUpdateManyWithoutReportInputSchema: z.ZodType<Prisma.ReportFileUncheckedUpdateManyWithoutReportInput> =
+  z
+    .object({
+      url: z
+        .union([
+          z.string(),
+          z.lazy(() => StringFieldUpdateOperationsInputSchema),
         ])
         .optional(),
     })
@@ -15643,6 +18079,129 @@ export const OutgoingLetterFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.Outgoin
     })
     .strict();
 
+export const LetterFileFindFirstArgsSchema: z.ZodType<Prisma.LetterFileFindFirstArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      where: LetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          LetterFileOrderByWithRelationInputSchema.array(),
+          LetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: LetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          LetterFileScalarFieldEnumSchema,
+          LetterFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileFindFirstOrThrowArgsSchema: z.ZodType<Prisma.LetterFileFindFirstOrThrowArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      where: LetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          LetterFileOrderByWithRelationInputSchema.array(),
+          LetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: LetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          LetterFileScalarFieldEnumSchema,
+          LetterFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileFindManyArgsSchema: z.ZodType<Prisma.LetterFileFindManyArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      where: LetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          LetterFileOrderByWithRelationInputSchema.array(),
+          LetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: LetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          LetterFileScalarFieldEnumSchema,
+          LetterFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const LetterFileAggregateArgsSchema: z.ZodType<Prisma.LetterFileAggregateArgs> =
+  z
+    .object({
+      where: LetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          LetterFileOrderByWithRelationInputSchema.array(),
+          LetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: LetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const LetterFileGroupByArgsSchema: z.ZodType<Prisma.LetterFileGroupByArgs> =
+  z
+    .object({
+      where: LetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          LetterFileOrderByWithAggregationInputSchema.array(),
+          LetterFileOrderByWithAggregationInputSchema,
+        ])
+        .optional(),
+      by: LetterFileScalarFieldEnumSchema.array(),
+      having: LetterFileScalarWhereWithAggregatesInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const LetterFileFindUniqueArgsSchema: z.ZodType<Prisma.LetterFileFindUniqueArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      where: LetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const LetterFileFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.LetterFileFindUniqueOrThrowArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      where: LetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
 export const IncomingLetterFindFirstArgsSchema: z.ZodType<Prisma.IncomingLetterFindFirstArgs> =
   z
     .object({
@@ -15766,6 +18325,129 @@ export const IncomingLetterFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.Incomin
     })
     .strict();
 
+export const InLetterFileFindFirstArgsSchema: z.ZodType<Prisma.InLetterFileFindFirstArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      where: InLetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          InLetterFileOrderByWithRelationInputSchema.array(),
+          InLetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: InLetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          InLetterFileScalarFieldEnumSchema,
+          InLetterFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileFindFirstOrThrowArgsSchema: z.ZodType<Prisma.InLetterFileFindFirstOrThrowArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      where: InLetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          InLetterFileOrderByWithRelationInputSchema.array(),
+          InLetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: InLetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          InLetterFileScalarFieldEnumSchema,
+          InLetterFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileFindManyArgsSchema: z.ZodType<Prisma.InLetterFileFindManyArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      where: InLetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          InLetterFileOrderByWithRelationInputSchema.array(),
+          InLetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: InLetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          InLetterFileScalarFieldEnumSchema,
+          InLetterFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const InLetterFileAggregateArgsSchema: z.ZodType<Prisma.InLetterFileAggregateArgs> =
+  z
+    .object({
+      where: InLetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          InLetterFileOrderByWithRelationInputSchema.array(),
+          InLetterFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: InLetterFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const InLetterFileGroupByArgsSchema: z.ZodType<Prisma.InLetterFileGroupByArgs> =
+  z
+    .object({
+      where: InLetterFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          InLetterFileOrderByWithAggregationInputSchema.array(),
+          InLetterFileOrderByWithAggregationInputSchema,
+        ])
+        .optional(),
+      by: InLetterFileScalarFieldEnumSchema.array(),
+      having: InLetterFileScalarWhereWithAggregatesInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const InLetterFileFindUniqueArgsSchema: z.ZodType<Prisma.InLetterFileFindUniqueArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      where: InLetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const InLetterFileFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.InLetterFileFindUniqueOrThrowArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      where: InLetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
 export const ReportFindFirstArgsSchema: z.ZodType<Prisma.ReportFindFirstArgs> =
   z
     .object({
@@ -15881,6 +18563,129 @@ export const ReportFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.ReportFindUniqu
       select: ReportSelectSchema.optional(),
       include: ReportIncludeSchema.optional(),
       where: ReportWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const ReportFileFindFirstArgsSchema: z.ZodType<Prisma.ReportFileFindFirstArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      where: ReportFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          ReportFileOrderByWithRelationInputSchema.array(),
+          ReportFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: ReportFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          ReportFileScalarFieldEnumSchema,
+          ReportFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileFindFirstOrThrowArgsSchema: z.ZodType<Prisma.ReportFileFindFirstOrThrowArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      where: ReportFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          ReportFileOrderByWithRelationInputSchema.array(),
+          ReportFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: ReportFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          ReportFileScalarFieldEnumSchema,
+          ReportFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileFindManyArgsSchema: z.ZodType<Prisma.ReportFileFindManyArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      where: ReportFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          ReportFileOrderByWithRelationInputSchema.array(),
+          ReportFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: ReportFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+      distinct: z
+        .union([
+          ReportFileScalarFieldEnumSchema,
+          ReportFileScalarFieldEnumSchema.array(),
+        ])
+        .optional(),
+    })
+    .strict();
+
+export const ReportFileAggregateArgsSchema: z.ZodType<Prisma.ReportFileAggregateArgs> =
+  z
+    .object({
+      where: ReportFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          ReportFileOrderByWithRelationInputSchema.array(),
+          ReportFileOrderByWithRelationInputSchema,
+        ])
+        .optional(),
+      cursor: ReportFileWhereUniqueInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const ReportFileGroupByArgsSchema: z.ZodType<Prisma.ReportFileGroupByArgs> =
+  z
+    .object({
+      where: ReportFileWhereInputSchema.optional(),
+      orderBy: z
+        .union([
+          ReportFileOrderByWithAggregationInputSchema.array(),
+          ReportFileOrderByWithAggregationInputSchema,
+        ])
+        .optional(),
+      by: ReportFileScalarFieldEnumSchema.array(),
+      having: ReportFileScalarWhereWithAggregatesInputSchema.optional(),
+      take: z.number().optional(),
+      skip: z.number().optional(),
+    })
+    .strict();
+
+export const ReportFileFindUniqueArgsSchema: z.ZodType<Prisma.ReportFileFindUniqueArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      where: ReportFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const ReportFileFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.ReportFileFindUniqueOrThrowArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      where: ReportFileWhereUniqueInputSchema,
     })
     .strict();
 
@@ -16557,6 +19362,87 @@ export const OutgoingLetterDeleteManyArgsSchema: z.ZodType<Prisma.OutgoingLetter
     })
     .strict();
 
+export const LetterFileCreateArgsSchema: z.ZodType<Prisma.LetterFileCreateArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      data: z.union([
+        LetterFileCreateInputSchema,
+        LetterFileUncheckedCreateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const LetterFileUpsertArgsSchema: z.ZodType<Prisma.LetterFileUpsertArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      where: LetterFileWhereUniqueInputSchema,
+      create: z.union([
+        LetterFileCreateInputSchema,
+        LetterFileUncheckedCreateInputSchema,
+      ]),
+      update: z.union([
+        LetterFileUpdateInputSchema,
+        LetterFileUncheckedUpdateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const LetterFileCreateManyArgsSchema: z.ZodType<Prisma.LetterFileCreateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        LetterFileCreateManyInputSchema,
+        LetterFileCreateManyInputSchema.array(),
+      ]),
+    })
+    .strict();
+
+export const LetterFileDeleteArgsSchema: z.ZodType<Prisma.LetterFileDeleteArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      where: LetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const LetterFileUpdateArgsSchema: z.ZodType<Prisma.LetterFileUpdateArgs> =
+  z
+    .object({
+      select: LetterFileSelectSchema.optional(),
+      include: LetterFileIncludeSchema.optional(),
+      data: z.union([
+        LetterFileUpdateInputSchema,
+        LetterFileUncheckedUpdateInputSchema,
+      ]),
+      where: LetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const LetterFileUpdateManyArgsSchema: z.ZodType<Prisma.LetterFileUpdateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        LetterFileUpdateManyMutationInputSchema,
+        LetterFileUncheckedUpdateManyInputSchema,
+      ]),
+      where: LetterFileWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict();
+
+export const LetterFileDeleteManyArgsSchema: z.ZodType<Prisma.LetterFileDeleteManyArgs> =
+  z
+    .object({
+      where: LetterFileWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict();
+
 export const IncomingLetterCreateArgsSchema: z.ZodType<Prisma.IncomingLetterCreateArgs> =
   z
     .object({
@@ -16638,6 +19524,87 @@ export const IncomingLetterDeleteManyArgsSchema: z.ZodType<Prisma.IncomingLetter
     })
     .strict();
 
+export const InLetterFileCreateArgsSchema: z.ZodType<Prisma.InLetterFileCreateArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      data: z.union([
+        InLetterFileCreateInputSchema,
+        InLetterFileUncheckedCreateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const InLetterFileUpsertArgsSchema: z.ZodType<Prisma.InLetterFileUpsertArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      where: InLetterFileWhereUniqueInputSchema,
+      create: z.union([
+        InLetterFileCreateInputSchema,
+        InLetterFileUncheckedCreateInputSchema,
+      ]),
+      update: z.union([
+        InLetterFileUpdateInputSchema,
+        InLetterFileUncheckedUpdateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const InLetterFileCreateManyArgsSchema: z.ZodType<Prisma.InLetterFileCreateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        InLetterFileCreateManyInputSchema,
+        InLetterFileCreateManyInputSchema.array(),
+      ]),
+    })
+    .strict();
+
+export const InLetterFileDeleteArgsSchema: z.ZodType<Prisma.InLetterFileDeleteArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      where: InLetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const InLetterFileUpdateArgsSchema: z.ZodType<Prisma.InLetterFileUpdateArgs> =
+  z
+    .object({
+      select: InLetterFileSelectSchema.optional(),
+      include: InLetterFileIncludeSchema.optional(),
+      data: z.union([
+        InLetterFileUpdateInputSchema,
+        InLetterFileUncheckedUpdateInputSchema,
+      ]),
+      where: InLetterFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const InLetterFileUpdateManyArgsSchema: z.ZodType<Prisma.InLetterFileUpdateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        InLetterFileUpdateManyMutationInputSchema,
+        InLetterFileUncheckedUpdateManyInputSchema,
+      ]),
+      where: InLetterFileWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict();
+
+export const InLetterFileDeleteManyArgsSchema: z.ZodType<Prisma.InLetterFileDeleteManyArgs> =
+  z
+    .object({
+      where: InLetterFileWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict();
+
 export const ReportCreateArgsSchema: z.ZodType<Prisma.ReportCreateArgs> = z
   .object({
     select: ReportSelectSchema.optional(),
@@ -16705,6 +19672,87 @@ export const ReportDeleteManyArgsSchema: z.ZodType<Prisma.ReportDeleteManyArgs> 
   z
     .object({
       where: ReportWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict();
+
+export const ReportFileCreateArgsSchema: z.ZodType<Prisma.ReportFileCreateArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      data: z.union([
+        ReportFileCreateInputSchema,
+        ReportFileUncheckedCreateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const ReportFileUpsertArgsSchema: z.ZodType<Prisma.ReportFileUpsertArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      where: ReportFileWhereUniqueInputSchema,
+      create: z.union([
+        ReportFileCreateInputSchema,
+        ReportFileUncheckedCreateInputSchema,
+      ]),
+      update: z.union([
+        ReportFileUpdateInputSchema,
+        ReportFileUncheckedUpdateInputSchema,
+      ]),
+    })
+    .strict();
+
+export const ReportFileCreateManyArgsSchema: z.ZodType<Prisma.ReportFileCreateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        ReportFileCreateManyInputSchema,
+        ReportFileCreateManyInputSchema.array(),
+      ]),
+    })
+    .strict();
+
+export const ReportFileDeleteArgsSchema: z.ZodType<Prisma.ReportFileDeleteArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      where: ReportFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const ReportFileUpdateArgsSchema: z.ZodType<Prisma.ReportFileUpdateArgs> =
+  z
+    .object({
+      select: ReportFileSelectSchema.optional(),
+      include: ReportFileIncludeSchema.optional(),
+      data: z.union([
+        ReportFileUpdateInputSchema,
+        ReportFileUncheckedUpdateInputSchema,
+      ]),
+      where: ReportFileWhereUniqueInputSchema,
+    })
+    .strict();
+
+export const ReportFileUpdateManyArgsSchema: z.ZodType<Prisma.ReportFileUpdateManyArgs> =
+  z
+    .object({
+      data: z.union([
+        ReportFileUpdateManyMutationInputSchema,
+        ReportFileUncheckedUpdateManyInputSchema,
+      ]),
+      where: ReportFileWhereInputSchema.optional(),
+      limit: z.number().optional(),
+    })
+    .strict();
+
+export const ReportFileDeleteManyArgsSchema: z.ZodType<Prisma.ReportFileDeleteManyArgs> =
+  z
+    .object({
+      where: ReportFileWhereInputSchema.optional(),
       limit: z.number().optional(),
     })
     .strict();
