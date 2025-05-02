@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { FormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -243,53 +243,62 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
 
     try {
       setNewIncomingLetter((prev) => ({ ...prev, isUploading: true }));
+      const uploaded = [];
 
-      const formDataobj = new FormData();
-      filesToUpload.forEach((file) => formDataobj.append("images", file));
-      const uploadResult =
-        filesToUpload.length > 0 ? await uploadImageFiles(formDataobj) : null;
-      let uploaded: any[] = [];
-      if (uploadResult) {
-        const updatedLetters = [
-          {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            recipient: newOutgoingLetter.recipient,
-            subject: newOutgoingLetter.subject,
-            priority: newOutgoingLetter.priority,
-            status: newOutgoingLetter.status,
-            fileUrl:
-              uploadResult && Array.isArray(uploadResult.fileURL)
-                ? uploadResult.fileURL
-                : [],
-            fileName: filesToUpload.map((file) => file.name).join(", "),
-          },
-        ];
-        uploaded = [...uploaded, ...updatedLetters];
-      }
-      const fileForm = new FormData();
-      newOutgoingLetter.file?.forEach((file) => fileForm.append("files", file));
-      const fileRes = await uploadNonImageFiles(fileForm);
+      // Handle image uploads from camera or file system
+      if (filesToUpload.length > 0) {
+        const formDataObj = new FormData();
+        filesToUpload.forEach((file) => formDataObj.append("images", file));
+        const uploadResult = await uploadImageFiles(formDataObj);
 
-      if (fileRes) {
-        const updatedLetters = [
-          {
+        if (uploadResult) {
+          const fileUrls = Array.isArray(uploadResult.fileURL)
+            ? uploadResult.fileURL
+            : [uploadResult.fileURL];
+
+          uploaded.push({
             id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            recipient: newIncomingLetter.sender,
+            sender: newIncomingLetter.sender,
             subject: newIncomingLetter.subject,
             priority: newIncomingLetter.priority,
             status: newIncomingLetter.status,
-            fileUrl: fileRes.upload.map((url: any) => url.value.qrPDFURL),
-
-            fileName: "Outgoing Letters",
-          },
-        ];
-        uploaded = [...uploaded, ...updatedLetters];
+            fileUrl: fileUrls,
+            fileName: filesToUpload.map((file) => file.name).join(", "),
+          });
+        }
       }
-      console.log(formData);
-      updateFormData({
-        incomingLetters: [...formData.incomingLetters, ...uploaded],
-      });
 
+      // Handle document file uploads
+      if (newIncomingLetter.file && newIncomingLetter.file.length > 0) {
+        const fileForm = new FormData();
+        newIncomingLetter.file.forEach((file) =>
+          fileForm.append("files", file)
+        );
+        const fileRes = await uploadNonImageFiles(fileForm);
+
+        if (fileRes && fileRes.upload) {
+          const fileUrls = fileRes.upload.map((url) => url.value.qrPDFURL);
+
+          uploaded.push({
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            sender: newIncomingLetter.sender,
+            subject: newIncomingLetter.subject,
+            priority: newIncomingLetter.priority,
+            status: newIncomingLetter.status,
+            fileUrl: fileUrls,
+            fileName: "Incoming Letters",
+          });
+        }
+      }
+
+      // Update form data with new incoming letters
+      if (uploaded.length > 0) {
+        updateFormData({
+          incomingLetters: [...formData.incomingLetters, ...uploaded],
+        });
+      }
+
+      // Reset form
       setNewIncomingLetter({
         sender: "",
         subject: "",
@@ -619,7 +628,9 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
                               <Image
                                 width={80}
                                 height={80}
-                                src={URL.createObjectURL(img)}
+                                src={
+                                  URL.createObjectURL(img) || "/placeholder.svg"
+                                }
                                 alt={`Uploaded ${index}`}
                                 className="w-20 h-20 object-cover rounded"
                               />
@@ -700,7 +711,10 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
                                 <Image
                                   width={80}
                                   height={80}
-                                  src={URL.createObjectURL(img)}
+                                  src={
+                                    URL.createObjectURL(img) ||
+                                    "/placeholder.svg"
+                                  }
                                   alt={`Capture ${index}`}
                                   className="w-20 h-20 object-cover rounded"
                                 />
@@ -923,7 +937,9 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
                               <Image
                                 width={80}
                                 height={80}
-                                src={URL.createObjectURL(img)}
+                                src={
+                                  URL.createObjectURL(img) || "/placeholder.svg"
+                                }
                                 alt={`Uploaded ${index}`}
                                 className="w-20 h-20 object-cover rounded"
                               />
@@ -988,7 +1004,10 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
                                 <Image
                                   width={80}
                                   height={80}
-                                  src={URL.createObjectURL(img)}
+                                  src={
+                                    URL.createObjectURL(img) ||
+                                    "/placeholder.svg"
+                                  }
                                   alt={`Capture ${index}`}
                                   className="w-20 h-20 object-cover rounded"
                                 />

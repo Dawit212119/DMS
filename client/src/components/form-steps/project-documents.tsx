@@ -1,9 +1,13 @@
+"use client";
+
+import type React from "react";
+
 import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, File, Plus, Trash2, Upload } from "lucide-react";
+import { Camera, type File, Trash2, Upload } from "lucide-react";
 import useImageUploader from "@/app/action/useImageuploader";
 import useFileUploader from "@/app/action/useFileuploader";
 import Image from "next/image";
@@ -38,23 +42,20 @@ export default function ProjectDocuments({
   const [nonImageFiles, setNonImageFiles] = useState<File[]>([]);
   const [cameraActive, setCameraActive] = useState(false);
   const [canAddMoreFiles, setCanAddMoreFiles] = useState(true);
-
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
   const { uploadFiles: uploadImageFiles } = useImageUploader();
   const { uploadFiles: uploadNonImageFiles } = useFileUploader();
   console.log(nonImageFiles);
   useEffect(() => {
     if (!cameraActive) return;
-
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
         if (videoRef.current) videoRef.current.srcObject = stream;
       })
       .catch((err) => {
-        console.error("Camera access denied:", err);
+        console.log("Camera access denied:", err);
         alert("Camera access denied. Please check your permissions.");
       });
   }, [cameraActive]);
@@ -77,7 +78,6 @@ export default function ProjectDocuments({
       file,
       isUploading: false,
     }));
-
     setNewDocuments((prev) => [...prev, ...allDocs]);
   };
 
@@ -128,11 +128,9 @@ export default function ProjectDocuments({
       )
     );
   };
-
   const removeNewDocument = (index: number) => {
     const removed = newDocuments[index];
     if (!removed.file) return;
-
     setNewDocuments((prev) => prev.filter((_, i) => i !== index));
     setImageFiles((prev) => prev.filter((f) => f !== removed.file));
     setNonImageFiles((prev) => prev.filter((f) => f !== removed.file));
@@ -192,14 +190,14 @@ export default function ProjectDocuments({
             fileUrl: fileRes.upload[i]?.value?.qrPDFURL || "",
             fileName: doc.file?.name || "",
           }));
-
         uploaded = [...uploaded, ...uploadedFiles];
+        console.log("the uploaded file>>>>>>>>>>>>..", uploaded);
       }
 
       updateFormData({
         documents: [...formData.documents, ...uploaded],
       });
-      console.log(formData);
+      console.log("Clear form data>>>>>>>>>>>.", formData);
       // Clear temporary state
       setNewDocuments([]);
       setImageFiles([]);
@@ -213,9 +211,10 @@ export default function ProjectDocuments({
   };
 
   const handleAddAnother = () => {
-    document.getElementById("fileInput")?.click();
+    if (!newDocuments.some((d) => d.isUploading)) {
+      document.getElementById("fileInput")?.click();
+    }
   };
-
   return (
     <div className="space-y-6">
       <div>
@@ -247,15 +246,49 @@ export default function ProjectDocuments({
                   onClick={handleAddAnother}
                   disabled={newDocuments.some((d) => d.isUploading)}
                 >
-                  <Upload className="mr-2 h-4 w-4" /> Select Files
+                  {newDocuments.some((d) => d.isUploading) ? (
+                    <>
+                      <span className="animate-spin mr-2">
+                        <svg
+                          className="h-4 w-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      </span>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" /> Select Files
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
           </div>
 
           {!cameraActive && (
-            <Button onClick={() => setCameraActive(true)} className="mt-4">
-              Start Camera
+            <Button
+              onClick={() => setCameraActive(true)}
+              className="mt-4"
+              disabled={newDocuments.some((d) => d.isUploading)}
+            >
+              <Camera className="mr-2 h-4 w-4" /> Start Camera
             </Button>
           )}
 
@@ -272,14 +305,16 @@ export default function ProjectDocuments({
                 <Button
                   className="bg-green-600 text-white"
                   onClick={handleCameraCapture}
+                  disabled={newDocuments.some((d) => d.isUploading)}
                 >
                   📸 Capture Photo
                 </Button>
                 <Button
                   className="bg-green-600 text-white"
                   onClick={handleStopCapture}
+                  disabled={newDocuments.some((d) => d.isUploading)}
                 >
-                  📸 stop
+                  📸 Stop
                 </Button>
               </div>
             </div>
@@ -307,7 +342,9 @@ export default function ProjectDocuments({
                     />
                     {doc.file && doc.file.type.startsWith("image/") ? (
                       <Image
-                        src={URL.createObjectURL(doc.file)}
+                        src={
+                          URL.createObjectURL(doc.file) || "/placeholder.svg"
+                        }
                         alt="Captured"
                         width={300}
                         height={300}
@@ -326,6 +363,7 @@ export default function ProjectDocuments({
                     <Button
                       variant="link"
                       onClick={() => removeNewDocument(idx)}
+                      disabled={doc.isUploading}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -340,10 +378,44 @@ export default function ProjectDocuments({
       <div className="flex gap-3">
         <Button
           variant="outline"
-          disabled={!canAddMoreFiles}
+          disabled={
+            !canAddMoreFiles ||
+            newDocuments.length === 0 ||
+            newDocuments.some((d) => d.isUploading)
+          }
           onClick={addDocument}
         >
-          <Upload className="mr-2 h-4 w-4" /> Upload Documents
+          {newDocuments.some((d) => d.isUploading) ? (
+            <>
+              <span className="animate-spin mr-2">
+                <svg
+                  className="h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              </span>
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Upload className="mr-2 h-4 w-4" /> Upload Documents
+            </>
+          )}
         </Button>
       </div>
     </div>

@@ -147,6 +147,65 @@ const steps = [
   { id: 9, name: "Reports", icon: "📊" },
   { id: 10, name: "Review", icon: "🔍" },
 ];
+function transformProjectData(formData: FormData) {
+  const raw = formData;
+  return {
+    project: {
+      projectName: raw.projectName,
+      clientName: raw.clientName,
+      location: raw.location,
+      startDate: new Date(raw.startDate).toISOString(),
+      endDate: new Date(raw.endDate).toISOString(),
+    },
+    budget: {
+      total: parseFloat(raw.totalBudget),
+      spent: parseFloat(raw.amountSpent),
+    },
+    team: {
+      projectManager: raw.projectManager,
+      siteManager: raw.siteManager,
+      civilManager: raw.civilManager,
+      architecturalLead: raw.architecturalLead,
+      totalWorkers: raw.totalWorkers,
+    },
+    milestones: (raw.milestones || []).map((m) => ({
+      name: m.name,
+      date: new Date(m.date).toISOString(),
+      status: m.status?.replace(/\s/g, "").toLowerCase(),
+    })),
+    reports: (raw.reports || []).map((r) => ({
+      title: r.title,
+      publisher: r.publisher,
+      version: r.version,
+      fileUrl: r.fileUrl?.[0] || "",
+      fileName: r.fileName,
+      uploadedDate: new Date().toISOString(), // use actual upload date if available
+      reportType: r.reportType,
+      status: r.status,
+    })),
+    outgoingLetters: (raw.outgoingLetters || []).map((l) => ({
+      recipient: l.recipient,
+      subject: l.subject,
+      priority: l.priority,
+      fileUrl: l.fileUrl?.[0] || "",
+      fileName: l.fileName,
+      status: l.status,
+    })),
+    incomingLetters: (raw.incomingLetters || []).map((l) => ({
+      sender: l.sender,
+      subject: l.subject,
+      priority: l.priority,
+      fileUrl: l.fileUrl?.[0] || "",
+      fileName: l.fileName,
+      status: l.status,
+    })),
+    documents: (raw.documents || []).map((d) => ({
+      title: d.title,
+      fileUrl: d.fileUrl,
+      fileName: d.fileName,
+    })),
+  };
+}
 
 export default function ProjectForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -181,6 +240,7 @@ export default function ProjectForm() {
           return;
         }
       }
+      console.log("the form data>>>>>>>>>>>>.", formData);
 
       // If validation passes or we're not on the first step, proceed
       setValidationErrors([]);
@@ -197,12 +257,17 @@ export default function ProjectForm() {
   };
 
   const handleSubmit = async () => {
+    const structuredData = transformProjectData(formData);
+    console.log(
+      "the form data to submit is +++++======>>>>>>>>>>>>.",
+      structuredData
+    );
     const res = await fetch("http://localhost:8000/project", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(structuredData),
     });
     if (res.ok) {
       toast("Project submitted successfully!");

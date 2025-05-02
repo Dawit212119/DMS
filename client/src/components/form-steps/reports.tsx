@@ -44,93 +44,71 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
     isUploading: false,
   });
 
-  // const uploadFilesToServer = async (files: File[]) => {
-  //   try {
-  //     setNewReport((prev) => ({ ...prev, isUploading: true }));
-  //     const fileData=
-  //     const response = await uploadFiles(files);
-  //     return response.map(
-  //       (res: PromiseSettledResult<{ fileURL: string }>, index: number) => ({
-  //         url: res.status === "fulfilled" ? res.value.fileURL : "",
-  //         fileName: files[index].name,
-  //       })
-  //     );
-  //   } finally {
-  //     setNewReport((prev) => ({ ...prev, isUploading: false }));
-  //   }
-  // };
-
+  // Update the addReport function to better handle file uploads and get URLs
   const addReport = async () => {
     if (
       newReport.title &&
       newReport.publisher &&
       newReport.version &&
-      newReport.files.length > 0
+      (newReport.files.length > 0 || fileSystemImages.length > 0)
     ) {
       try {
-        // const uploadedFiles = await uploadFilesToServer(newReport.files);
+        setNewReport((prev) => ({ ...prev, isUploading: true }));
 
-        interface UploadedFile {
-          url: string;
-          fileName: string;
-        }
+        const upload: any[] = [];
 
-        interface Report {
-          id: string;
-          title: string;
-          publisher: string;
-          reportType: "daily" | "weekly" | "monthly" | "quarterly" | "annually";
-          version: string;
-          status: "approved" | "rejected";
-          fileUrl: any;
-          fileName: string;
-        }
-        const fileData = new FormData();
-        newReport.files.forEach((file) => fileData.append("files", file));
-        const fileres = await uploadFiles(fileData);
-        let upload: any[] = [];
-        if (fileres) {
-          const updatedReports: Report[] = [
-            {
+        // Handle non-image files upload
+        if (newReport.files.length > 0) {
+          const fileData = new FormData();
+          newReport.files.forEach((file) => fileData.append("files", file));
+          const fileRes = await uploadFiles(fileData);
+
+          if (fileRes?.success && Array.isArray(fileRes.upload)) {
+            const uploadedFiles = {
               id: `${Date.now()}`,
               title: newReport.title,
               publisher: newReport.publisher,
               reportType: newReport.reportType,
               version: newReport.version,
               status: newReport.status,
-              fileUrl: fileres.upload.map((url: any) => url.qrPDFURL),
-              fileName: fileres.fileName,
-            },
-          ];
-          upload = [...updatedReports];
+              fileUrl: fileRes.upload.map(
+                (item: any) => item.value?.qrPDFURL || ""
+              ),
+              fileName: newReport.files.map((file) => file.name).join(", "),
+            };
+            upload.push(uploadedFiles);
+          }
         }
-        const formDataobj = new FormData();
-        fileSystemImages.forEach((file) => formDataobj.append("images", file));
-        const uploadResult =
-          fileSystemImages.length > 0
-            ? await uploadImageFiles(formDataobj)
-            : null;
-        if (uploadResult) {
-          const updatedReports: Report[] = [
-            {
-              id: `${Date.now()}`,
+
+        // Handle image files upload
+        if (fileSystemImages.length > 0) {
+          const imgForm = new FormData();
+          fileSystemImages.forEach((img) => imgForm.append("images", img));
+          const imageRes = await uploadImageFiles(imgForm);
+
+          if (imageRes?.fileURL) {
+            const uploadedImages = {
+              id: `${Date.now()}-img`,
               title: newReport.title,
               publisher: newReport.publisher,
               reportType: newReport.reportType,
               version: newReport.version,
               status: newReport.status,
-              fileUrl: uploadResult.fileURL,
-
+              fileUrl: imageRes.fileURL,
               fileName: fileSystemImages.map((file) => file.name).join(", "),
-            },
-          ];
-          upload = [...updatedReports];
+            };
+            upload.push(uploadedImages);
+          }
         }
-        console.log(formData);
-        console.log(fileres);
-        console.log(formDataobj);
-        updateFormData({ reports: upload });
 
+        // Update form data with the uploaded files
+        if (upload.length > 0) {
+          updateFormData({
+            reports: [...(formData.reports || []), ...upload],
+          });
+        }
+
+        // Reset form state
         setNewReport({
           title: "",
           publisher: "",
@@ -140,9 +118,11 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
           files: [],
           isUploading: false,
         });
+        setFileSystemImages([]);
       } catch (error) {
         console.error("Error uploading files:", error);
         alert("Failed to upload files. Please try again.");
+        setNewReport((prev) => ({ ...prev, isUploading: false }));
       }
     }
   };
@@ -171,15 +151,12 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
     }));
   };
 
-  const handleCameraCapture = () => {
-    alert(
-      "Camera functionality would be implemented here to capture report documents."
-    );
-  };
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const startCamera = async () => {
+    if (newReport.isUploading) return;
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
@@ -192,6 +169,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
       alert("Unable to access camera");
     }
   };
+
   const stopCamera = () => {
     if (videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
@@ -202,6 +180,8 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
   };
 
   const capturePhoto = () => {
+    if (newReport.isUploading) return;
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (video && canvas) {
@@ -224,15 +204,20 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
       }, "image/png");
     }
   };
+
   const handleFileSystemImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
+    if (newReport.isUploading) return;
+
     if (e.target.files) {
       const files = Array.from(e.target.files);
       setFileSystemImages((prev) => [...prev, ...files]);
     }
   };
+
   const removeImage = (index: number, isCameraImage: boolean) => {
+    if (newReport.isUploading) return;
     setFileSystemImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -246,8 +231,6 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* Form fields remain the same */}
-            {/* ... */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {/* Title Input */}
               <div className="space-y-2">
@@ -259,6 +242,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     setNewReport((prev) => ({ ...prev, title: e.target.value }))
                   }
                   placeholder="Enter report title"
+                  disabled={newReport.isUploading}
                 />
               </div>
 
@@ -275,6 +259,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     }))
                   }
                   placeholder="Enter publisher name"
+                  disabled={newReport.isUploading}
                 />
               </div>
 
@@ -289,6 +274,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                       reportType: value as typeof newReport.reportType,
                     }))
                   }
+                  disabled={newReport.isUploading}
                 >
                   <SelectTrigger id="reportType">
                     <SelectValue placeholder="Select report type" />
@@ -316,6 +302,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     }))
                   }
                   placeholder="Enter version"
+                  disabled={newReport.isUploading}
                 />
               </div>
 
@@ -330,6 +317,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                       status: value as typeof newReport.status,
                     }))
                   }
+                  disabled={newReport.isUploading}
                 >
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
@@ -353,12 +341,44 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     onChange={handleFileChange}
                     accept="*/"
                     multiple
+                    disabled={newReport.isUploading}
                   />
                   <Button
                     variant="outline"
                     className="w-full flex items-center justify-center"
+                    disabled={newReport.isUploading}
                   >
-                    <Upload className="mr-2 h-4 w-4" /> Upload Files
+                    {newReport.isUploading ? (
+                      <>
+                        <span className="animate-spin mr-2">
+                          <svg
+                            className="h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                        </span>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" /> Upload Files
+                      </>
+                    )}
                   </Button>
                 </div>
                 <div className="relative">
@@ -369,12 +389,44 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     onChange={handleFileSystemImageUpload}
                     accept="image/*"
                     multiple
+                    disabled={newReport.isUploading}
                   />
                   <Button
                     variant="outline"
                     className="w-full flex items-center justify-center"
+                    disabled={newReport.isUploading}
                   >
-                    <Upload className="mr-2 h-4 w-4" /> Upload Images
+                    {newReport.isUploading ? (
+                      <>
+                        <span className="animate-spin mr-2">
+                          <svg
+                            className="h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                        </span>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" /> Upload Images
+                      </>
+                    )}
                   </Button>
                   {fileSystemImages.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -383,13 +435,14 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                           <Image
                             width={80}
                             height={80}
-                            src={URL.createObjectURL(img)}
+                            src={URL.createObjectURL(img) || "/placeholder.svg"}
                             alt={`Uploaded ${index}`}
                             className="w-20 h-20 object-cover rounded"
                           />
                           <button
                             onClick={() => removeImage(index, false)}
                             className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                            disabled={newReport.isUploading}
                           >
                             <Trash2 className="h-3 w-3" />
                           </button>
@@ -405,6 +458,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     startCamera();
                     setTimeout(() => capturePhoto(), 2000); // Capture after 2 seconds
                   }}
+                  disabled={newReport.isUploading}
                 >
                   <Camera className="h-4 w-4" />
                 </Button>
@@ -441,6 +495,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => removeSelectedFile(index)}
+                        disabled={newReport.isUploading}
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
@@ -463,7 +518,31 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
             }
           >
             {newReport.isUploading ? (
-              <>Uploading...</>
+              <>
+                <span className="animate-spin mr-2">
+                  <svg
+                    className="h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </span>
+                Uploading...
+              </>
             ) : (
               <>
                 <Plus className="mr-2 h-4 w-4" /> Add Report
@@ -505,22 +584,6 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                             report.status.slice(1)}
                         </span>
                       </div>
-                      {/* <a
-                        href={
-                          Array.isArray(report.fileUrl)
-                            ? typeof report.fileUrl[0] === "string"
-                              ? report.fileUrl[0]
-                              : URL.createObjectURL(report.fileUrl[0])
-                            : typeof report.fileUrl === "string"
-                            ? report.fileUrl
-                            : URL.createObjectURL(report.fileUrl)
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-500 hover:underline mt-1 block"
-                      >
-                        {report.fileName}
-                      </a> */}
                     </div>
                   </div>
 
@@ -528,6 +591,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     variant="destructive"
                     size="sm"
                     onClick={() => removeReport(report.id)}
+                    disabled={newReport.isUploading}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

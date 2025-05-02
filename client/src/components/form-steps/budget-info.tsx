@@ -22,7 +22,7 @@ export default function BudgetInfo({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="totalBudget">Total Budget ($)</Label>
+          <Label htmlFor="totalBudget">Total Budget (ETB)</Label>
           <Input
             id="totalBudget"
             type="number"
@@ -34,7 +34,7 @@ export default function BudgetInfo({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="amountSpent">Amount Spent ($)</Label>
+          <Label htmlFor="amountSpent">Amount Spent (ETB)</Label>
           <Input
             id="amountSpent"
             type="number"
