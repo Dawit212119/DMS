@@ -189,7 +189,6 @@ export async function createProject(
         data: documentsValidation.data
           .filter((doc) => doc !== undefined)
           .map((doc) => ({
-            ...doc,
             title: doc.title || " ", // Provide default value for title
             fileUrl: doc.fileUrl || "", // Provide default value for fileUrl
             fileName: doc.fileName || "Unnamed File", // Provide default value for fileName
