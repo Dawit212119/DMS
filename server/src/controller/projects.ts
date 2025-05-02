@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import {
   SiteImageSchema,
@@ -13,16 +13,24 @@ import {
   IncomingLetterSchema,
 } from "../zod";
 import { prismaClient } from "../prisma";
+import { BadRequestException } from "../exceptions/badRequest";
+import { ErrorCodes } from "../exceptions/root";
 
 // Create Project
 export async function createProject(
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
   try {
     if (!req.body) {
       res.status(400).json({ message: "No data provided" });
       return;
+    }
+    if (!req.user) {
+      return next(
+        new BadRequestException("Unauthorized", ErrorCodes.UnAUTHORIZED)
+      );
     }
     console.log("the structured format for project>>>>>>>", req.body);
     // Validate Project Data
@@ -32,6 +40,7 @@ export async function createProject(
     const project = await prismaClient.project.create({
       data: {
         ...projectData,
+        userId: req.user?.id,
         projectName: projectData?.projectName || "Default Project Name",
         clientName: projectData?.clientName || "Default Client Name",
         location: projectData?.location || "Default Location",
@@ -321,7 +330,6 @@ export const getProjectById = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    p;
 
     // Fetch project with all relations
     const project = await prismaClient.project.findUnique({
