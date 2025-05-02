@@ -24,6 +24,8 @@ export async function createProject(
       return;
     }
     console.log("project ", req.body);
+    console.log(req?.user?.id);
+
     if (!req.user) {
       console.log("no user");
     }
@@ -35,7 +37,7 @@ export async function createProject(
     const project = await prismaClient.project.create({
       data: {
         projectName: projectData?.projectName || "Default Project Name",
-        // userId: req.user?.id ?? "123456789012",
+        userId: req.user?.id,
         clientName: projectData?.clientName || "Default Client Name",
         location: projectData?.location || "Default Location",
         startDate: projectData?.startDate || new Date(),
@@ -121,11 +123,17 @@ export async function createProject(
     }
 
     // Validate and Create Reports
-    const reportsValidation = ReportSchema.array().safeParse(req.body?.reports);
-
-    if (reportsValidation.success && reportsValidation.data.length > 0) {
+    // const reportsValidation = ReportSchema.array().safeParse(req.body?.reports);
+    // console.log("report ",reportsValidation.data);
+    console.log("Reposrt funcking>>>>>>>>>>>>>>>>>>", req.body?.reports);
+    // const urls = req.body.reports.fileUrl((item) => item.vaue.qrPDFURL);
+    console.log(
+      "the url>>>>>>.",
+      req.body?.reports[0].fileUrl[0].vaue.qrPDFURL
+    );
+    if (req.body?.reports) {
       await prismaClient.report.createMany({
-        data: reportsValidation.data.map((report) => ({
+        data: req.body?.reports.map((report: any) => ({
           projectId: project.id,
           status: report?.status ?? "approved", // default value
           title: report?.title || "",
@@ -146,6 +154,7 @@ export async function createProject(
     const outgoingLettersValidation = OutgoingLetterSchema.array().safeParse(
       req.body?.outgoingLetters
     );
+    console.log("outgoingLetters ", outgoingLettersValidation.data);
     if (
       outgoingLettersValidation.success &&
       outgoingLettersValidation.data.length > 0
@@ -169,7 +178,7 @@ export async function createProject(
     const incomingLettersValidation = IncomingLetterSchema.array().safeParse(
       req.body?.incomingLetters
     );
-
+    console.log("incomingLetters  ", incomingLettersValidation);
     if (
       incomingLettersValidation.success &&
       incomingLettersValidation.data.length > 0

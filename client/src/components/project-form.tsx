@@ -102,17 +102,17 @@ export type FormData = {
     fileName: string;
   }>;
 
-  // Reports
-  reports: Array<{
+  // Existing properties
+  reports?: {
     id: string;
     title: string;
     publisher: string;
     reportType: "daily" | "weekly" | "monthly" | "quarterly" | "annually";
     version: string;
     status: "approved" | "rejected";
-    fileUrl: File[];
+    fileUrl: any;
     fileName: string;
-  }>;
+  }[];
 };
 
 const initialFormData: FormData = {

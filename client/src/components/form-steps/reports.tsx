@@ -3,6 +3,21 @@
 import type React from "react";
 import { useRef, useState } from "react";
 import type { FormData as ProjectFormData } from "../project-form";
+
+interface Report {
+  id: string;
+  title: string;
+  publisher: string;
+  reportType: "daily" | "weekly" | "monthly" | "quarterly" | "annually";
+  version: string;
+  status: "approved" | "rejected";
+  fileUrl: any;
+  fileName: string;
+}
+
+interface ExtendedFormData extends ProjectFormData {
+  reports?: Report[];
+}
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,18 +32,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Camera, File, Plus, Trash2, Upload } from "lucide-react";
 import useFileUploader from "@/app/action/useFileuploader";
 import Image from "next/image";
-import useImageUploader from "@/app/action/useImageuploader";
-
 interface ReportsProps {
   formData: ProjectFormData;
-  updateFormData: (data: Partial<FormData>) => void;
+  updateFormData: (data: Partial<ExtendedFormData>) => void;
 }
 
 export default function Reports({ formData, updateFormData }: ReportsProps) {
   const { uploadFiles } = useFileUploader();
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [fileSystemImages, setFileSystemImages] = useState<File[]>([]);
-  const { uploadFiles: uploadImageFiles } = useImageUploader();
+  const { uploadFiles: uploadImageFiles } = useFileUploader();
   const [newReport, setNewReport] = useState({
     title: "",
     publisher: "",
@@ -68,13 +81,6 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
       newReport.files.length > 0
     ) {
       try {
-        // const uploadedFiles = await uploadFilesToServer(newReport.files);
-
-        interface UploadedFile {
-          url: string;
-          fileName: string;
-        }
-
         interface Report {
           id: string;
           title: string;
@@ -85,51 +91,63 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
           fileUrl: any;
           fileName: string;
         }
-        const fileData = new FormData();
-        newReport.files.forEach((file) => fileData.append("files", file));
-        const fileres = await uploadFiles(fileData);
-        let upload: any[] = [];
-        if (fileres) {
-          const updatedReports: Report[] = [
-            {
-              id: `${Date.now()}`,
-              title: newReport.title,
-              publisher: newReport.publisher,
-              reportType: newReport.reportType,
-              version: newReport.version,
-              status: newReport.status,
-              fileUrl: fileres.upload.map((url: any) => url.qrPDFURL),
-              fileName: fileres.fileName,
-            },
-          ];
-          upload = [...updatedReports];
-        }
-        const formDataobj = new FormData();
-        fileSystemImages.forEach((file) => formDataobj.append("images", file));
-        const uploadResult =
-          fileSystemImages.length > 0
-            ? await uploadImageFiles(formDataobj)
-            : null;
-        if (uploadResult) {
-          const updatedReports: Report[] = [
-            {
-              id: `${Date.now()}`,
-              title: newReport.title,
-              publisher: newReport.publisher,
-              reportType: newReport.reportType,
-              version: newReport.version,
-              status: newReport.status,
-              fileUrl: uploadResult.fileURL,
 
-              fileName: fileSystemImages.map((file) => file.name).join(", "),
-            },
-          ];
-          upload = [...updatedReports];
+        let upload: Report[] = [];
+
+        // Handle PDF files upload
+        if (newReport.files.length > 0) {
+          const fileData = new FormData();
+          newReport.files.forEach((file) => fileData.append("files", file));
+
+          const fileres = await uploadFiles(fileData);
+          console.log("File upload response:", fileres);
+
+          if (fileres && fileres.upload) {
+            const updatedReports: Report[] = [
+              {
+                id: `${Date.now()}`,
+                title: newReport.title,
+                publisher: newReport.publisher,
+                reportType: newReport.reportType,
+                version: newReport.version,
+                status: newReport.status,
+                fileUrl: fileres.upload.map((url: any) => url.qrPDFURL || url),
+                fileName: newReport.files.map((file) => file.name).join(", "),
+              },
+            ];
+            upload = [...updatedReports];
+          }
         }
-        console.log(formData);
-        console.log(fileres);
-        console.log(formDataobj);
-        updateFormData({ reports: upload });
+
+        // Handle image files upload
+        if (fileSystemImages.length > 0) {
+          const formDataobj = new FormData();
+          fileSystemImages.forEach((file) =>
+            formDataobj.append("images", file)
+          );
+
+          const uploadResult = await uploadImageFiles(formDataobj);
+          console.log("Image upload response:", uploadResult);
+
+          if (uploadResult && uploadResult.fileURL) {
+            const updatedReports: Report[] = [
+              {
+                id: `${Date.now()}`,
+                title: newReport.title,
+                publisher: newReport.publisher,
+                reportType: newReport.reportType,
+                version: newReport.version,
+                status: newReport.status,
+                fileUrl: uploadResult.fileURL,
+                fileName: fileSystemImages.map((file) => file.name).join(", "),
+              },
+            ];
+            upload = [...upload, ...updatedReports];
+          }
+        }
+
+        console.log("Final upload data:", upload);
+        updateFormData({ reports: [...(formData.reports || []), ...upload] });
 
         setNewReport({
           title: "",
@@ -140,6 +158,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
           files: [],
           isUploading: false,
         });
+        setFileSystemImages([]);
       } catch (error) {
         console.error("Error uploading files:", error);
         alert("Failed to upload files. Please try again.");
@@ -148,7 +167,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
   };
 
   const removeReport = (id: string) => {
-    const updatedReports = formData.reports.filter(
+    const updatedReports = (formData.reports || []).filter(
       (report) => report.id !== id
     );
     updateFormData({ reports: updatedReports });
@@ -351,7 +370,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                     id="reportFiles"
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     onChange={handleFileChange}
-                    accept="*/"
+                    accept=".pdf,application/pdf"
                     multiple
                   />
                   <Button
@@ -383,7 +402,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                           <Image
                             width={80}
                             height={80}
-                            src={URL.createObjectURL(img)}
+                            src={URL.createObjectURL(img) || "/placeholder.svg"}
                             alt={`Uploaded ${index}`}
                             className="w-20 h-20 object-cover rounded"
                           />
@@ -473,11 +492,11 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
         </CardContent>
       </Card>
 
-      {formData.reports.length > 0 && (
+      {(formData.reports?.length ?? 0) > 0 && (
         <div className="space-y-4 mt-6">
           <h4 className="font-medium">Added Reports</h4>
 
-          {formData.reports.map((report) => (
+          {(formData.reports ?? []).map((report) => (
             <Card key={report.id} className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -505,22 +524,18 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                             report.status.slice(1)}
                         </span>
                       </div>
-                      {/* <a
+                      <a
                         href={
                           Array.isArray(report.fileUrl)
-                            ? typeof report.fileUrl[0] === "string"
-                              ? report.fileUrl[0]
-                              : URL.createObjectURL(report.fileUrl[0])
-                            : typeof report.fileUrl === "string"
-                            ? report.fileUrl
-                            : URL.createObjectURL(report.fileUrl)
+                            ? report.fileUrl[0] || "#"
+                            : report.fileUrl || "#"
                         }
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-blue-500 hover:underline mt-1 block"
                       >
-                        {report.fileName}
-                      </a> */}
+                        {report.fileName || "View File"}
+                      </a>
                     </div>
                   </div>
 
