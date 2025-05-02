@@ -116,7 +116,7 @@ export async function Projects(req: Request, res: Response) {
       });
       return;
     }
-    console.log(req.body);
+    console.log("the project data sent to backend>>", req.body);
     const validatedProjectData = ProjectSchema.parse(req.body?.project);
 
     const { projectName, clientName, location, startDate, dueDate, progress } =
