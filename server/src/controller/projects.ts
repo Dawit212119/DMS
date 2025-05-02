@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import {
   ProjectSchema,
@@ -12,11 +12,14 @@ import {
   IncomingLetterSchema,
 } from "../zod";
 import { prismaClient } from "../prisma";
+import { BadRequestException } from "../exceptions/badRequest";
+import { ErrorCodes } from "../exceptions/root";
 
 // Create Project
 export async function createProject(
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
   try {
     if (!req.body) {
@@ -27,9 +30,10 @@ export async function createProject(
     console.log(req?.user?.id);
 
     if (!req.user) {
-      console.log("no user");
+      return next(
+        new BadRequestException("Unauthorized", ErrorCodes.UnAUTHORIZED)
+      );
     }
-
     // Validate Project Data
     const projectData = ProjectSchema.parse(req.body.project);
 

@@ -30,7 +30,7 @@ model Project {
   location               String
   startDate              DateTime
   endDate                DateTime
-  userId                  String?     @db.ObjectId
+  userId                 String?     @db.ObjectId
   user                 User? @relation(fields: [userId], references: [id])
   budget                 Budget?
   team                   Team?
@@ -63,7 +63,6 @@ model Team {
   totalWorkers        Int
   project             Project  @relation(fields: [projectId], references: [id])
   projectId           String   @db.ObjectId @unique
-  
 }
 
 model Milestone {
