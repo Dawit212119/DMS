@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // ==================== ENUMS ====================
-enum Status {
+export enum Status {
   ONTRACK = "ontrack",
   ATRISK = "atrisk",
 }
 
-enum Priority {
+export enum Priority {
   HIGH = "high",
   MEDIUM = "medium",
   LOW = "low",
@@ -69,7 +69,7 @@ interface Milestone {
   projectId: string;
 }
 
-interface ChecklistItem {
+export interface ChecklistItem {
   id: string;
   task: string;
   assignedTo: string;
@@ -181,9 +181,12 @@ export const fetchProjects = createAsyncThunk(
   "project/fetchProjects",
   async (page: number = 1, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:8000/project?page=1", {
-        credentials: "include",
-      });
+      const response = await fetch(
+        `http://localhost:8000/project?page=${page}`,
+        {
+          credentials: "include",
+        }
+      );
 
       console.log("response:", response);
 

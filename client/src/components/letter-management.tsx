@@ -51,8 +51,6 @@ import {
 import { IncomingLetter, OutgoingLetter } from "@/state/project/projectSlice";
 import Image from "next/image";
 
-// Define TypeScript interfaces for the letter data
-
 export interface LetterPageProps {
   projectName: string;
   projectId: string;
@@ -74,8 +72,10 @@ export default function LetterPage({
     subject: string;
     isIncoming: boolean;
   } | null>(null);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeSort, setActiveSort] = useState("newest");
 
-  // Function to generate QR code
+  // Generate QR Code
   const generateQRCode = async (
     fileUrl: string,
     letterId: string,
@@ -83,10 +83,7 @@ export default function LetterPage({
     isIncoming: boolean
   ) => {
     try {
-      // Generate a URL for the letter (this is a placeholder - replace with your actual URL structure)
-      // Generate QR code
       const qrCodeDataUrl = await QRCode.toDataURL(fileUrl);
-      console.log(qrCodeDataUrl);
       setQrCodeUrl(qrCodeDataUrl);
       setCurrentLetter({ id: letterId, subject, isIncoming });
       setQrModalOpen(true);
@@ -95,7 +92,7 @@ export default function LetterPage({
     }
   };
 
-  // Function to download QR code
+  // Download QR Code
   const downloadQRCode = () => {
     if (!qrCodeUrl || !currentLetter) return;
 
@@ -107,13 +104,12 @@ export default function LetterPage({
     document.body.removeChild(link);
   };
 
-  // Function to share QR code
+  // Share QR Code
   const shareQRCode = async () => {
     if (!qrCodeUrl || !currentLetter) return;
 
     if (navigator.share) {
       try {
-        // Convert data URL to Blob
         const response = await fetch(qrCodeUrl);
         const blob = await response.blob();
         const file = new File([blob], `qrcode-${currentLetter.id}.png`, {
@@ -131,27 +127,100 @@ export default function LetterPage({
         console.error("Error sharing:", error);
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
       alert(
         "Sharing is not supported in your browser. You can download the QR code instead."
       );
     }
   };
 
-  // Filter letters based on search query
-  const filteredIncoming = incomingLetters.filter(
-    (letter) =>
-      letter.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      letter.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      letter.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort letters
+  const filterLetters = (
+    letters: (IncomingLetter | OutgoingLetter)[],
+    isIncoming: boolean
+  ) => {
+    let filtered = letters.filter((letter) => {
+      const matchesSearch =
+        letter.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (isIncoming
+          ? (letter as IncomingLetter).sender
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())
+          : (letter as OutgoingLetter).recipient
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())) ||
+        letter.id.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const filteredOutgoing = outgoingLetters.filter(
-    (letter) =>
-      letter.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      letter.recipient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      letter.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      let matchesFilter = true;
+      switch (activeFilter) {
+        case "high":
+          matchesFilter = letter.priority === "high";
+          break;
+        case "unread":
+          matchesFilter = isIncoming
+            ? (letter as IncomingLetter).status === "unread"
+            : (letter as OutgoingLetter).status === "draft";
+          break;
+        case "week":
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          matchesFilter = new Date(letter.createdAt) > weekAgo;
+          break;
+        case "month":
+          const monthAgo = new Date();
+          monthAgo.setDate(monthAgo.getDate() - 30);
+          matchesFilter = new Date(letter.createdAt) > monthAgo;
+          break;
+        default:
+          matchesFilter = true;
+      }
+
+      return matchesSearch && matchesFilter;
+    });
+
+    // Sort letters
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+
+      switch (activeSort) {
+        case "newest":
+          return dateB - dateA;
+        case "oldest":
+          return dateA - dateB;
+        case "priority-high":
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          return priorityOrder[b.priority] - priorityOrder[a.priority];
+        case "priority-low":
+          const priorityOrderLow = { high: 3, medium: 2, low: 1 };
+          return priorityOrderLow[a.priority] - priorityOrderLow[b.priority];
+        case "alphabetical":
+          return a.subject.localeCompare(b.subject);
+        default:
+          return dateB - dateA;
+      }
+    });
+
+    return filtered;
+  };
+
+  const filteredIncoming = filterLetters(incomingLetters, true);
+  const filteredOutgoing = filterLetters(outgoingLetters, false);
+
+  // Download letter file
+  // const onDownload = (id: string, isIncoming: boolean) => {
+  //   const letter = isIncoming
+  //     ? incomingLetters.find((l) => l.id === id)
+  //     : outgoingLetters.find((l) => l.id === id);
+
+  //   if (letter) {
+  //     const link = document.createElement("a");
+  //     link.href = letter.fileUrl;
+  //     link.download = `letter-${id}.pdf`;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //   }
+  // };
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
@@ -163,12 +232,6 @@ export default function LetterPage({
           <p className="text-muted-foreground">
             {projectName} #{projectId}
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Calendar className="mr-2 h-4 w-4" />
-            Filter by Date
-          </Button>
         </div>
       </div>
 
@@ -193,11 +256,21 @@ export default function LetterPage({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
-              <DropdownMenuItem>All Correspondence</DropdownMenuItem>
-              <DropdownMenuItem>High Priority</DropdownMenuItem>
-              <DropdownMenuItem>Unread Only</DropdownMenuItem>
-              <DropdownMenuItem>Last 7 Days</DropdownMenuItem>
-              <DropdownMenuItem>Last 30 Days</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveFilter("all")}>
+                {activeFilter === "all" ? "✓ " : ""}All Correspondence
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveFilter("high")}>
+                {activeFilter === "high" ? "✓ " : ""}High Priority
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveFilter("unread")}>
+                {activeFilter === "unread" ? "✓ " : ""}Unread Only
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveFilter("week")}>
+                {activeFilter === "week" ? "✓ " : ""}Last 7 Days
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveFilter("month")}>
+                {activeFilter === "month" ? "✓ " : ""}Last 30 Days
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
@@ -209,11 +282,23 @@ export default function LetterPage({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
-              <DropdownMenuItem>Date (Newest First)</DropdownMenuItem>
-              <DropdownMenuItem>Date (Oldest First)</DropdownMenuItem>
-              <DropdownMenuItem>Priority (High to Low)</DropdownMenuItem>
-              <DropdownMenuItem>Priority (Low to High)</DropdownMenuItem>
-              <DropdownMenuItem>Alphabetical (A-Z)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveSort("newest")}>
+                {activeSort === "newest" ? "✓ " : ""}Date (Newest First)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveSort("oldest")}>
+                {activeSort === "oldest" ? "✓ " : ""}Date (Oldest First)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveSort("priority-high")}>
+                {activeSort === "priority-high" ? "✓ " : ""}Priority (High to
+                Low)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveSort("priority-low")}>
+                {activeSort === "priority-low" ? "✓ " : ""}Priority (Low to
+                High)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveSort("alphabetical")}>
+                {activeSort === "alphabetical" ? "✓ " : ""}Alphabetical (A-Z)
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -312,7 +397,9 @@ export default function LetterPage({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => downloadQRCode()}
+                                  onClick={() =>
+                                    downloadQRCode(letter.id, true)
+                                  }
                                   title="Download"
                                 >
                                   <Download className="h-4 w-4" />
@@ -332,7 +419,7 @@ export default function LetterPage({
                   </Table>
                 </div>
 
-                {/* Mobile card view (visible on small screens) */}
+                {/* Mobile card view */}
                 <div className="mt-4 grid grid-cols-1 gap-4 md:hidden">
                   {filteredIncoming.map((letter) => (
                     <Card key={letter.id}>
@@ -387,7 +474,7 @@ export default function LetterPage({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => onDownload(letter.id, true)}
+                              onClick={() => downloadQRCode()}
                             >
                               <Download className="h-4 w-4 mr-1" />
                               Download
@@ -484,7 +571,7 @@ export default function LetterPage({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => onDownload(letter.id, false)}
+                                  onClick={() => downloadQRCode()}
                                   title="Download"
                                 >
                                   <Download className="h-4 w-4" />
@@ -504,7 +591,7 @@ export default function LetterPage({
                   </Table>
                 </div>
 
-                {/* Mobile card view (visible on small screens) */}
+                {/* Mobile card view */}
                 <div className="mt-4 grid grid-cols-1 gap-4 md:hidden">
                   {filteredOutgoing.map((letter) => (
                     <Card key={letter.id}>
@@ -559,7 +646,7 @@ export default function LetterPage({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => onDownload(letter.id, false)}
+                              onClick={() => downloadQRCode()}
                             >
                               <Download className="h-4 w-4 mr-1" />
                               Download

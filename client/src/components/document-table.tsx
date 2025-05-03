@@ -243,6 +243,7 @@ export function DocumentTable({
     },
     {
       id: "actions",
+      header: "Download",
       cell: ({ row }) => {
         const document = row.original;
         return (
@@ -305,7 +306,11 @@ export function DocumentTable({
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue>
+                {table.getColumn("status")?.getFilterValue()
+                  ? `Status: ${table.getColumn("status")?.getFilterValue()}`
+                  : "Filter by status"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>

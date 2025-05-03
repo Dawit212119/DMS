@@ -14,6 +14,8 @@ export default function ProjectsPage() {
   });
 
   useEffect(() => {
+    if (!projects) {
+    }
     dispatch(fetchProjects(1)); // Fetch first page of projects
   }, [dispatch]);
 

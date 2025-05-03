@@ -1,20 +1,12 @@
 "use client";
-import LetterPage, {
-  type IncomingLetter,
-  type OutgoingLetter,
-} from "@/components/letter-management";
+import LetterPage from "@/components/letter-management";
+import { IncomingLetter, OutgoingLetter } from "@/state/project/projectSlice";
 import { RootState } from "@/state/store";
 import { useSelector } from "react-redux";
 
 export default function Home() {
   const { currentProject } = useSelector((state: RootState) => state.project);
   // Example download handler
-  const handleDownload = (letterId: string, isIncoming: boolean) => {
-    console.log(
-      `Downloading ${isIncoming ? "incoming" : "outgoing"} letter: ${letterId}`
-    );
-    // Implement actual download functionality here
-  };
 
   return (
     <LetterPage
@@ -26,7 +18,6 @@ export default function Home() {
       outgoingLetters={
         currentProject?.outgoingLetters as unknown as OutgoingLetter[]
       }
-      onDownload={handleDownload}
     />
   );
 }
