@@ -80,7 +80,7 @@ interface ChecklistItem {
   projectId: string;
 }
 
-interface Document {
+export interface Document {
   id: string;
   title: string;
   fileUrl: string;

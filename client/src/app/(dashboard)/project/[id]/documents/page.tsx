@@ -1,8 +1,11 @@
 "use client";
 
+import { RootState } from "@/state/store";
+import { useSelector } from "react-redux";
 import { Download, FileText, QrCode, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import QRCode from "qrcode";
+import { Document } from "@/state/project/projectSlice";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,63 +31,22 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-interface ProjectFile {
-  id: string;
-  name: string;
-  date: string;
-  downloadUrl: string;
-  status: string;
-  version: string;
-}
-
-export default function ProjectFilesTable() {
-  const [files, setFiles] = useState<ProjectFile[]>([
-    {
-      id: "1",
-      name: "Quantity (BOQ)",
-      date: "2025-03-15",
-      downloadUrl: "#",
-      status: "Approved",
-      version: "1.2",
-    },
-    {
-      id: "2",
-      name: "Agreement",
-      date: "2025-03-12",
-      downloadUrl: "#",
-      status: "Signed",
-      version: "1.0",
-    },
-    {
-      id: "3",
-      name: "Business Proposal",
-      date: "2025-03-10",
-      downloadUrl: "#",
-      status: "Final",
-      version: "2.0",
-    },
-    {
-      id: "4",
-      name: "Feasibility Study",
-      date: "2025-02-28",
-      downloadUrl: "#",
-      status: "Under Review",
-      version: "1.3",
-    },
-    {
-      id: "5",
-      name: "Approval Document",
-      date: "2025-03-20",
-      downloadUrl: "#",
-      status: "Approved",
-      version: "1.0",
-    },
-  ]);
-
+export default function DocumentsTable() {
+  const documents = useSelector(
+    (state: RootState) => state.project.currentProject?.documents
+  );
+  const [files, setFiles] = useState<Document[]>([]);
   // QR code state
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
-  const [currentFile, setCurrentFile] = useState<ProjectFile | null>(null);
+  const [currentFile, setCurrentFile] = useState<Document | null>(null);
+
+  // Initialize files with documents from Redux
+  useEffect(() => {
+    if (documents) {
+      setFiles(documents);
+    }
+  }, [documents]);
 
   const handleDownload = (fileId: string) => {
     // In a real application, this would trigger the actual file download
@@ -92,7 +54,7 @@ export default function ProjectFilesTable() {
     // You would typically redirect to the file URL or use an API call here
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -102,7 +64,7 @@ export default function ProjectFilesTable() {
   };
 
   // Function to generate QR code
-  const generateQRCode = async (file: ProjectFile) => {
+  const generateQRCode = async (file: Document) => {
     try {
       // Generate a URL for the file (this is a placeholder - replace with your actual URL structure)
       const fileUrl = `${window.location.origin}/projects/files/${file.id}`;
@@ -123,7 +85,7 @@ export default function ProjectFilesTable() {
 
     const link = document.createElement("a");
     link.href = qrCodeUrl;
-    link.download = `qrcode-${currentFile.name
+    link.download = `qrcode-${currentFile.fileName
       .toLowerCase()
       .replace(/\s+/g, "-")}.png`;
     document.body.appendChild(link);
@@ -142,14 +104,14 @@ export default function ProjectFilesTable() {
         const blob = await response.blob();
         const file = new File(
           [blob],
-          `qrcode-${currentFile.name.replace(/\s+/g, "-")}.png`,
+          `qrcode-${currentFile.fileName.replace(/\s+/g, "-")}.png`,
           {
             type: "image/png",
           }
         );
 
         await navigator.share({
-          title: `QR Code for ${currentFile.name}`,
+          title: `QR Code for ${currentFile.fileName}`,
           text: `Scan this QR code to access the document: ${currentFile.name}`,
           files: [file],
         });
@@ -178,8 +140,6 @@ export default function ProjectFilesTable() {
             <TableRow>
               <TableHead>Document</TableHead>
               <TableHead className="hidden md:table-cell">Date</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden md:table-cell">Version</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -189,17 +149,11 @@ export default function ProjectFilesTable() {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span>{file.name}</span>
+                    <span>{file.fileName}</span>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {formatDate(file.date)}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {file.status}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {file.version}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
@@ -235,7 +189,7 @@ export default function ProjectFilesTable() {
           <DialogHeader>
             <DialogTitle>QR Code for Document</DialogTitle>
             <DialogDescription>
-              {currentFile?.name} (Version {currentFile?.version})
+              {currentFile?.fileName} (Title {currentFile?.title})
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center p-4">

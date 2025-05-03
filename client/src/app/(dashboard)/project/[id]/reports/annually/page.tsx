@@ -1,32 +1,25 @@
-import { Document, DocumentTable } from "@/components/document-table";
+"use client";
 
-const annualReports: Document[] = [
-  {
-    id: "a1",
-    projectName: "Website Redesign",
-    publisher: "Robert Taylor",
-    uploadDate: new Date("2023-01-15"),
-    lastModified: new Date("2023-02-01"),
-    status: "Approved",
-    version: "v5.0",
-    downloadUrl: "#",
-  },
-  {
-    id: "a2",
-    projectName: "Mobile App Development",
-    publisher: "Jennifer White",
-    uploadDate: new Date("2023-01-10"),
-    lastModified: new Date("2023-01-20"),
-    status: "Approved",
-    version: "v4.0",
-    downloadUrl: "#",
-  },
-];
+import { DocumentTable } from "@/components/document-table";
+import { RootState } from "@/state/store";
+import { useSelector } from "react-redux";
 
 const AnnuallyPage = () => {
+  const project = useSelector(
+    (state: RootState) => state.project.currentProject
+  );
+  const annualReports =
+    project?.reports.filter((report) => {
+      return report.reportType === "annually";
+    }) || [];
+
   return (
     <div>
-      <DocumentTable documents={annualReports} title="Annual Reports" />
+      <DocumentTable
+        projectName={project?.projectName}
+        documents={annualReports}
+        title="Annually Reports"
+      />
     </div>
   );
 };

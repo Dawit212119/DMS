@@ -1,31 +1,25 @@
-import { Document, DocumentTable } from "@/components/document-table";
+"use client";
 
-const quarterlyReports: Document[] = [
-  {
-    id: "q1",
-    projectName: "Website Redesign",
-    publisher: "David Wilson",
-    uploadDate: new Date("2023-10-15"),
-    lastModified: new Date("2023-10-20"),
-    status: "Approved",
-    version: "v4.0",
-    downloadUrl: "#",
-  },
-  {
-    id: "q2",
-    projectName: "Mobile App Development",
-    publisher: "Lisa Anderson",
-    uploadDate: new Date("2023-07-10"),
-    lastModified: new Date("2023-07-15"),
-    status: "Approved",
-    version: "v3.5",
-    downloadUrl: "#",
-  },
-];
+import { DocumentTable } from "@/components/document-table";
+import { RootState } from "@/state/store";
+import { useSelector } from "react-redux";
+
 const QuarterlyPage = () => {
+  const project = useSelector(
+    (state: RootState) => state.project.currentProject
+  );
+  const quarterlyReports =
+    project?.reports.filter((report) => {
+      return report.reportType === "quarterly";
+    }) || [];
   return (
     <div>
-      <DocumentTable documents={quarterlyReports} title="Quarterly Reports" />
+      {" "}
+      <DocumentTable
+        projectName={project?.projectName}
+        documents={quarterlyReports}
+        title="Quarterly Reports"
+      />
     </div>
   );
 };

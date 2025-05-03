@@ -69,11 +69,6 @@ const constructionSiteImages = [
   },
 ];
 
-export const metadata: Metadata = {
-  title: "Project Site Gallery | Construction Documentation",
-  description: "Construction site progress images and documentation",
-};
-
 export default function GalleryPage() {
   return (
     <div className="container py-10">
