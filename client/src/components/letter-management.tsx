@@ -12,6 +12,7 @@ import {
   Send,
   QrCode,
   Share2,
+  Eye,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -398,11 +399,11 @@ export default function LetterPage({
                                   variant="ghost"
                                   size="icon"
                                   onClick={() =>
-                                    downloadQRCode(letter.id, true)
+                                    window.open(letter.fileUrl, "_blank")
                                   }
                                   title="Download"
                                 >
-                                  <Download className="h-4 w-4" />
+                                  <Eye className="h-4 w-4" />
                                 </Button>
                               </div>
                             </TableCell>
