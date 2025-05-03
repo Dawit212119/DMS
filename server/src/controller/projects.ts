@@ -282,6 +282,9 @@ export const getProjects = async (
       },
     });
 
+    // projects.forEach((project) => {
+    //   console.log("dueDateis:", project?.checklist[0]?.dueDate instanceof Date);
+    // });
     // Format dates and construct response
     // const formattedProjects = projects.map((project) => ({
     //   id: project.id,
@@ -356,28 +359,28 @@ export const getProjectById = async (
     }
 
     // Format response (optional)
-    const formattedProject = {
-      id: project.id,
-      projectName: project.projectName,
-      clientName: project.clientName,
-      location: project.location,
-      startDate: project.startDate.toISOString().split("T")[0],
-      endDate: project.endDate.toISOString().split("T")[0],
-      budget: project.budget,
-      team: project.team,
-      milestones: project.milestones,
-      checklist: project.checklist,
-      documents: project.documents,
-      incomingLetters: project.incomingLetters,
-      outgoingLetters: project.outgoingLetters,
-      reports: project.reports,
-      siteImages: project.siteImages,
-    };
+    // const formattedProject = {
+    //   id: project.id,
+    //   projectName: project.projectName,
+    //   clientName: project.clientName,
+    //   location: project.location,
+    //   startDate: project.startDate.toISOString().split("T")[0],
+    //   endDate: project.endDate.toISOString().split("T")[0],
+    //   budget: project.budget,
+    //   team: project.team,
+    //   milestones: project.milestones,
+    //   checklist: project.checklist,
+    //   documents: project.documents,
+    //   incomingLetters: project.incomingLetters,
+    //   outgoingLetters: project.outgoingLetters,
+    //   reports: project.reports,
+    //   siteImages: project.siteImages,
+    // };
 
     // Success response
     res.status(200).json({
       success: true,
-      data: formattedProject,
+      data: project,
     });
   } catch (error) {
     // Error handling (matches getProjects)
