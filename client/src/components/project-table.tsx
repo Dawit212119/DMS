@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -31,96 +31,37 @@ import { Card } from "@/components/ui/card";
 import { Eye, MoreHorizontal, Pencil, Trash2, Plus } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import ProjectDetailsDialog from "./project-details-dialog";
-
-// Sample project data - in a real app, this would come from an API or database
-const sampleProjects = [
-  {
-    projectName: "Len Buckley",
-    clientName: "Neil Sullivan",
-    location: "Downtown Area",
-    startDate: "2019-10-26",
-    endDate: "2018-12-24",
-    budget: { totalBudget: "400000", amountSpent: "90000" },
-    team: {
-      projectManager: "John Smith",
-      siteManager: "Jane Doe",
-      civilManager: "Robert Johnson",
-      architecturalLead: "Sarah Williams",
-      totalWorkers: 81,
-    },
-    milestones: [
-      {
-        id: "1746008289759",
-        name: "Foundation Complete",
-        date: "2021-01-20",
-        status: "ontrack",
-      },
-    ],
-    documents: [
-      {
-        id: "17460083369300",
-        title: "Project Plan",
-        fileUrl: "https://example.com/project-plan.pdf",
-        fileName: "project-plan.pdf",
-      },
-    ],
-  },
-  {
-    projectName: "Harbor Heights",
-    clientName: "Maria Garcia",
-    location: "Waterfront District",
-    startDate: "2020-05-15",
-    endDate: "2022-08-30",
-    budget: { totalBudget: "750000", amountSpent: "500000" },
-    team: {
-      projectManager: "David Lee",
-      siteManager: "Michael Brown",
-      civilManager: "Lisa Chen",
-      architecturalLead: "Thomas Wilson",
-      totalWorkers: 65,
-    },
-    milestones: [
-      {
-        id: "1746008289760",
-        name: "Structural Completion",
-        date: "2021-06-15",
-        status: "completed",
-      },
-    ],
-    documents: [
-      {
-        id: "17460083369301",
-        title: "Architectural Drawings",
-        fileUrl: "https://example.com/drawings.pdf",
-        fileName: "architectural-drawings.pdf",
-      },
-    ],
-  },
-];
+import { useGetUserProjectsQuery } from "@/state/features/userProjectApi";
+import { useGetMeQuery } from "@/state/features/authApi";
 
 export default function ProjectTable() {
+  const { data, isLoading, error } = useGetUserProjectsQuery();
+  const projects = data?.data || [];
+  console.log("My projects", projects);
   const router = useRouter();
-  const [projects, setProjects] = useState(sampleProjects);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   const handleViewDetails = (project: any) => {
-    router.push(`/`);
+    setSelectedProject(project);
+    setIsDetailsDialogOpen(true);
   };
 
   const handleEditProject = (projectName: string) => {
-    router.push(`/`);
+    router.push(`/projects/edit/${projectName}`);
   };
 
   const handleDeleteClick = (projectName: string) => {
-    console.log("deleting the project");
+    setProjectToDelete(projectName);
+    setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
     if (projectToDelete) {
-      setProjects(projects.filter((p) => p.projectName !== projectToDelete));
+      //TODO: delete the project here
+      // For now: just close the dialog
       setIsDeleteDialogOpen(false);
       setProjectToDelete(null);
     }
@@ -146,86 +87,129 @@ export default function ProjectTable() {
     return "In Progress";
   };
 
+  const { data: user } = useGetMeQuery();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/sign-in");
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        Loading...
+      </div>
+    );
+  }
+  if (error) return <p>Failed to load projects.</p>;
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Your Projects</h2>
-        <Button onClick={() => router.push("/projects/new")}>
+        <Button onClick={() => router.push("/project/create?mode=create")}>
           <Plus className="mr-2 h-4 w-4" /> New Project
         </Button>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Name</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead className="hidden md:table-cell">Location</TableHead>
-                <TableHead className="hidden md:table-cell">Timeline</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.map((project) => (
-                <TableRow key={project.projectName}>
-                  <TableCell className="font-medium">
-                    {project.projectName}
-                  </TableCell>
-                  <TableCell>{project.clientName}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {project.location}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {formatDate(project.startDate)} -{" "}
-                    {formatDate(project.endDate)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={getStatusColor(
-                        project.startDate,
-                        project.endDate
-                      )}
-                    >
-                      {getStatusText(project.startDate, project.endDate)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleViewDetails(project)}
-                        >
-                          <Eye className="mr-2 h-4 w-4" /> View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleEditProject(project.projectName)}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" /> Edit Project
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(project.projectName)}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete Project
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      {/* If there are no projects, show this message */}
+      {projects.length === 0 && (
+        <div className="flex flex-col justify-center items-center space-y-4 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+          <p className="text-lg text-gray-600">
+            You haven&#39;t created any projects yet.
+          </p>
+          <Button
+            onClick={() => router.push("/projects/new")}
+            variant="outline"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Create Your First Project
+          </Button>
         </div>
-      </Card>
+      )}
+
+      {/* If there are projects, show the table */}
+      {projects.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Location
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Timeline
+                  </TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((project: any) => (
+                  <TableRow key={project.projectName}>
+                    <TableCell className="font-medium">
+                      {project.projectName}
+                    </TableCell>
+                    <TableCell>{project.clientName}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {project.location}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {formatDate(project.startDate)} -{" "}
+                      {formatDate(project.endDate)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        className={getStatusColor(
+                          project.startDate,
+                          project.endDate
+                        )}
+                      >
+                        {getStatusText(project.startDate, project.endDate)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleViewDetails(project)}
+                          >
+                            <Eye className="mr-2 h-4 w-4" /> View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleEditProject(project.projectName)
+                            }
+                          >
+                            <Pencil className="mr-2 h-4 w-4" /> Edit Project
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleDeleteClick(project.projectName)
+                            }
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete Project
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

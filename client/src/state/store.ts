@@ -5,6 +5,7 @@ import { authApi } from "./features/authApi";
 import projectReducer from "./project/projectSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage
+import { userProjectsApi } from "./features/userProjectApi";
 
 // Configuration for Redux Persist
 // const persistConfig = {
@@ -36,6 +37,7 @@ const persistedReducer = persistReducer(
   combineReducers({
     project: projectReducer,
     [authApi.reducerPath]: authApi.reducer,
+    [userProjectsApi.reducerPath]: userProjectsApi.reducer,
   })
 );
 
@@ -44,7 +46,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(authApi.middleware),
+    }).concat(authApi.middleware, userProjectsApi.middleware),
 });
 
 // export const store = configureStore({
