@@ -48,31 +48,16 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-// Define TypeScript interfaces for the letter data
-export interface IncomingLetter {
-  id: string;
-  date: string;
-  sender: string;
-  subject: string;
-  status: "Read" | "Unread";
-  priority: "High" | "Medium" | "Low";
-}
+import { IncomingLetter, OutgoingLetter } from "@/state/project/projectSlice";
+import Image from "next/image";
 
-export interface OutgoingLetter {
-  id: string;
-  date: string;
-  recipient: string;
-  subject: string;
-  status: "Sent" | "Draft";
-  priority: "High" | "Medium" | "Low";
-}
+// Define TypeScript interfaces for the letter data
 
 export interface LetterPageProps {
   projectName: string;
   projectId: string;
   incomingLetters: IncomingLetter[];
   outgoingLetters: OutgoingLetter[];
-  onDownload?: (letterId: string, isIncoming: boolean) => void;
 }
 
 export default function LetterPage({
@@ -80,7 +65,6 @@ export default function LetterPage({
   projectId,
   incomingLetters,
   outgoingLetters,
-  onDownload = () => {},
 }: LetterPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -93,20 +77,16 @@ export default function LetterPage({
 
   // Function to generate QR code
   const generateQRCode = async (
+    fileUrl: string,
     letterId: string,
     subject: string,
     isIncoming: boolean
   ) => {
     try {
       // Generate a URL for the letter (this is a placeholder - replace with your actual URL structure)
-      const letterUrl = `${
-        window.location.origin
-      }/projects/${projectId}/letters/${
-        isIncoming ? "incoming" : "outgoing"
-      }/${letterId}`;
-
       // Generate QR code
-      const qrCodeDataUrl = await QRCode.toDataURL(letterUrl);
+      const qrCodeDataUrl = await QRCode.toDataURL(fileUrl);
+      console.log(qrCodeDataUrl);
       setQrCodeUrl(qrCodeDataUrl);
       setCurrentLetter({ id: letterId, subject, isIncoming });
       setQrModalOpen(true);
@@ -263,7 +243,6 @@ export default function LetterPage({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">ID</TableHead>
                         <TableHead className="w-[120px]">Date</TableHead>
                         <TableHead>Sender</TableHead>
                         <TableHead className="hidden md:table-cell">
@@ -282,11 +261,8 @@ export default function LetterPage({
                       {filteredIncoming.length > 0 ? (
                         filteredIncoming.map((letter) => (
                           <TableRow key={letter.id}>
-                            <TableCell className="font-medium">
-                              {letter.id}
-                            </TableCell>
                             <TableCell>
-                              {new Date(letter.date).toLocaleDateString()}
+                              {new Date(letter.createdAt).toLocaleDateString()}
                             </TableCell>
                             <TableCell>{letter.sender}</TableCell>
                             <TableCell className="hidden md:table-cell">
@@ -295,9 +271,9 @@ export default function LetterPage({
                             <TableCell className="hidden md:table-cell">
                               <Badge
                                 variant={
-                                  letter.priority === "High"
+                                  letter.priority === "high"
                                     ? "destructive"
-                                    : letter.priority === "Medium"
+                                    : letter.priority === "medium"
                                     ? "default"
                                     : "secondary"
                                 }
@@ -308,7 +284,7 @@ export default function LetterPage({
                             <TableCell className="hidden md:table-cell">
                               <Badge
                                 variant={
-                                  letter.status === "Unread"
+                                  letter.status === "unread"
                                     ? "outline"
                                     : "secondary"
                                 }
@@ -323,6 +299,7 @@ export default function LetterPage({
                                   size="icon"
                                   onClick={() =>
                                     generateQRCode(
+                                      letter.fileUrl,
                                       letter.id,
                                       letter.subject,
                                       true
@@ -335,7 +312,7 @@ export default function LetterPage({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => onDownload(letter.id, true)}
+                                  onClick={() => downloadQRCode()}
                                   title="Download"
                                 >
                                   <Download className="h-4 w-4" />
@@ -364,14 +341,14 @@ export default function LetterPage({
                           <div>
                             <p className="font-medium">{letter.id}</p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(letter.date).toLocaleDateString()}
+                              {new Date(letter.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                           <Badge
                             variant={
-                              letter.priority === "High"
+                              letter.priority === "high"
                                 ? "destructive"
-                                : letter.priority === "Medium"
+                                : letter.priority === "medium"
                                 ? "default"
                                 : "secondary"
                             }
@@ -384,7 +361,7 @@ export default function LetterPage({
                         <div className="flex justify-between items-center">
                           <Badge
                             variant={
-                              letter.status === "Unread"
+                              letter.status === "unread"
                                 ? "outline"
                                 : "secondary"
                             }
@@ -396,7 +373,12 @@ export default function LetterPage({
                               variant="ghost"
                               size="sm"
                               onClick={() =>
-                                generateQRCode(letter.id, letter.subject, true)
+                                generateQRCode(
+                                  letter.fileUrl,
+                                  letter.id,
+                                  letter.subject,
+                                  true
+                                )
                               }
                             >
                               <QrCode className="h-4 w-4 mr-1" />
@@ -433,7 +415,6 @@ export default function LetterPage({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">ID</TableHead>
                         <TableHead className="w-[120px]">Date</TableHead>
                         <TableHead>Recipient</TableHead>
                         <TableHead className="hidden md:table-cell">
@@ -452,11 +433,8 @@ export default function LetterPage({
                       {filteredOutgoing.length > 0 ? (
                         filteredOutgoing.map((letter) => (
                           <TableRow key={letter.id}>
-                            <TableCell className="font-medium">
-                              {letter.id}
-                            </TableCell>
                             <TableCell>
-                              {new Date(letter.date).toLocaleDateString()}
+                              {new Date(letter.createdAt).toLocaleDateString()}
                             </TableCell>
                             <TableCell>{letter.recipient}</TableCell>
                             <TableCell className="hidden md:table-cell">
@@ -465,9 +443,9 @@ export default function LetterPage({
                             <TableCell className="hidden md:table-cell">
                               <Badge
                                 variant={
-                                  letter.priority === "High"
+                                  letter.priority === "high"
                                     ? "destructive"
-                                    : letter.priority === "Medium"
+                                    : letter.priority === "medium"
                                     ? "default"
                                     : "secondary"
                                 }
@@ -478,7 +456,7 @@ export default function LetterPage({
                             <TableCell className="hidden md:table-cell">
                               <Badge
                                 variant={
-                                  letter.status === "Draft"
+                                  letter.status === "draft"
                                     ? "outline"
                                     : "secondary"
                                 }
@@ -493,6 +471,7 @@ export default function LetterPage({
                                   size="icon"
                                   onClick={() =>
                                     generateQRCode(
+                                      letter.fileUrl,
                                       letter.id,
                                       letter.subject,
                                       false
@@ -534,14 +513,14 @@ export default function LetterPage({
                           <div>
                             <p className="font-medium">{letter.id}</p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(letter.date).toLocaleDateString()}
+                              {new Date(letter.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                           <Badge
                             variant={
-                              letter.priority === "High"
+                              letter.priority === "high"
                                 ? "destructive"
-                                : letter.priority === "Medium"
+                                : letter.priority === "medium"
                                 ? "default"
                                 : "secondary"
                             }
@@ -554,7 +533,7 @@ export default function LetterPage({
                         <div className="flex justify-between items-center">
                           <Badge
                             variant={
-                              letter.status === "Draft"
+                              letter.status === "draft"
                                 ? "outline"
                                 : "secondary"
                             }
@@ -566,7 +545,12 @@ export default function LetterPage({
                               variant="ghost"
                               size="sm"
                               onClick={() =>
-                                generateQRCode(letter.id, letter.subject, false)
+                                generateQRCode(
+                                  letter.fileUrl,
+                                  letter.id,
+                                  letter.subject,
+                                  false
+                                )
                               }
                             >
                               <QrCode className="h-4 w-4 mr-1" />
@@ -607,10 +591,11 @@ export default function LetterPage({
           <div className="flex flex-col items-center justify-center p-4">
             {qrCodeUrl && (
               <div className="border p-4 rounded-lg bg-white">
-                <img
+                <Image
                   src={qrCodeUrl || "/placeholder.svg"}
                   alt="QR Code"
-                  className="w-64 h-64"
+                  width={160}
+                  height={160}
                 />
               </div>
             )}

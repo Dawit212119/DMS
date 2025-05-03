@@ -100,7 +100,7 @@ interface SiteImage {
   projectId: string;
 }
 
-interface OutgoingLetter {
+export interface OutgoingLetter {
   id: string;
   recipient: string;
   subject: string;
@@ -112,7 +112,7 @@ interface OutgoingLetter {
   projectId: string;
 }
 
-interface IncomingLetter {
+export interface IncomingLetter {
   id: string;
   sender: string;
   subject: string;

@@ -278,7 +278,6 @@ export function DocumentTable({
       rowSelection,
     },
   });
-  console.log(table.getRowModel().rows);
 
   return (
     <div className="w-full">

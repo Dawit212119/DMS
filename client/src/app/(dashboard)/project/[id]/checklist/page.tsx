@@ -56,7 +56,7 @@ export default function ProjectChecklistPage() {
 
       <ProjectChecklist
         projectName={currentProject.projectName}
-        items={currentProject.checkList}
+        items={currentProject.checklist}
       />
     </main>
   );
