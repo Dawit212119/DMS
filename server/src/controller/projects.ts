@@ -15,7 +15,6 @@ import {
 import { prismaClient } from "../prisma";
 import { BadRequestException } from "../exceptions/badRequest";
 import { ErrorCodes } from "../exceptions/root";
-import { title } from "process";
 
 // Create Project
 export async function createProject(
@@ -197,14 +196,14 @@ export async function createProject(
       req.body?.siteImages
     );
 
-    if (siteImagesValidation.success) {
+    if (siteImagesValidation.success && siteImagesValidation.data.length > 0) {
       await prismaClient.siteImage.createMany({
         data: siteImagesValidation.data.map((img) => ({
-          location: img?.location || "", // Provide default value for sender
-          title: img?.title || "", // Provide default value for subject
-          category: img?.category || "foundation", // Provide default valid value for category
-          imageUrl: img?.imageUrl || "", // Provide default value for fileName
-          fileName: img?.fileName || "", // Provide default value for priority
+          location: img?.location || "",
+          title: img?.title || "",
+          category: img?.category || "foundation",
+          imageUrl: img?.imageUrl || "",
+          fileName: img?.fileName || "",
           projectId: project.id,
         })),
       });
@@ -260,7 +259,6 @@ export async function createProject(
     await prismaClient.$disconnect();
   }
 }
-
 // Get All Projects with Pagination
 export const getProjects = async (
   req: Request,
@@ -410,454 +408,6 @@ export const getProjectById = async (
     await prismaClient.$disconnect();
   }
 };
-// export async function Projects(req: Request, res: Response) {
-//   try {
-//     if (!req.body) {
-//       res.json({
-//         msg: "not data found",
-//         status: STATUS_CODES,
-//       });
-//       return;
-//     }
-//     const validatedProjectData = ProjectSchema.parse(req.body?.project);
-
-//     const { projectName, clientName, location, startDate, dueDate, progress } =
-//       validatedProjectData;
-
-//     const project = await prismaClient.project.create({
-//       data: {
-//         projectName,
-//         clientName,
-//         location,
-//         startDate,
-//         dueDate,
-//         progress,
-//       },
-//     });
-
-//     const validatedBudgetData = BudgetSchema.parse(req.body?.budget);
-//     const { total, spent } = validatedBudgetData;
-//     const budget = await prismaClient.budget.create({
-//       data: {
-//         total,
-//         spent,
-//         projectId: project.id,
-//       },
-//     });
-
-//     const validatedTeamData = TeamSchema.parse(req.body?.team);
-//     const {
-//       projectManger,
-//       siteManger,
-//       civilManger,
-//       architecturalLoad,
-//       totalWorker,
-//     } = validatedTeamData;
-//     const team = await prismaClient.team.create({
-//       data: {
-//         projectManger,
-//         siteManger,
-//         civilManger,
-//         architecturalLoad,
-//         totalWorker,
-//         projectId: project.id,
-//       },
-//     });
-//     const validatedUpcomingMilstoneData = UpcomingMilstoneSchema.parse(
-//       req.body.upcomingMilstone
-//     );
-//     const { title, status, date } = validatedUpcomingMilstoneData;
-//     const UpcomingMilstone = await prismaClient.upcomingMilstone.create({
-//       data: {
-//         title,
-//         status,
-//         date,
-//         projectId: project.id,
-//       },
-//     });
-//     const validatedChecklistUData = CheckListSchema.parse(req.body?.checkList);
-//     const { task, assignedTo, dueData, priority, completed } =
-//       validatedChecklistUData;
-//     const checkList = await prismaClient.checkList.create({
-//       data: {
-//         task,
-//         assignedTo,
-//         dueData,
-//         priority,
-//         completed,
-//         projectId: project.id,
-//       },
-//     });
-
-//     const validationReportData = ReportSchema.safeParse(req.body?.report);
-//     if (!validationReportData.success || !validationReportData.data) {
-//       throw new Error("Invalid report data");
-//     }
-//     const {
-//       publisher,
-//       version,
-//       status: reportstatus,
-//       reportType,
-//       downloadedUrl,
-//     } = validationReportData.data;
-//     if (!downloadedUrl) {
-//       throw new Error("url need");
-//     }
-//     const report = await prismaClient.report.createMany({
-//       data: {
-//         projectId: project.id,
-//         publisher,
-//         status: reportstatus || "draft", // Provide a default value for status
-//         version,
-//         reportType,
-//         downloadedUrl,
-//       },
-//     });
-
-//     const validatedData = z.array(TheOutgoingLetterSchema).safeParse(req.body);
-//     if (!validatedData.success) {
-//       res.json({
-//         msg: validatedData.error.flatten().fieldErrors,
-//       });
-//       return;
-//     }
-
-//     const outgoingletter = await prismaClient.theOutgoingLetter.createMany({
-//       data: validatedData.data.map((letter: letterProps) => ({
-//         recipent: letter.recipent,
-//         projectId: project.id,
-//         subject: letter.subject,
-//         downloadedUrl: letter.downloadedUrl,
-//         status: letter.status,
-//         priority: letter.priority,
-//       })),
-//     });
-
-//     const validatedDocumentData = z
-//       .array(DocumentsSchema)
-//       .safeParse(req.body?.documents);
-//     if (!validatedDocumentData.success) {
-//       res.json({ msg: validatedDocumentData.error.flatten().fieldErrors });
-//       return;
-//     }
-//     const document = await prismaClient.documents.createMany({
-//       data: validatedDocumentData.data.map((doc: documentProps) => ({
-//         name: doc.name,
-//         downloadedUrl: doc.downloadedUrl,
-//         date: doc.date,
-//         projectId: project.id,
-//       })),
-//     });
-//     res.json({
-//       success: true,
-//       projectId: project.id,
-//       project,
-//       checkList,
-//       UpcomingMilstone,
-//       team,
-//       budget,
-//       outgoingletter,
-//       report,
-//       document,
-//     });
-//   } catch (error) {
-//     if (error instanceof ZodError) {
-//       res.json({
-//         msg: error.flatten().fieldErrors,
-//         status: STATUS_CODES,
-//       });
-//       return;
-//     }
-//     if (error instanceof Error) {
-//       res.json({
-//         msg: error.message,
-//         status: STATUS_CODES,
-//       });
-//       return;
-//     }
-//     res.json({
-//       msg: "server error",
-//       status: 500,
-//     });
-//   }
-// }
-
-// export async function UpdateProject(req: Request, res: Response) {
-//   const projectId = req.params.id;
-
-//   if (!projectId) {
-//     return res.status(400).json({
-//       msg: "Project ID is required",
-//       status: 400,
-//     });
-//   }
-
-//   try {
-//     // Verify project exists
-//     const existingProject = await prismaClient.project.findUnique({
-//       where: { id: projectId },
-//     });
-
-//     if (!existingProject) {
-//       return res.status(404).json({
-//         msg: "Project not found",
-//         status: 404,
-//       });
-//     }
-
-//     // Validate and update main project data if provided
-//     if (req.body?.project) {
-//       const validatedProjectData = ProjectSchema.safeParse(req.body.project);
-
-//       if (!validatedProjectData.success) {
-//         return res.status(400).json({
-//           msg: validatedProjectData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-
-//       await prismaClient.project.update({
-//         where: { id: projectId },
-//         data: validatedProjectData.data,
-//       });
-//     }
-
-//     // Update budget if provided
-//     if (req.body?.budget) {
-//       const validatedBudgetData = BudgetSchema.safeParse(req.body.budget);
-
-//       if (validatedBudgetData.success) {
-//         await prismaClient.budget.upsert({
-//           where: { projectId },
-//           update: validatedBudgetData.data,
-//           create: {
-//             total: validatedBudgetData.data.total ?? 0,
-//             spent: validatedBudgetData.data.spent ?? 0,
-//             projectId,
-//           },
-//         });
-//       } else {
-//         return res.status(400).json({
-//           msg: validatedBudgetData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-//     }
-
-//     // Update team if provided
-//     if (req.body?.team) {
-//       const validatedTeamData = TeamSchema.safeParse(req.body.team);
-
-//       if (validatedTeamData.success) {
-//         await prismaClient.team.upsert({
-//           where: { projectId },
-//           update: validatedTeamData.data,
-//           create: {
-//             projectManager:
-//               validatedTeamData.data.projectManager || "Unknown Manager",
-//             siteManager:
-//               validatedTeamData.data.siteManager || "Unknown Manager",
-//             civilManager:
-//               validatedTeamData.data.civilManager || "Unknown Manager",
-//             architecturalLead:
-//               validatedTeamData.data.architecturalLead || "Unknown",
-//             totalWorkers: validatedTeamData.data.totalWorkers || 0,
-//             projectId,
-//           },
-//         });
-//       } else {
-//         return res.status(400).json({
-//           msg: validatedTeamData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-//     }
-
-//     // Update upcoming milestone if provided
-//     if (req.body?.upcomingMilstone) {
-//       const validatedMilestoneData = MilestoneSchema.safeParse(
-//         req.body.upcomingMilstone
-//       );
-
-//       if (validatedMilestoneData.success) {
-//         await prismaClient.milestone.upsert({
-//           where: { projectId },
-//           update: validatedMilestoneData.data,
-//           create: {
-//             ...validatedMilestoneData.data,
-//             title: validatedMilestoneData.data.title || "Default Title",
-//             status: validatedMilestoneData.data.status || "ontrack",
-//             projectId,
-//           },
-//         });
-//       } else {
-//         return res.status(400).json({
-//           msg: validatedMilestoneData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-//     }
-
-//     // Update checklist if provided
-//     if (req.body?.checklist) {
-//       const validatedChecklistData = ChecklistItemSchema.safeParse(
-//         req.body.checklist
-//       );
-
-//       if (validatedChecklistData.success) {
-//         await prismaClient.checklistItem.upsert({
-//           where: { projectId },
-//           update: validatedChecklistData.data,
-//           create: {
-//             ...validatedChecklistData.data,
-//             task: validatedChecklistData.data.task || "ontrack",
-//             assignedTo: validatedChecklistData.data.assignedTo || "Unassigned",
-//             priority: validatedChecklistData.data.priority || "low",
-//             completed: validatedChecklistData.data.completed ?? false,
-//             projectId,
-//           },
-//         });
-//       } else {
-//         return res.status(400).json({
-//           msg: validatedChecklistData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-//     }
-
-//     // Update reports if provided
-//     if (req.body?.reports) {
-//       const validatedReportData = ReportSchema.safeParse(req.body.reports);
-
-//       if (validatedReportData.success) {
-//         const existingReport = await prismaClient.report.findFirst({
-//           where: { projectId },
-//         });
-
-//         if (existingReport) {
-//           await prismaClient.report.update({
-//             where: { id: existingReport.id },
-//             data: validatedReportData.data,
-//           });
-//         } else {
-//           await prismaClient.report.create({
-//             data: {
-//               ...validatedReportData.data,
-//               publisher:
-//                 validatedReportData.data.publisher || "Unknown Publisher",
-//               status: validatedReportData.data.status || "approved",
-//               version: validatedReportData.data.version || "1.0",
-//               downloadedUrl: validatedReportData.data.downloadedUrl || "",
-//               reportType: validatedReportData.data.reportType || "daily",
-//               projectId,
-//             },
-//           });
-//         }
-//       } else {
-//         return res.status(400).json({
-//           msg: validatedReportData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-//     }
-
-//     // Update outgoing letters if provided
-//     if (req.body?.outgoingLetters) {
-//       const validatedLettersData = TheOutgoingLetterSchema.safeParse(
-//         req.body.outgoingLetters
-//       );
-
-//       if (validatedLettersData.success) {
-//         await prismaClient.outgoingLetter.deleteMany({
-//           where: { projectId },
-//         });
-
-//         if (validatedLettersData.data.length > 0) {
-//           await prismaClient.outgoingLetter.createMany({
-//             data: validatedLettersData.data.map((letter) => ({
-//               recipient: letter.recipient || "",
-//               subject: letter.subject || "",
-//               downloadedUrl: letter.downloadedUrl || "",
-//               status: letter.status || "draft",
-//               priority: letter.priority || "low",
-//               projectId,
-//             })),
-//           });
-//         }
-//       } else {
-//         return res.status(400).json({
-//           msg: validatedLettersData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-//     }
-
-//     // Update documents if provided
-//     if (req.body?.documents) {
-//       const validatedDocumentsData = DocumentSchema.safeParse(
-//         req.body.documents
-//       );
-
-//       if (validatedDocumentsData.success) {
-//         await prismaClient.document.deleteMany({
-//           where: {
-//             id: {
-//               in: validatedDocumentsData.data
-//                 .map((doc) => doc.id)
-//                 .filter((id) => id !== undefined),
-//             },
-//           },
-//         });
-
-//         if (validatedDocumentsData.data.length > 0) {
-//           await prismaClient.document.createMany({
-//             data: validatedDocumentsData.data
-//               .filter(
-//                 (doc) =>
-//                   doc.name !== undefined && doc.downloadedUrl !== undefined
-//               )
-//               .map((doc) => ({
-//                 ...doc,
-//                 name: doc.name || "Unnamed Document",
-//                 downloadedUrl: doc.downloadedUrl || "",
-//                 projectId,
-//               })),
-//           });
-//         }
-//       } else {
-//         return res.status(400).json({
-//           msg: validatedDocumentsData.error.flatten().fieldErrors,
-//           status: 400,
-//         });
-//       }
-//     }
-
-//     // Return the updated project with all relations
-//     const updatedProject = await prismaClient.project.findUnique({
-//       where: { id: projectId },
-//       include: {
-//         team: true,
-//         budget: true,
-//         milestones: true,
-//         checklist: true,
-//         outgoingLetters: true,
-//         documents: true,
-//         reports: true,
-//       },
-//     });
-
-//     return res.json({
-//       success: true,
-//       project: updatedProject,
-//     });
-//   } catch (error) {
-//     console.error("Update project error:", error);
-//     return res.status(500).json({
-//       msg: "Internal server error",
-//       status: 500,
-//     });
-//   }
-// }
 export const getMyProjects = async (
   req: Request,
   res: Response,
@@ -869,3 +419,214 @@ export const getMyProjects = async (
     },
   });
 };
+export async function updateProject(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    console.log("Here is the update object", req.body);
+    const projectId = req.params.projectId;
+
+    if (!req.user) {
+      return next(
+        new BadRequestException("Unauthorized", ErrorCodes.UnAUTHORIZED)
+      );
+    }
+
+    const existingProject = await prismaClient.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!existingProject) {
+      res.status(404).json({ message: "Project not found" });
+      return;
+    }
+
+    // Update Project
+    const projectData = ProjectSchema.parse(req.body.project);
+    await prismaClient.project.update({
+      where: { id: projectId },
+      data: {
+        ...projectData,
+        projectName: projectData?.projectName ?? "Default Project Name",
+        clientName: projectData?.clientName ?? "Default Client Name",
+        location: projectData?.location ?? "Default Location",
+        startDate: projectData?.startDate ?? new Date(),
+        endDate: projectData?.endDate ?? new Date(),
+      },
+    });
+
+    // Upsert Budget (delete + insert)
+    await prismaClient.budget.deleteMany({ where: { projectId } });
+    const budgetData = BudgetSchema.parse(req.body.budget);
+    await prismaClient.budget.create({
+      data: {
+        ...budgetData,
+        total: budgetData?.total ?? 0,
+        spent: budgetData?.spent ?? 0,
+        projectId,
+      },
+    });
+
+    // Upsert Team (delete + insert)
+    await prismaClient.team.deleteMany({ where: { projectId } });
+    const teamData = TeamSchema.parse(req.body.team);
+    await prismaClient.team.create({
+      data: {
+        ...teamData,
+        projectManager: teamData?.projectManager ?? "Unknown Manager",
+        siteManager: teamData?.siteManager ?? "Unknown Manager",
+        civilManager: teamData?.civilManager ?? "Unknown Manager",
+        architecturalLead: teamData?.architecturalLead ?? "Unknown",
+        totalWorkers: teamData?.totalWorkers ?? 0,
+        projectId,
+      },
+    });
+
+    // Upsert Milestones
+    await prismaClient.milestone.deleteMany({ where: { projectId } });
+    const milestonesData =
+      req.body.milestones?.map((m: any) => MilestoneSchema.parse(m)) || [];
+    if (milestonesData.length) {
+      await prismaClient.milestone.createMany({
+        data: milestonesData.map((m: (typeof milestonesData)[0]) => ({
+          name: m.name,
+          date: m.date || new Date(),
+          status: m.status || "ontrack",
+          projectId,
+        })),
+      });
+    }
+
+    // Upsert Checklist
+    await prismaClient.checklistItem.deleteMany({ where: { projectId } });
+    const checklistData =
+      req.body?.checklist?.map((item: any) =>
+        ChecklistItemSchema.parse(item)
+      ) || [];
+    if (checklistData.length) {
+      await prismaClient.checklistItem.createMany({
+        data: checklistData.map((item: (typeof checklistData)[0]) => ({
+          task: item.task || "Unnamed Task",
+          assignedTo: item.assignedTo || "Unknown",
+          dueDate: item.dueDate,
+          status: item.status || "ontrack",
+          priority: item.priority || "low",
+          milestoneId: item.milestoneId,
+          projectId,
+        })),
+      });
+    }
+
+    // Upsert Reports
+    await prismaClient.report.deleteMany({ where: { projectId } });
+    const reportsValidation = ReportSchema.array().safeParse(req.body?.reports);
+    if (reportsValidation.success && reportsValidation.data.length > 0) {
+      await prismaClient.report.createMany({
+        data: reportsValidation.data.map((report) => ({
+          projectId,
+          status: report?.status ?? "approved",
+          title: report?.title || "",
+          publisher: report?.publisher || "",
+          version: report?.version || "",
+          fileUrl: report?.fileUrl || "",
+          fileName: report?.fileName || "",
+          uploadedDate: report?.uploadedDate || new Date(),
+          reportType: report?.reportType || "daily",
+        })),
+      });
+    }
+
+    // Upsert Outgoing Letters
+    await prismaClient.outgoingLetter.deleteMany({ where: { projectId } });
+    const outgoingLettersValidation = OutgoingLetterSchema.array().safeParse(
+      req.body.outgoingLetters
+    );
+    if (outgoingLettersValidation.success) {
+      await prismaClient.outgoingLetter.createMany({
+        data: outgoingLettersValidation.data.map((letter) => ({
+          recipient: letter?.recipient || "",
+          subject: letter?.subject || "",
+          fileUrl: letter?.fileUrl || "",
+          fileName: letter?.fileName || "",
+          priority: letter?.priority || "low",
+          status: letter?.status || "draft",
+          projectId,
+        })),
+      });
+    }
+
+    // Upsert Incoming Letters
+    await prismaClient.incomingLetter.deleteMany({ where: { projectId } });
+    const incomingLettersValidation = IncomingLetterSchema.array().safeParse(
+      req.body.incomingLetters
+    );
+    if (incomingLettersValidation.success) {
+      await prismaClient.incomingLetter.createMany({
+        data: incomingLettersValidation.data.map((letter) => ({
+          sender: letter?.sender || "",
+          subject: letter?.subject || "",
+          fileUrl: letter?.fileUrl || "",
+          fileName: letter?.fileName || "",
+          priority: letter?.priority || "low",
+          status: letter?.status || "unread",
+          projectId,
+        })),
+      });
+    }
+
+    // Upsert Site Images
+    await prismaClient.siteImage.deleteMany({ where: { projectId } });
+    const siteImagesValidation = SiteImageSchema.array().safeParse(
+      req.body?.siteImages
+    );
+    if (siteImagesValidation.success && siteImagesValidation.data.length > 0) {
+      await prismaClient.siteImage.createMany({
+        data: siteImagesValidation.data.map((img) => ({
+          location: img?.location || "",
+          title: img?.title || "",
+          category: img?.category || "foundation",
+          imageUrl: img?.imageUrl || "",
+          fileName: img?.fileName || "",
+          projectId,
+        })),
+      });
+    }
+
+    // Upsert Documents
+    await prismaClient.document.deleteMany({ where: { projectId } });
+    const documentsValidation = DocumentSchema.array().safeParse(
+      req.body?.documents
+    );
+    if (documentsValidation.success) {
+      await prismaClient.document.createMany({
+        data: documentsValidation.data.map((doc) => ({
+          title: doc?.title || " ",
+          fileUrl: doc?.fileUrl || "",
+          fileName: doc?.fileName || "Unnamed File",
+          projectId,
+        })),
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Project updated successfully",
+    });
+  } catch (error) {
+    console.error("Update Project Server Error:", error); // ✅ Add this for debugging
+
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        success: false,
+        errors: error.format(),
+      });
+      return;
+    }
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Server error",
+    });
+  }
+}
