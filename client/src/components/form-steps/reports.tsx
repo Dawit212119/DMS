@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { FormData as ProjectFormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -14,14 +14,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, File, Plus, Trash2, Upload } from "lucide-react";
+import {
+  Camera,
+  File,
+  Plus,
+  Trash2,
+  Upload,
+  ExternalLink,
+  Check,
+  X,
+} from "lucide-react";
 import useFileUploader from "@/app/action/useFileuploader";
 import Image from "next/image";
 import useImageUploader from "@/app/action/useImageuploader";
+import { Badge } from "@/components/ui/badge";
 
 interface ReportsProps {
   formData: ProjectFormData;
-  updateFormData: (data: Partial<FormData>) => void;
+  updateFormData: (data: Partial<ProjectFormData>) => void;
 }
 
 export default function Reports({ formData, updateFormData }: ReportsProps) {
@@ -29,6 +39,12 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [fileSystemImages, setFileSystemImages] = useState<File[]>([]);
   const { uploadFiles: uploadImageFiles } = useImageUploader();
+
+  // State to track which existing reports to keep
+  const [reportsToKeep, setReportsToKeep] = useState<string[]>(
+    formData.reports.map((report) => report.id)
+  );
+
   const [newReport, setNewReport] = useState({
     title: "",
     publisher: "",
@@ -43,6 +59,19 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
     files: [] as File[],
     isUploading: false,
   });
+
+  // Update reportsToKeep when formData.reports changes
+  useEffect(() => {
+    setReportsToKeep(formData.reports.map((report) => report.id));
+  }, [formData.reports]);
+
+  const toggleKeepReport = (id: string) => {
+    setReportsToKeep((prev) =>
+      prev.includes(id)
+        ? prev.filter((reportId) => reportId !== id)
+        : [...prev, id]
+    );
+  };
 
   // Update the addReport function to better handle file uploads and get URLs
   const addReport = async () => {
@@ -101,12 +130,15 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
           }
         }
 
-        // Update form data with the uploaded files
-        if (upload.length > 0) {
-          updateFormData({
-            reports: [...(formData.reports || []), ...upload],
-          });
-        }
+        // Get existing reports that should be kept
+        const keptReports = formData.reports.filter((report) =>
+          reportsToKeep.includes(report.id)
+        );
+
+        // Update form data with the uploaded files and kept reports
+        updateFormData({
+          reports: [...keptReports, ...upload],
+        });
 
         // Reset form state
         setNewReport({
@@ -128,6 +160,10 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
   };
 
   const removeReport = (id: string) => {
+    // Remove from reportsToKeep
+    setReportsToKeep((prev) => prev.filter((reportId) => reportId !== id));
+
+    // Remove from formData
     const updatedReports = formData.reports.filter(
       (report) => report.id !== id
     );
@@ -216,18 +252,134 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
     }
   };
 
-  const removeImage = (index: number, isCameraImage: boolean) => {
+  const removeImage = (index: number) => {
     if (newReport.isUploading) return;
     setFileSystemImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Project Reports</h3>
-      <p className="text-sm text-muted-foreground">
-        Upload and manage reports for your construction project.
-      </p>
+      <div>
+        <h3 className="text-2xl font-semibold bg-clip-text text-transparent bg-blue-green-gradient">
+          Project Reports
+        </h3>
+        <p className="text-gray-600">
+          Upload and manage reports for your construction project.
+        </p>
+      </div>
 
+      {/* Existing Reports Section */}
+      {formData.reports.length > 0 && (
+        <div className="space-y-4 mb-6">
+          <div className="flex items-center justify-between">
+            <h4 className="text-lg font-medium text-gray-800">
+              Existing Reports
+            </h4>
+            <Badge variant="outline">
+              {reportsToKeep.length} of {formData.reports.length} selected
+            </Badge>
+          </div>
+
+          <div className="space-y-3">
+            {formData.reports.map((report) => (
+              <Card
+                key={report.id}
+                className={`overflow-hidden transition-colors ${
+                  reportsToKeep.includes(report.id)
+                    ? "border-green-200"
+                    : "border-red-200 bg-red-50"
+                }`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <File className="h-8 w-8 mr-3 text-primary" />
+                      <div>
+                        <p className="font-medium">{report.title}</p>
+                        <p className="text-sm">Publisher: {report.publisher}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+                            {report.reportType.charAt(0).toUpperCase() +
+                              report.reportType.slice(1)}
+                          </span>
+                          <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-800 rounded-full">
+                            v{report.version}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full ${
+                              report.status === "approved"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {report.status.charAt(0).toUpperCase() +
+                              report.status.slice(1)}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={
+                              reportsToKeep.includes(report.id)
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }
+                          >
+                            {reportsToKeep.includes(report.id)
+                              ? "Keep"
+                              : "Remove"}
+                          </Badge>
+                        </div>
+                        {typeof report.fileUrl === "string" && (
+                          <a
+                            href={report.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1 mt-1"
+                          >
+                            <ExternalLink className="h-3 w-3" /> View report
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant={
+                          reportsToKeep.includes(report.id)
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        onClick={() => toggleKeepReport(report.id)}
+                        className={
+                          reportsToKeep.includes(report.id)
+                            ? "bg-green-600"
+                            : ""
+                        }
+                      >
+                        {reportsToKeep.includes(report.id) ? (
+                          <Check className="h-4 w-4 mr-1" />
+                        ) : (
+                          <X className="h-4 w-4 mr-1" />
+                        )}
+                        {reportsToKeep.includes(report.id) ? "Keep" : "Remove"}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeReport(report.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* New Report Form */}
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -384,7 +536,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                 <div className="relative">
                   <Input
                     type="file"
-                    id="outgoingImages"
+                    id="reportImages"
                     className="absolute inset-0 opacity-0 cursor-pointer"
                     onChange={handleFileSystemImageUpload}
                     accept="image/*"
@@ -440,7 +592,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
                             className="w-20 h-20 object-cover rounded"
                           />
                           <button
-                            onClick={() => removeImage(index, false)}
+                            onClick={() => removeImage(index)}
                             className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
                             disabled={newReport.isUploading}
                           >
@@ -513,7 +665,7 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
               !newReport.title ||
               !newReport.publisher ||
               !newReport.version ||
-              newReport.files.length === 0 ||
+              (newReport.files.length === 0 && fileSystemImages.length === 0) ||
               newReport.isUploading
             }
           >
@@ -552,53 +704,30 @@ export default function Reports({ formData, updateFormData }: ReportsProps) {
         </CardContent>
       </Card>
 
+      {/* Summary for reports */}
       {formData.reports.length > 0 && (
-        <div className="space-y-4 mt-6">
-          <h4 className="font-medium">Added Reports</h4>
-
-          {formData.reports.map((report) => (
-            <Card key={report.id} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <File className="h-8 w-8 mr-3 text-primary" />
-                    <div>
-                      <p className="font-medium">{report.title}</p>
-                      <p className="text-sm">Publisher: {report.publisher}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">
-                          {report.reportType.charAt(0).toUpperCase() +
-                            report.reportType.slice(1)}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-800 rounded-full">
-                          v{report.version}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${
-                            report.status === "approved"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {report.status.charAt(0).toUpperCase() +
-                            report.status.slice(1)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => removeReport(report.id)}
-                    disabled={newReport.isUploading}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h4 className="font-medium text-gray-700 mb-2">Reports Summary</h4>
+          <ul className="space-y-1 text-sm">
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-green-50">
+                {reportsToKeep.length}
+              </Badge>
+              <span>Reports to keep</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-red-50">
+                {formData.reports.length - reportsToKeep.length}
+              </Badge>
+              <span>Reports to remove</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-blue-50">
+                {newReport.files.length + fileSystemImages.length}
+              </Badge>
+              <span>New files to upload</span>
+            </li>
+          </ul>
         </div>
       )}
     </div>

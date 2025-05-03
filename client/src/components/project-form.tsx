@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
+import { useRouter } from "next/navigation";
 import SiteImages from "./form-steps/site-images";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProjectInfo from "./form-steps/project-info";
@@ -121,8 +121,8 @@ const initialFormData: FormData = {
   startDate: "",
   endDate: "",
   budget: {
-    totalBudget: "",
-    amountSpent: "",
+    totalBudget: "0",
+    amountSpent: "0",
   },
   team: {
     projectManager: "",
@@ -152,6 +152,7 @@ const steps = [
   { id: 9, name: "Reports", icon: "📊" },
   { id: 10, name: "Review", icon: "🔍" },
 ];
+
 function transformProjectData(formData: FormData) {
   const raw = formData;
   return {
@@ -163,8 +164,8 @@ function transformProjectData(formData: FormData) {
       endDate: new Date(raw.endDate).toISOString(),
     },
     budget: {
-      total: parseFloat(raw.budget.totalBudget),
-      spent: parseFloat(raw.budget.amountSpent),
+      total: Number.parseFloat(raw.budget.totalBudget),
+      spent: Number.parseFloat(raw.budget.amountSpent),
     },
     team: {
       projectManager: raw.team.projectManager,
@@ -205,19 +206,152 @@ function transformProjectData(formData: FormData) {
       fileName: l.fileName,
       status: l.status,
     })),
-    documents: (raw.documents || []).map((d) => ({
-      title: d.title,
-      fileUrl: d.fileUrl,
-      fileName: d.fileName,
+    siteImages: (raw.siteImages || []).map((l) => ({
+      id: l.id,
+      category: l.category,
+      fileName: l.fileName,
+      imageUrl: l.imageUrl,
+      location: l.location,
+      title: l.title,
     })),
   };
 }
 
-export default function ProjectForm() {
+// Helper function to transform API data to form data format
+function transformApiDataToFormData(apiData: any): FormData {
+  if (!apiData) return initialFormData;
+
+  try {
+    return {
+      projectName: apiData?.projectName || "",
+      clientName: apiData?.clientName || "",
+      location: apiData?.location || "",
+      startDate: apiData?.startDate
+        ? new Date(apiData.startDate).toISOString().split("T")[0]
+        : "",
+      endDate: apiData?.endDate
+        ? new Date(apiData.endDate).toISOString().split("T")[0]
+        : "",
+      budget: {
+        totalBudget: apiData.budget?.total?.toString() || "",
+        amountSpent: apiData.budget?.spent?.toString() || "",
+      },
+      team: {
+        projectManager: apiData.team?.projectManager || "",
+        siteManager: apiData.team?.siteManager || "",
+        civilManager: apiData.team?.civilManager || "",
+        architecturalLead: apiData.team?.architecturalLead || "",
+        totalWorkers: apiData.team?.totalWorkers || 0,
+      },
+      milestones: Array.isArray(apiData.milestones)
+        ? apiData.milestones.map((m: any, index: number) => ({
+            id: m.id || `milestone-${index}`,
+            name: m.name || "",
+            date: m.date ? new Date(m.date).toISOString().split("T")[0] : "",
+            status: m.status || "ontrack",
+          }))
+        : [],
+      checklist: Array.isArray(apiData.checklist)
+        ? apiData.checklist.map((c: any, index: number) => ({
+            id: c.id || `checklist-${index}`,
+            task: c.task || "",
+            assignedTo: c.assignedTo || "",
+            dueDate: c.dueDate
+              ? new Date(c.dueDate).toISOString().split("T")[0]
+              : "",
+            status: c.status || "ontrack",
+            priority: c.priority || "medium",
+            milestoneId: c.milestoneId || "",
+          }))
+        : [],
+      documents: Array.isArray(apiData.documents)
+        ? apiData.documents.map((d: any, index: number) => ({
+            id: d.id || `document-${index}`,
+            title: d.title || "",
+            fileUrl: d.fileUrl || "",
+            fileName: d.fileName || "",
+          }))
+        : [],
+      siteImages: Array.isArray(apiData.siteImages)
+        ? apiData.siteImages.map((i: any, index: number) => ({
+            id: i.id || `image-${index}`,
+            title: i.title || "",
+            location: i.location || "",
+            category: i.category || "foundation",
+            imageUrl: i.imageUrl || "",
+            fileName: i.fileName || "",
+          }))
+        : [],
+      outgoingLetters: Array.isArray(apiData.outgoingLetters)
+        ? apiData.outgoingLetters.map((l: any, index: number) => ({
+            id: l.id || `outgoing-${index}`,
+            recipient: l.recipient || "",
+            subject: l.subject || "",
+            priority: l.priority || "medium",
+            status: l.status || "draft",
+            fileUrl: l.fileUrl ? [l.fileUrl] : [],
+            fileName: l.fileName || "",
+          }))
+        : [],
+      incomingLetters: Array.isArray(apiData.incomingLetters)
+        ? apiData.incomingLetters.map((l: any, index: number) => ({
+            id: l.id || `incoming-${index}`,
+            sender: l.sender || "",
+            subject: l.subject || "",
+            priority: l.priority || "medium",
+            status: l.status || "unread",
+            fileUrl: l.fileUrl ? [l.fileUrl] : [],
+            fileName: l.fileName || "",
+          }))
+        : [],
+      reports: Array.isArray(apiData.reports)
+        ? apiData.reports.map((r: any, index: number) => ({
+            id: r.id || `report-${index}`,
+            title: r.title || "",
+            publisher: r.publisher || "",
+            reportType: r.reportType || "daily",
+            version: r.version || "",
+            status: r.status || "approved",
+            fileUrl: r.fileUrl ? [r.fileUrl] : [],
+            fileName: r.fileName || "",
+          }))
+        : [],
+    };
+  } catch (error) {
+    console.log("Error transforming API data:", error);
+    return initialFormData;
+  }
+}
+
+interface ProjectFormProps {
+  mode?: "create" | "update";
+  existingData?: any;
+  projectId?: string | null;
+}
+
+export default function ProjectForm({
+  mode = "create",
+  existingData = null,
+  projectId = null,
+}: ProjectFormProps) {
+  // console.log("Existing data", existingData.data);
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Initialize form with existing data if in update mode
+  useEffect(() => {
+    if (mode === "update" && existingData) {
+      console.log("say hello if this is true");
+      const transformedData = transformApiDataToFormData(existingData);
+
+      console.log("transformed data>>>", transformedData);
+      setFormData(transformedData);
+    }
+  }, [mode, existingData]);
+  console.log("form data>>>", formData);
   const updateFormData = (data: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
@@ -246,7 +380,6 @@ export default function ProjectForm() {
           return;
         }
       }
-      console.log("the form data>>>>>>>>>>>>.", formData);
 
       // If validation passes or we're not on the first step, proceed
       setValidationErrors([]);
@@ -263,28 +396,44 @@ export default function ProjectForm() {
   };
 
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     const structuredData = transformProjectData(formData);
-    console.log(
-      "the form data to submit is +++++======>>>>>>>>>>>>.",
-      structuredData
-    );
-    const res = await fetch("http://localhost:8000/project", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(structuredData),
-      credentials: "include",
-    });
-    if (res.ok) {
-      toast("Project submitted successfully!");
-    }
-    // This is where you would handle the form submission to your backend
-    console.log("Form submitted:", formData);
 
-    // Reset form after submission
-    setFormData(initialFormData);
-    setCurrentStep(1);
+    try {
+      const url =
+        mode === "create"
+          ? "http://localhost:8000/project"
+          : `http://localhost:8000/project/${projectId}`;
+
+      const method = mode === "create" ? "POST" : "PUT";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(structuredData),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to ${mode} project`);
+      }
+
+      toast(
+        `Project ${mode === "create" ? "created" : "updated"} successfully!`
+      );
+
+      // Redirect to projects list after successful submission
+      setTimeout(() => {
+        router.push("/projects");
+      }, 1500);
+    } catch (error) {
+      console.error(`Error ${mode}ing project:`, error);
+      toast.error(`Failed to ${mode} project. Please try again.`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -338,6 +487,22 @@ export default function ProjectForm() {
     window.validationErrors = validationErrors;
   }, [validationErrors]);
 
+  // Display validation errors if any
+  const renderValidationErrors = () => {
+    if (validationErrors.length === 0) return null;
+
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+        <p className="font-medium mb-1">Please fix the following errors:</p>
+        <ul className="list-disc pl-5">
+          {validationErrors.map((error, index) => (
+            <li key={index}>{error}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
@@ -366,13 +531,14 @@ export default function ProjectForm() {
       <Card className="border-none shadow-lg card-hover-effect overflow-hidden">
         <div className="h-2 bg-blue-green-gradient w-full"></div>
         <CardContent className="pt-6 p-8">
+          {renderValidationErrors()}
           {renderStep()}
 
           <div className="flex justify-between mt-10">
             <Button
               variant="outline"
               onClick={handlePrevious}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isSubmitting}
               className="flex items-center border-blue-400 text-blue-600 hover:bg-blue-50"
             >
               <ChevronLeft className="mr-2 h-4 w-4" /> Previous
@@ -381,13 +547,19 @@ export default function ProjectForm() {
             {currentStep === steps.length ? (
               <Button
                 onClick={handleSubmit}
+                disabled={isSubmitting}
                 className="flex items-center bg-blue-green-gradient hover:opacity-90 transition-opacity animate-gradient"
               >
-                Submit Project
+                {isSubmitting
+                  ? "Submitting..."
+                  : mode === "create"
+                  ? "Create Project"
+                  : "Update Project"}
               </Button>
             ) : (
               <Button
                 onClick={handleNext}
+                disabled={isSubmitting}
                 className="flex items-center bg-teal-500 hover:bg-teal-600 text-white transition-colors"
               >
                 Next <ChevronRight className="ml-2 h-4 w-4" />

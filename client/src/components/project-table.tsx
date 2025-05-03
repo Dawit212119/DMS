@@ -47,7 +47,7 @@ export default function ProjectTable() {
 
   const handleEditProject = useCallback(
     (projectId: string) => {
-      router.push(`/projects/edit/${projectId}`);
+      router.push(`/project/create?mode=update&projectId=${projectId}`);
     },
     [router]
   );

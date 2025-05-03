@@ -15,6 +15,7 @@ import {
 import { prismaClient } from "../prisma";
 import { BadRequestException } from "../exceptions/badRequest";
 import { ErrorCodes } from "../exceptions/root";
+import { title } from "process";
 
 // Create Project
 export async function createProject(
@@ -191,7 +192,25 @@ export async function createProject(
     } else {
       console.error("No valid incoming letters to insert");
     }
+    // Validate Incoming Letters
+    const siteImagesValidation = SiteImageSchema.array().safeParse(
+      req.body?.siteImages
+    );
 
+    if (siteImagesValidation.success) {
+      await prismaClient.siteImage.createMany({
+        data: siteImagesValidation.data.map((img) => ({
+          location: img?.location || "", // Provide default value for sender
+          title: img?.title || "", // Provide default value for subject
+          category: img?.category || "foundation", // Provide default valid value for category
+          imageUrl: img?.imageUrl || "", // Provide default value for fileName
+          fileName: img?.fileName || "", // Provide default value for priority
+          projectId: project.id,
+        })),
+      });
+    } else {
+      console.error("No valid incoming letters to insert");
+    }
     // Validate and Create Documents
     const documentsValidation = DocumentSchema.array().safeParse(
       req.body?.documents
