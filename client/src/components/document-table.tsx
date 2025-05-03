@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  Eye,
   ArrowUpDown,
   Download,
   ChevronDown,
@@ -253,8 +254,8 @@ export function DocumentTable({
             onClick={() => window.open(document.fileUrl, "_blank")}
             className="flex items-center gap-1"
           >
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Download</span>
+            <Eye className="h-4 w-4" />
+            <span className="hidden sm:inline">View</span>
           </Button>
         );
       },

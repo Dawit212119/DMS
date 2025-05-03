@@ -2,7 +2,7 @@
 
 import { RootState } from "@/state/store";
 import { useSelector } from "react-redux";
-import { Download, FileText, QrCode, Share2 } from "lucide-react";
+import { Eye, Download, FileText, QrCode, Share2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import QRCode from "qrcode";
 import { Document } from "@/state/project/projectSlice";
@@ -48,11 +48,11 @@ export default function DocumentsTable() {
     }
   }, [documents]);
 
-  const handleDownload = (fileId: string) => {
-    // In a real application, this would trigger the actual file download
-    console.log(`Downloading file with ID: ${fileId}`);
-    // You would typically redirect to the file URL or use an API call here
-  };
+  // const handleDownload = (fileId: string) => {
+  //   // In a real application, this would trigger the actual file download
+  //   console.log(`Downloading file with ID: ${fileId}`);
+  //   // You would typically redirect to the file URL or use an API call here
+  // };
 
   const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
@@ -67,7 +67,7 @@ export default function DocumentsTable() {
   const generateQRCode = async (file: Document) => {
     try {
       // Generate a URL for the file (this is a placeholder - replace with your actual URL structure)
-      const fileUrl = `${window.location.origin}/projects/files/${file.id}`;
+      const fileUrl = file.fileUrl;
 
       // Generate QR code
       const qrCodeDataUrl = await QRCode.toDataURL(fileUrl);
@@ -170,10 +170,10 @@ export default function DocumentsTable() {
                       variant="outline"
                       size="sm"
                       className="flex items-center gap-1"
-                      onClick={() => handleDownload(file.id)}
+                      onClick={() => window.open(file.fileUrl, "_blank")}
                     >
-                      <Download className="h-4 w-4" />
-                      <span className="hidden sm:inline">Download</span>
+                      <Eye className="h-4 w-4" />
+                      <span className="hidden sm:inline">View</span>
                     </Button>
                   </div>
                 </TableCell>
