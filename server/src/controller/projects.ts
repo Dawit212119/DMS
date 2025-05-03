@@ -839,3 +839,14 @@ export const getProjectById = async (
 //     });
 //   }
 // }
+export const getMyProjects = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const myProjects = await prismaClient.project.findMany({
+    where: {
+      userId: req.user?.id,
+    },
+  });
+};

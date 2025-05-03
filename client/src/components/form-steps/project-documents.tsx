@@ -89,6 +89,7 @@ export default function ProjectDocuments({
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach((track) => track.stop()); // Stop previous stream
     }
+    setCameraActive(false); // Move this outside the if statement to ensure it always runs
   };
   const handleCameraCapture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -226,10 +227,10 @@ export default function ProjectDocuments({
 
       <Card className="border border-blue-100 overflow-hidden">
         <div className="h-1 bg-blue-green-gradient w-full" />
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 md:p-6 space-y-4">
           <div className="space-y-2">
             <Label className="text-blue-700">Document Files</Label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Input
                   id="fileInput"
@@ -294,23 +295,31 @@ export default function ProjectDocuments({
 
           {cameraActive && (
             <div className="space-y-3">
-              <video ref={videoRef} width="100%" height="300" autoPlay />
+              <div className="w-full max-w-full overflow-hidden">
+                <video
+                  ref={videoRef}
+                  width="100%"
+                  height="auto"
+                  autoPlay
+                  className="max-h-[300px] object-cover rounded-lg"
+                />
+              </div>
               <canvas
                 ref={canvasRef}
                 width="400"
                 height="400"
                 className="hidden"
               />
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row gap-2 justify-between">
                 <Button
-                  className="bg-green-600 text-white"
+                  className="bg-green-600 text-white w-full sm:w-auto"
                   onClick={handleCameraCapture}
                   disabled={newDocuments.some((d) => d.isUploading)}
                 >
                   📸 Capture Photo
                 </Button>
                 <Button
-                  className="bg-green-600 text-white"
+                  className="bg-green-600 text-white w-full sm:w-auto"
                   onClick={handleStopCapture}
                   disabled={newDocuments.some((d) => d.isUploading)}
                 >
@@ -325,9 +334,9 @@ export default function ProjectDocuments({
               {newDocuments.map((doc, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 p-3 border overflow-y-auto rounded-lg"
+                  className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 border overflow-y-auto rounded-lg"
                 >
-                  <div className="flex-1 space-y-2">
+                  <div className="w-full md:flex-1 space-y-2">
                     <Input
                       value={doc.documentName}
                       onChange={(e) =>
@@ -341,15 +350,17 @@ export default function ProjectDocuments({
                       placeholder="Document title"
                     />
                     {doc.file && doc.file.type.startsWith("image/") ? (
-                      <Image
-                        src={
-                          URL.createObjectURL(doc.file) || "/placeholder.svg"
-                        }
-                        alt="Captured"
-                        width={300}
-                        height={300}
-                        className="max-w-xs max-h-48 border rounded shadow"
-                      />
+                      <div className="max-w-full overflow-hidden">
+                        <Image
+                          src={
+                            URL.createObjectURL(doc.file) || "/placeholder.svg"
+                          }
+                          alt="Captured"
+                          width={300}
+                          height={300}
+                          className="max-w-full h-auto max-h-48 border rounded shadow"
+                        />
+                      </div>
                     ) : (
                       <div>
                         {doc.file?.name}
@@ -359,7 +370,7 @@ export default function ProjectDocuments({
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2 justify-between items-center">
+                  <div className="flex flex-row md:flex-col gap-2 justify-between items-center mt-2 md:mt-0">
                     <Button
                       variant="link"
                       onClick={() => removeNewDocument(idx)}

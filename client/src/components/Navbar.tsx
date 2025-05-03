@@ -12,7 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Container from "./container";
-import { useGetMeQuery, useLogoutUserMutation } from "@/state/features/authApi";
+import {
+  resetApiState,
+  useGetMeQuery,
+  useLogoutUserMutation,
+} from "@/state/features/authApi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 
 export default function Header() {
   const { data: user, error } = useGetMeQuery();
@@ -44,10 +49,12 @@ export default function Header() {
     setIsMenuOpen(!isMenuOpen);
   };
   const router = useRouter();
+  const dispatch = useDispatch();
   const [logoutUser] = useLogoutUserMutation();
   const handleLogout = async () => {
     try {
       await logoutUser().unwrap();
+      dispatch(resetApiState());
       router.push("/sign-in"); // Redirect to login page after logout
     } catch (error) {
       console.error("Logout failed:", error);
@@ -91,8 +98,12 @@ export default function Header() {
                 <User />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>My Projects</DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => router.push("/myprojects")}
+                  className="cursor-pointer"
+                >
+                  My Projects
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
                   sign out
                 </DropdownMenuItem>

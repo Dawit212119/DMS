@@ -58,3 +58,4 @@ export const {
   useGetMeQuery,
   useLogoutUserMutation,
 } = authApi;
+export const { resetApiState } = authApi.util;

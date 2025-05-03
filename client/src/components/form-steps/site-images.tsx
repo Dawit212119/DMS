@@ -1,6 +1,9 @@
+"use client";
+
+import type React from "react";
+
 import { useRef, useState } from "react";
 import type { FormData } from "../project-form";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,14 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Camera,
-  FileText,
-  ImageIcon,
-  Plus,
-  Trash2,
-  Upload,
-} from "lucide-react";
+import { Camera, Plus, Trash2, Upload } from "lucide-react";
 import useImageUploader from "@/app/action/useImageuploader";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -166,9 +162,18 @@ export default function SiteImages({
   };
 
   const startCamera = async () => {
-    if (navigator.mediaDevices.getUserMedia) {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) videoRef.current.srcObject = stream;
+    try {
+      if (navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        if (videoRef.current) videoRef.current.srcObject = stream;
+        setCameraError(null);
+      }
+    } catch (error) {
+      console.error("Camera access error:", error);
+      setCameraError("Failed to access camera. Please check permissions.");
+      setIsCameraActive(false);
     }
   };
 
@@ -203,6 +208,7 @@ export default function SiteImages({
                     : img
                 )
               );
+              toast.success("Image captured successfully");
             }
           },
           "image/jpeg",
@@ -230,7 +236,7 @@ export default function SiteImages({
     <div className="space-y-6">
       {newImages.map((img, index) => (
         <Card key={index} className="p-4">
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-0">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 placeholder="Title"
@@ -277,51 +283,57 @@ export default function SiteImages({
                     "aerial",
                   ].map((cat) => (
                     <SelectItem key={cat} value={cat}>
-                      {cat}
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex items-center gap-4">
-              <Input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, index)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => {
-                  setIsCameraActive(true);
-                  startCamera();
-                  setActiveImageIndex(index);
-                }}
-              >
-                <Camera />
-              </Button>
-              <Button
-                type="button"
-                onClick={() => handleGroupUpload(index)}
-                disabled={img.isUploading}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {img.isUploading ? "Uploading..." : "Upload Group"}
-              </Button>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:flex-1">
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, index)}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setIsCameraActive(true);
+                    startCamera();
+                    setActiveImageIndex(index);
+                  }}
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => handleGroupUpload(index)}
+                  disabled={img.isUploading}
+                  className="w-full sm:w-auto"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {img.isUploading ? "Uploading..." : "Upload Group"}
+                </Button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {img.files.map((file, i) => (
                 <div key={i} className="relative w-full h-32">
                   <Image
-                    src={URL.createObjectURL(file)}
+                    src={URL.createObjectURL(file) || "/placeholder.svg"}
                     alt={`Preview ${i}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    className="rounded object-cover"
                   />
                   <Button
                     type="button"
@@ -340,18 +352,41 @@ export default function SiteImages({
       ))}
 
       {isCameraActive && (
-        <div className="space-y-2">
-          <video
-            ref={videoRef}
-            autoPlay
-            className="w-full max-w-md mx-auto rounded shadow"
-          />
-          <canvas ref={canvasRef} className="hidden" />
-          <div className="flex gap-4 justify-center">
-            <Button onClick={captureImage}>Capture</Button>
-            <Button variant="outline" onClick={stopCamera}>
-              Cancel
-            </Button>
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-4 w-full max-w-md space-y-4">
+            <h3 className="text-lg font-medium">Camera Capture</h3>
+
+            {cameraError ? (
+              <div className="text-red-500 p-4 text-center">{cameraError}</div>
+            ) : (
+              <div className="space-y-2">
+                <div className="relative w-full h-64 bg-gray-100 rounded overflow-hidden">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <canvas ref={canvasRef} className="hidden" />
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Button
+                onClick={captureImage}
+                className="w-full sm:w-auto"
+                disabled={!!cameraError}
+              >
+                Capture
+              </Button>
+              <Button
+                variant="outline"
+                onClick={stopCamera}
+                className="w-full sm:w-auto"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -371,6 +406,7 @@ export default function SiteImages({
           ]);
         }}
         disabled={!isUploadComplete}
+        className="w-full sm:w-auto"
       >
         <Plus className="mr-2 h-4 w-4" /> Add Image Group
       </Button>

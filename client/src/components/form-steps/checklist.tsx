@@ -266,8 +266,8 @@ export default function Checklist({
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="on track">On Track</SelectItem>
-                              <SelectItem value="at risk">At Risk</SelectItem>
+                              <SelectItem value="ontrack">On Track</SelectItem>
+                              <SelectItem value="atrisk">At Risk</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
