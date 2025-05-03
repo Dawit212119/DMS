@@ -29,3 +29,38 @@ export const getUserProjects = async (
     next(error);
   }
 };
+export const deleteProject = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return next(
+        new BadRequestException("Unauthorized", ErrorCodes.UnAUTHORIZED)
+      );
+    }
+    const userId = req.user.id;
+    const { projectId } = req.params;
+    console.log(userId, projectId);
+    // Delete related entities first (order matters)
+    await prismaClient.report.deleteMany({ where: { projectId } });
+    await prismaClient.incomingLetter.deleteMany({ where: { projectId } });
+    await prismaClient.outgoingLetter.deleteMany({ where: { projectId } });
+    await prismaClient.siteImage.deleteMany({ where: { projectId } });
+    await prismaClient.document.deleteMany({ where: { projectId } });
+    await prismaClient.checklistItem.deleteMany({ where: { projectId } });
+    await prismaClient.milestone.deleteMany({ where: { projectId } });
+    await prismaClient.team.deleteMany({ where: { projectId } });
+    await prismaClient.budget.deleteMany({ where: { projectId } });
+
+    // Finally delete the project
+    await prismaClient.project.delete({ where: { id: projectId } });
+    res.status(200).json({
+      success: true,
+      message: "project deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
