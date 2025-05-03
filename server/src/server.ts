@@ -9,6 +9,7 @@ import { PrismaClient } from "@prisma/client";
 import { errorMiddleware } from "./exceptions/errorMiddleware";
 import project from "./route/project.js";
 import authRoute from "./route/auth.js";
+import userProjectRoute from "./route/userProject.js";
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -21,6 +22,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", authRoute);
+app.use("/user", userProjectRoute);
 app.use("/upload", uploadRouter);
 app.use("/files", getRouter);
 app.use("/project", project);

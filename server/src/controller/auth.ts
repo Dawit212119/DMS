@@ -1,4 +1,3 @@
-import jwt from "jsonwebtoken";
 import { BadRequestException } from "../exceptions/badRequest.js";
 import { NotFoundException } from "../exceptions/notFound.js";
 import { ErrorCodes } from "../exceptions/root.js";

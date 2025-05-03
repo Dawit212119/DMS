@@ -3,6 +3,7 @@
 import type { FormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { formatETB } from "@/lib/utils/formatPrice";
 
 interface BudgetInfoProps {
   formData: FormData;
@@ -67,9 +68,10 @@ export default function BudgetInfo({
             <div>
               <p className="text-sm text-muted-foreground">Remaining Budget:</p>
               <p className="font-medium">
-                $
-                {Number(formData.budget.totalBudget) -
-                  Number(formData.budget.amountSpent)}
+                {formatETB(
+                  Number(formData.budget.totalBudget) -
+                    Number(formData.budget.amountSpent)
+                )}
               </p>
             </div>
             <div>

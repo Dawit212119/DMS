@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, type File, Trash2, Upload } from "lucide-react";
+import { Camera, Trash2, Upload, ExternalLink } from "lucide-react";
 import useImageUploader from "@/app/action/useImageuploader";
 import useFileUploader from "@/app/action/useFileuploader";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 interface ExtendedFormData extends FormData {
   documents: {
@@ -46,7 +47,17 @@ export default function ProjectDocuments({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { uploadFiles: uploadImageFiles } = useImageUploader();
   const { uploadFiles: uploadNonImageFiles } = useFileUploader();
-  console.log(nonImageFiles);
+
+  // State to track which existing documents to keep
+  const [documentsToKeep, setDocumentsToKeep] = useState<string[]>(
+    formData.documents.map((doc) => doc.id)
+  );
+
+  useEffect(() => {
+    // Update documentsToKeep when formData.documents changes (e.g., on initial load)
+    setDocumentsToKeep(formData.documents.map((doc) => doc.id));
+  }, [formData.documents]);
+
   useEffect(() => {
     if (!cameraActive) return;
     navigator.mediaDevices
@@ -84,12 +95,15 @@ export default function ProjectDocuments({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) classifyFiles(Array.from(e.target.files));
   };
+
   const handleStopCapture = () => {
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach((track) => track.stop()); // Stop previous stream
     }
+    setCameraActive(false); // Move this outside the if statement to ensure it always runs
   };
+
   const handleCameraCapture = () => {
     if (videoRef.current && canvasRef.current) {
       const context = canvasRef.current.getContext("2d");
@@ -128,6 +142,7 @@ export default function ProjectDocuments({
       )
     );
   };
+
   const removeNewDocument = (index: number) => {
     const removed = newDocuments[index];
     if (!removed.file) return;
@@ -136,7 +151,17 @@ export default function ProjectDocuments({
     setNonImageFiles((prev) => prev.filter((f) => f !== removed.file));
   };
 
+  const toggleKeepDocument = (id: string) => {
+    setDocumentsToKeep((prev) =>
+      prev.includes(id) ? prev.filter((docId) => docId !== id) : [...prev, id]
+    );
+  };
+
   const removeDocument = (id: string) => {
+    // Remove from documentsToKeep
+    setDocumentsToKeep((prev) => prev.filter((docId) => docId !== id));
+
+    // Remove from formData
     const updated = formData.documents.filter((doc) => doc.id !== id);
     updateFormData({ documents: updated });
   };
@@ -173,7 +198,7 @@ export default function ProjectDocuments({
         const uploadedImages = [
           {
             id: Date.now().toString(),
-            title: imagename[0], // You can customize title
+            title: imagename[0]?.title || "Uploaded Image", // Use title or default
             fileUrl: imageRes?.fileURL || "",
             fileName: imageFiles.map((file) => file.name).join(", "),
           },
@@ -191,13 +216,18 @@ export default function ProjectDocuments({
             fileName: doc.file?.name || "",
           }));
         uploaded = [...uploaded, ...uploadedFiles];
-        console.log("the uploaded file>>>>>>>>>>>>..", uploaded);
       }
 
+      // Get existing documents that should be kept
+      const keptDocuments = formData.documents.filter((doc) =>
+        documentsToKeep.includes(doc.id)
+      );
+
+      // Update with both kept documents and new uploads
       updateFormData({
-        documents: [...formData.documents, ...uploaded],
+        documents: [...keptDocuments, ...uploaded],
       });
-      console.log("Clear form data>>>>>>>>>>>.", formData);
+
       // Clear temporary state
       setNewDocuments([]);
       setImageFiles([]);
@@ -215,6 +245,25 @@ export default function ProjectDocuments({
       document.getElementById("fileInput")?.click();
     }
   };
+
+  // Function to determine file type icon
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split(".").pop()?.toLowerCase();
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext || "")) {
+      return "🖼️";
+    } else if (["pdf"].includes(ext || "")) {
+      return "📄";
+    } else if (["doc", "docx"].includes(ext || "")) {
+      return "📝";
+    } else if (["xls", "xlsx"].includes(ext || "")) {
+      return "📊";
+    } else if (["ppt", "pptx"].includes(ext || "")) {
+      return "📑";
+    } else {
+      return "📁";
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -224,12 +273,94 @@ export default function ProjectDocuments({
         <p className="text-gray-600">Upload project-related documents.</p>
       </div>
 
+      {/* Existing Documents Section */}
+      {formData.documents.length > 0 && (
+        <Card className="border border-blue-100 overflow-hidden">
+          <div className="h-1 bg-blue-green-gradient w-full" />
+          <CardContent className="p-4 md:p-6 space-y-4">
+            <div className="space-y-2">
+              <Label className="text-blue-700 flex items-center gap-2">
+                Existing Documents
+                <Badge variant="outline" className="ml-2">
+                  {formData.documents.length}
+                </Badge>
+              </Label>
+
+              <div className="space-y-3 mt-4">
+                {formData.documents.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className={`flex flex-col md:flex-row items-start md:items-center gap-3 p-3 border rounded-lg transition-colors ${
+                      documentsToKeep.includes(doc.id)
+                        ? "border-green-200 bg-green-50"
+                        : "border-red-200 bg-red-50"
+                    }`}
+                  >
+                    <div className="w-full md:flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">
+                          {getFileIcon(doc.fileName)}
+                        </span>
+                        <div>
+                          <p className="font-medium">{doc.title}</p>
+                          <p className="text-sm text-gray-500">
+                            {doc.fileName}
+                          </p>
+                        </div>
+                      </div>
+
+                      {doc.fileUrl && (
+                        <div className="mt-2">
+                          <a
+                            href={doc.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                          >
+                            <ExternalLink className="h-3 w-3" /> View document
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 mt-2 md:mt-0">
+                      <Button
+                        variant={
+                          documentsToKeep.includes(doc.id)
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        onClick={() => toggleKeepDocument(doc.id)}
+                        className={
+                          documentsToKeep.includes(doc.id) ? "bg-green-600" : ""
+                        }
+                      >
+                        {documentsToKeep.includes(doc.id) ? "Keep" : "Removed"}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeDocument(doc.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Upload New Documents Section */}
       <Card className="border border-blue-100 overflow-hidden">
         <div className="h-1 bg-blue-green-gradient w-full" />
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 md:p-6 space-y-4">
           <div className="space-y-2">
-            <Label className="text-blue-700">Document Files</Label>
-            <div className="flex gap-2">
+            <Label className="text-blue-700">Upload New Documents</Label>
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Input
                   id="fileInput"
@@ -294,23 +425,31 @@ export default function ProjectDocuments({
 
           {cameraActive && (
             <div className="space-y-3">
-              <video ref={videoRef} width="100%" height="300" autoPlay />
+              <div className="w-full max-w-full overflow-hidden">
+                <video
+                  ref={videoRef}
+                  width="100%"
+                  height="auto"
+                  autoPlay
+                  className="max-h-[300px] object-cover rounded-lg"
+                />
+              </div>
               <canvas
                 ref={canvasRef}
                 width="400"
                 height="400"
                 className="hidden"
               />
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row gap-2 justify-between">
                 <Button
-                  className="bg-green-600 text-white"
+                  className="bg-green-600 text-white w-full sm:w-auto"
                   onClick={handleCameraCapture}
                   disabled={newDocuments.some((d) => d.isUploading)}
                 >
                   📸 Capture Photo
                 </Button>
                 <Button
-                  className="bg-green-600 text-white"
+                  className="bg-green-600 text-white w-full sm:w-auto"
                   onClick={handleStopCapture}
                   disabled={newDocuments.some((d) => d.isUploading)}
                 >
@@ -325,9 +464,9 @@ export default function ProjectDocuments({
               {newDocuments.map((doc, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 p-3 border overflow-y-auto rounded-lg"
+                  className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 border overflow-y-auto rounded-lg"
                 >
-                  <div className="flex-1 space-y-2">
+                  <div className="w-full md:flex-1 space-y-2">
                     <Input
                       value={doc.documentName}
                       onChange={(e) =>
@@ -341,15 +480,17 @@ export default function ProjectDocuments({
                       placeholder="Document title"
                     />
                     {doc.file && doc.file.type.startsWith("image/") ? (
-                      <Image
-                        src={
-                          URL.createObjectURL(doc.file) || "/placeholder.svg"
-                        }
-                        alt="Captured"
-                        width={300}
-                        height={300}
-                        className="max-w-xs max-h-48 border rounded shadow"
-                      />
+                      <div className="max-w-full overflow-hidden">
+                        <Image
+                          src={
+                            URL.createObjectURL(doc.file) || "/placeholder.svg"
+                          }
+                          alt="Captured"
+                          width={300}
+                          height={300}
+                          className="max-w-full h-auto max-h-48 border rounded shadow"
+                        />
+                      </div>
                     ) : (
                       <div>
                         {doc.file?.name}
@@ -359,7 +500,7 @@ export default function ProjectDocuments({
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2 justify-between items-center">
+                  <div className="flex flex-row md:flex-col gap-2 justify-between items-center mt-2 md:mt-0">
                     <Button
                       variant="link"
                       onClick={() => removeNewDocument(idx)}
@@ -380,7 +521,8 @@ export default function ProjectDocuments({
           variant="outline"
           disabled={
             !canAddMoreFiles ||
-            newDocuments.length === 0 ||
+            (newDocuments.length === 0 &&
+              documentsToKeep.length === formData.documents.length) ||
             newDocuments.some((d) => d.isUploading)
           }
           onClick={addDocument}
@@ -413,11 +555,39 @@ export default function ProjectDocuments({
             </>
           ) : (
             <>
-              <Upload className="mr-2 h-4 w-4" /> Upload Documents
+              <Upload className="mr-2 h-4 w-4" />{" "}
+              {newDocuments.length > 0 ? "Upload Documents" : "Save Changes"}
             </>
           )}
         </Button>
       </div>
+
+      {/* Summary of changes */}
+      {formData.documents.length > 0 && (
+        <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h4 className="font-medium text-gray-700 mb-2">Document Summary</h4>
+          <ul className="space-y-1 text-sm">
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-green-50">
+                {documentsToKeep.length}
+              </Badge>
+              <span>Documents to keep</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-red-50">
+                {formData.documents.length - documentsToKeep.length}
+              </Badge>
+              <span>Documents to remove</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-blue-50">
+                {newDocuments.length}
+              </Badge>
+              <span>New documents to upload</span>
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

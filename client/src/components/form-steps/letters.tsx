@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type { FormData } from "../project-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,10 +15,11 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, File, Plus, Trash2, Upload } from "lucide-react";
+import { Camera, File, Plus, Trash2, Upload, Check, X } from "lucide-react";
 import Image from "next/image";
 import useImageUploader from "@/app/action/useImageuploader";
 import useFileUploader from "@/app/action/useFileuploader";
+import { Badge } from "@/components/ui/badge";
 
 interface LettersProps {
   formData: FormData;
@@ -37,6 +38,14 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
   const { uploadFiles: uploadImageFiles } = useImageUploader();
   const { uploadFiles: uploadNonImageFiles } = useFileUploader();
 
+  // State to track which existing letters to keep
+  const [outgoingLettersToKeep, setOutgoingLettersToKeep] = useState<string[]>(
+    formData.outgoingLetters.map((letter) => letter.id)
+  );
+  const [incomingLettersToKeep, setIncomingLettersToKeep] = useState<string[]>(
+    formData.incomingLetters.map((letter) => letter.id)
+  );
+
   const [newOutgoingLetter, setNewOutgoingLetter] = useState({
     recipient: "",
     subject: "",
@@ -54,6 +63,16 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
     file: null as File[] | null,
     isUploading: false,
   });
+
+  // Update letters to keep when formData changes
+  useEffect(() => {
+    setOutgoingLettersToKeep(
+      formData.outgoingLetters.map((letter) => letter.id)
+    );
+    setIncomingLettersToKeep(
+      formData.incomingLetters.map((letter) => letter.id)
+    );
+  }, [formData.outgoingLetters, formData.incomingLetters]);
 
   const isImageFile = (file: File): boolean => {
     return file.type.startsWith("image/");
@@ -80,17 +99,9 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
         nonImageResponse = await uploadNonImageFiles(formData);
       }
 
-      // Combine results
-      // const fileURLs = [
-      //   ...(Array.isArray(imageResponse?.fileURL)
-      //     ? imageResponse.fileURL
-      //     : [imageResponse?.fileURL]),
-      //   ...(nonImageResponse?.fileURL || []),
-      // ];
-
       const fileURLs = [
-        imageResponse!.fileURL,
-        ...nonImageResponse?.upload.value.qrPDFURL,
+        imageResponse?.fileURL,
+        ...(nonImageResponse?.upload?.value?.qrPDFURL || []),
       ];
       const fileNames = files.map((f) => f.name).join(", ");
 
@@ -125,18 +136,9 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
         nonImageResponse = await uploadNonImageFiles(formData);
       }
       const fileURLs = [
-        imageResponse!.fileURL,
-        ...nonImageResponse?.upload.value.qrPDFURL,
+        imageResponse?.fileURL,
+        ...(nonImageResponse?.upload?.value?.qrPDFURL || []),
       ];
-      console.log(fileURLs);
-      console.log(formData);
-      // Combine results
-      // const fileURLs = [
-      //   ...(Array.isArray(imageResponse?.fileURL)
-      //     ? imageResponse.fileURL
-      //     : [imageResponse?.fileURL]),
-      //   ...(nonImageResponse?.fileURL || []),
-      // ];
 
       const fileNames = files.map((f) => f.name).join(", ");
 
@@ -148,6 +150,22 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
       console.error("Upload error:", error);
       throw error;
     }
+  };
+
+  const toggleKeepOutgoingLetter = (id: string) => {
+    setOutgoingLettersToKeep((prev) =>
+      prev.includes(id)
+        ? prev.filter((letterId) => letterId !== id)
+        : [...prev, id]
+    );
+  };
+
+  const toggleKeepIncomingLetter = (id: string) => {
+    setIncomingLettersToKeep((prev) =>
+      prev.includes(id)
+        ? prev.filter((letterId) => letterId !== id)
+        : [...prev, id]
+    );
   };
 
   const addOutgoingLetter = async () => {
@@ -200,17 +218,22 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
             priority: newOutgoingLetter.priority,
             status: newOutgoingLetter.status,
             fileUrl: fileRes.upload.map((url: any) => url.value.qrPDFURL),
-
             fileName: "Outgoing Letters",
           },
         ];
         uploaded = [...updatedLetters];
       }
 
+      // Get existing letters that should be kept
+      const keptLetters = formData.outgoingLetters.filter((letter) =>
+        outgoingLettersToKeep.includes(letter.id)
+      );
+
+      // Update with both kept letters and new uploads
       updateFormData({
-        outgoingLetters: [...formData.outgoingLetters, ...uploaded],
+        outgoingLetters: [...keptLetters, ...uploaded],
       });
-      console.log(formData);
+
       setNewOutgoingLetter({
         recipient: "",
         subject: "",
@@ -228,7 +251,7 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
       setNewOutgoingLetter((prev) => ({ ...prev, isUploading: false }));
     }
   };
-  console.log(formData);
+
   const addIncomingLetter = async () => {
     if (!newIncomingLetter.sender || !newIncomingLetter.subject) {
       alert("Please fill in sender and subject");
@@ -291,10 +314,15 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
         }
       }
 
+      // Get existing letters that should be kept
+      const keptLetters = formData.incomingLetters.filter((letter) =>
+        incomingLettersToKeep.includes(letter.id)
+      );
+
       // Update form data with new incoming letters
       if (uploaded.length > 0) {
         updateFormData({
-          incomingLetters: [...formData.incomingLetters, ...uploaded],
+          incomingLetters: [...keptLetters, ...uploaded],
         });
       }
 
@@ -318,6 +346,12 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
   };
 
   const removeOutgoingLetter = (id: string) => {
+    // Remove from outgoingLettersToKeep
+    setOutgoingLettersToKeep((prev) =>
+      prev.filter((letterId) => letterId !== id)
+    );
+
+    // Remove from formData
     const updatedLetters = formData.outgoingLetters.filter(
       (letter) => letter.id !== id
     );
@@ -325,6 +359,12 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
   };
 
   const removeIncomingLetter = (id: string) => {
+    // Remove from incomingLettersToKeep
+    setIncomingLettersToKeep((prev) =>
+      prev.filter((letterId) => letterId !== id)
+    );
+
+    // Remove from formData
     const updatedLetters = formData.incomingLetters.filter(
       (letter) => letter.id !== id
     );
@@ -357,42 +397,17 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
       setFileSystemImages((prev) => [...prev, ...files]);
     }
   };
+
   const startCamera = async () => {
     if (navigator.mediaDevices.getUserMedia) {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
       if (videoRef.current) {
         setIsCameraActive(true);
-
         videoRef.current.srcObject = stream;
       }
     }
   };
-  console.log(isCameraActive);
-  // const startCamera = async () => {
-  //   try {
-  //     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-  //       const stream = await navigator.mediaDevices.getUserMedia({
-  //         video: true,
-  //         audio: false,
-  //       });
-
-  //       if (videoRef.current) {
-  //         videoRef.current.srcObject = stream;
-  //         videoRef.current.play().catch((error) => {
-  //           console.error("Error playing video stream:", error);
-  //         });
-  //         setIsCameraActive(true);
-  //       }
-  //     } else {
-  //       throw new Error("Camera API not supported in this browser");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error accessing camera:", error);
-  //     alert("Could not access camera. Please check permissions.");
-  //     setIsCameraActive(false);
-  //   }
-  // };
 
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {
@@ -408,42 +423,6 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
     }
   };
 
-  // const captureImage = () => {
-  //   if (!isCameraActive || !videoRef.current || !canvasRef.current) {
-  //     alert("Please start the camera first");
-  //     return;
-  //   }
-
-  //   const context = canvasRef.current.getContext("2d");
-  //   if (context && videoRef.current) {
-  //     canvasRef.current.width = videoRef.current.videoWidth;
-  //     canvasRef.current.height = videoRef.current.videoHeight;
-
-  //     context.drawImage(
-  //       videoRef.current,
-  //       0,
-  //       0,
-  //       canvasRef.current.width,
-  //       canvasRef.current.height
-  //     );
-
-  //     canvasRef.current.toBlob(
-  //       (blob) => {
-  //         if (blob) {
-  //           const fileName = `capture-${Date.now()}.jpg`;
-  //           const file = new window.File([blob], fileName, {
-  //             type: "image/jpeg",
-  //             lastModified: Date.now(),
-  //           });
-
-  //           setCameraImages((prev) => [...prev, file]);
-  //         }
-  //       },
-  //       "image/jpeg",
-  //       0.95
-  //     );
-  //   }
-  // };
   const captureImage = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -484,11 +463,15 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Project Letters</h3>
-      <p className="text-sm text-muted-foreground">
-        Manage incoming and outgoing correspondence for your construction
-        project.
-      </p>
+      <div>
+        <h3 className="text-2xl font-semibold bg-clip-text text-transparent bg-blue-green-gradient">
+          Project Letters
+        </h3>
+        <p className="text-gray-600">
+          Manage incoming and outgoing correspondence for your construction
+          project.
+        </p>
+      </div>
 
       <Tabs
         defaultValue="outgoing"
@@ -496,11 +479,135 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
         value={activeTab}
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="outgoing">Outgoing Letters</TabsTrigger>
-          <TabsTrigger value="incoming">Incoming Letters</TabsTrigger>
+          <TabsTrigger value="outgoing">
+            Outgoing Letters
+            {formData.outgoingLetters.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {formData.outgoingLetters.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="incoming">
+            Incoming Letters
+            {formData.incomingLetters.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {formData.incomingLetters.length}
+              </Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="outgoing" className="mt-4">
+          {/* Existing Outgoing Letters Section */}
+          {formData.outgoingLetters.length > 0 && (
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center justify-between">
+                <h4 className="text-lg font-medium text-gray-800">
+                  Existing Outgoing Letters
+                </h4>
+                <Badge variant="outline">
+                  {outgoingLettersToKeep.length} of{" "}
+                  {formData.outgoingLetters.length} selected
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                {formData.outgoingLetters.map((letter) => (
+                  <Card
+                    key={letter.id}
+                    className={`overflow-hidden transition-colors ${
+                      outgoingLettersToKeep.includes(letter.id)
+                        ? "border-green-200"
+                        : "border-red-200 bg-red-50"
+                    }`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <File className="h-8 w-8 mr-3 text-primary" />
+                          <div>
+                            <p className="font-medium">{letter.subject}</p>
+                            <p className="text-sm">To: {letter.recipient}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full ${
+                                  letter.priority === "high"
+                                    ? "bg-red-100 text-red-800"
+                                    : letter.priority === "medium"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-green-100 text-green-800"
+                                }`}
+                              >
+                                {letter.priority.charAt(0).toUpperCase() +
+                                  letter.priority.slice(1)}
+                              </span>
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full ${
+                                  letter.status === "draft"
+                                    ? "bg-gray-100 text-gray-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {letter.status.charAt(0).toUpperCase() +
+                                  letter.status.slice(1)}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  outgoingLettersToKeep.includes(letter.id)
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }
+                              >
+                                {outgoingLettersToKeep.includes(letter.id)
+                                  ? "Keep"
+                                  : "Remove"}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            variant={
+                              outgoingLettersToKeep.includes(letter.id)
+                                ? "default"
+                                : "outline"
+                            }
+                            size="sm"
+                            onClick={() => toggleKeepOutgoingLetter(letter.id)}
+                            className={
+                              outgoingLettersToKeep.includes(letter.id)
+                                ? "bg-green-600"
+                                : ""
+                            }
+                          >
+                            {outgoingLettersToKeep.includes(letter.id) ? (
+                              <Check className="h-4 w-4 mr-1" />
+                            ) : (
+                              <X className="h-4 w-4 mr-1" />
+                            )}
+                            {outgoingLettersToKeep.includes(letter.id)
+                              ? "Keep"
+                              : "Remove"}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeOutgoingLetter(letter.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* New Outgoing Letter Form */}
           <Card>
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -685,11 +792,6 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
                               height="400"
                               className="hidden"
                             />
-                            {/* {!videoRef.current?.srcObject && (
-                              <div className="absolute inset-0 flex items-center justify-center text-white">
-                                Initializing camera...
-                              </div>
-                            )} */}
                           </div>
                           <Button
                             onClick={captureImage}
@@ -757,61 +859,141 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
             </CardContent>
           </Card>
 
+          {/* Summary for outgoing letters */}
           {formData.outgoingLetters.length > 0 && (
-            <div className="space-y-4 mt-6">
-              <h4 className="font-medium">Outgoing Letters</h4>
-              {formData.outgoingLetters.map((letter, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <File className="h-8 w-8 mr-3 text-primary" />
-                        <div>
-                          <p className="font-medium">{letter.subject}</p>
-                          <p className="text-sm">To: {letter.recipient}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${
-                                letter.priority === "high"
-                                  ? "bg-red-100 text-red-800"
-                                  : letter.priority === "medium"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-green-100 text-green-800"
-                              }`}
-                            >
-                              {letter.priority.charAt(0).toUpperCase() +
-                                letter.priority.slice(1)}
-                            </span>
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${
-                                letter.status === "draft"
-                                  ? "bg-gray-100 text-gray-800"
-                                  : "bg-blue-100 text-blue-800"
-                              }`}
-                            >
-                              {letter.status.charAt(0).toUpperCase() +
-                                letter.status.slice(1)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeOutgoingLetter(letter.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 className="font-medium text-gray-700 mb-2">
+                Outgoing Letters Summary
+              </h4>
+              <ul className="space-y-1 text-sm">
+                <li className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-green-50">
+                    {outgoingLettersToKeep.length}
+                  </Badge>
+                  <span>Letters to keep</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-red-50">
+                    {formData.outgoingLetters.length -
+                      outgoingLettersToKeep.length}
+                  </Badge>
+                  <span>Letters to remove</span>
+                </li>
+              </ul>
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="incoming" className="mt-4">
+          {/* Existing Incoming Letters Section */}
+          {formData.incomingLetters.length > 0 && (
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center justify-between">
+                <h4 className="text-lg font-medium text-gray-800">
+                  Existing Incoming Letters
+                </h4>
+                <Badge variant="outline">
+                  {incomingLettersToKeep.length} of{" "}
+                  {formData.incomingLetters.length} selected
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                {formData.incomingLetters.map((letter) => (
+                  <Card
+                    key={letter.id}
+                    className={`overflow-hidden transition-colors ${
+                      incomingLettersToKeep.includes(letter.id)
+                        ? "border-green-200"
+                        : "border-red-200 bg-red-50"
+                    }`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <File className="h-8 w-8 mr-3 text-primary" />
+                          <div>
+                            <p className="font-medium">{letter.subject}</p>
+                            <p className="text-sm">From: {letter.sender}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full ${
+                                  letter.priority === "high"
+                                    ? "bg-red-100 text-red-800"
+                                    : letter.priority === "medium"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-green-100 text-green-800"
+                                }`}
+                              >
+                                {letter.priority.charAt(0).toUpperCase() +
+                                  letter.priority.slice(1)}
+                              </span>
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full ${
+                                  letter.status === "unread"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {letter.status.charAt(0).toUpperCase() +
+                                  letter.status.slice(1)}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  incomingLettersToKeep.includes(letter.id)
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }
+                              >
+                                {incomingLettersToKeep.includes(letter.id)
+                                  ? "Keep"
+                                  : "Remove"}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            variant={
+                              incomingLettersToKeep.includes(letter.id)
+                                ? "default"
+                                : "outline"
+                            }
+                            size="sm"
+                            onClick={() => toggleKeepIncomingLetter(letter.id)}
+                            className={
+                              incomingLettersToKeep.includes(letter.id)
+                                ? "bg-green-600"
+                                : ""
+                            }
+                          >
+                            {incomingLettersToKeep.includes(letter.id) ? (
+                              <Check className="h-4 w-4 mr-1" />
+                            ) : (
+                              <X className="h-4 w-4 mr-1" />
+                            )}
+                            {incomingLettersToKeep.includes(letter.id)
+                              ? "Keep"
+                              : "Remove"}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeIncomingLetter(letter.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Card>
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -1050,56 +1232,27 @@ export default function Letters({ formData, updateFormData }: LettersProps) {
             </CardContent>
           </Card>
 
+          {/* Summary for incoming letters */}
           {formData.incomingLetters.length > 0 && (
-            <div className="space-y-4 mt-6">
-              <h4 className="font-medium">Incoming Letters</h4>
-              {formData.incomingLetters.map((letter) => (
-                <Card key={letter.id} className="overflow-hidden">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <File className="h-8 w-8 mr-3 text-primary" />
-                        <div>
-                          <p className="font-medium">{letter.subject}</p>
-                          <p className="text-sm">From: {letter.sender}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${
-                                letter.priority === "high"
-                                  ? "bg-red-100 text-red-800"
-                                  : letter.priority === "medium"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-green-100 text-green-800"
-                              }`}
-                            >
-                              {letter.priority.charAt(0).toUpperCase() +
-                                letter.priority.slice(1)}
-                            </span>
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${
-                                letter.status === "unread"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-gray-100 text-gray-800"
-                              }`}
-                            >
-                              {letter.status.charAt(0).toUpperCase() +
-                                letter.status.slice(1)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeIncomingLetter(letter.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <h4 className="font-medium text-gray-700 mb-2">
+                Incoming Letters Summary
+              </h4>
+              <ul className="space-y-1 text-sm">
+                <li className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-green-50">
+                    {incomingLettersToKeep.length}
+                  </Badge>
+                  <span>Letters to keep</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-red-50">
+                    {formData.incomingLetters.length -
+                      incomingLettersToKeep.length}
+                  </Badge>
+                  <span>Letters to remove</span>
+                </li>
+              </ul>
             </div>
           )}
         </TabsContent>
