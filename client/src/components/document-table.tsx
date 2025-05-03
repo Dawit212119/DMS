@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import QRCode from "qrcode";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,80 +56,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-import { Report } from "@/state/project/projectSlice";
-
-// Define the type for our document data
-export type Document = {
-  id: string;
-  projectName: string;
-  publisher: string;
-  uploadDate: Date;
-  lastModified: Date;
-  status: "Pending" | "Approved" | "Rejected";
-  version: string;
-  downloadUrl: string;
-};
-
-// Sample data
-// const sampleDocuments: Document[] = [
-//   {
-//     id: "1",
-//     projectName: "Annual Financial Report",
-//     publisher: "John Smith",
-//     uploadDate: new Date("2023-10-15"),
-//     lastModified: new Date("2023-11-02"),
-//     status: "Approved",
-//     version: "v2.1",
-//     downloadUrl: "#",
-//   },
-//   {
-//     id: "2",
-//     projectName: "Marketing Strategy",
-//     publisher: "Emma Johnson",
-//     uploadDate: new Date("2023-11-05"),
-//     lastModified: new Date("2023-11-05"),
-//     status: "Pending",
-//     version: "v1.0",
-//     downloadUrl: "#",
-//   },
-//   {
-//     id: "3",
-//     projectName: "Product Development Plan",
-//     publisher: "Michael Brown",
-//     uploadDate: new Date("2023-09-20"),
-//     lastModified: new Date("2023-10-30"),
-//     status: "Rejected",
-//     version: "v1.2",
-//     downloadUrl: "#",
-//   },
-//   {
-//     id: "4",
-//     projectName: "Q3 Performance Review",
-//     publisher: "Sarah Davis",
-//     uploadDate: new Date("2023-10-01"),
-//     lastModified: new Date("2023-10-15"),
-//     status: "Approved",
-//     version: "v1.1",
-//     downloadUrl: "#",
-//   },
-//   {
-//     id: "5",
-//     projectName: "HR Policy Update",
-//     publisher: "David Wilson",
-//     uploadDate: new Date("2023-11-10"),
-//     lastModified: new Date("2023-11-10"),
-//     status: "Pending",
-//     version: "v3.0",
-//     downloadUrl: "#",
-//   },
-// ];
+import { Report as Document } from "@/state/project/projectSlice";
 
 // Status badge component with appropriate colors
 const StatusBadge = ({ status }: { status: Document["status"] }) => {
   const statusStyles = {
-    Approved: "bg-green-100 text-green-800 hover:bg-green-100",
-    Pending: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-    Rejected: "bg-red-100 text-red-800 hover:bg-red-100",
+    approved: "bg-green-100 text-green-800 hover:bg-green-100",
+    rejected: "bg-red-100 text-red-800 hover:bg-red-100",
   };
 
   return (
@@ -140,13 +74,15 @@ const StatusBadge = ({ status }: { status: Document["status"] }) => {
 
 // Define props for the DocumentTable component
 interface DocumentTableProps {
-  documents?: Report[];
+  documents?: Document[];
   title?: string;
+  projectName?: string | null;
 }
 
 export function DocumentTable({
-  documents,
+  documents = [],
   title = "Documents",
+  projectName = "project name",
 }: DocumentTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -159,8 +95,7 @@ export function DocumentTable({
   // Function to generate QR code
   const generateQRCode = async (document: Document) => {
     try {
-      // Generate QR code for the document URL or ID
-      const qrCodeDataUrl = await QRCode.toDataURL(document.downloadUrl);
+      const qrCodeDataUrl = await QRCode.toDataURL(document.fileUrl);
       setQrCodeUrl(qrCodeDataUrl);
       setCurrentDocument(document);
       setQrModalOpen(true);
@@ -176,8 +111,7 @@ export function DocumentTable({
     const link = document.createElement("a");
     link.href = qrCodeUrl;
     link.download = `qrcode-${
-      currentDocument?.projectName.replace(/\s+/g, "-").toLowerCase() ||
-      "document"
+      projectName?.replace(/\s+/g, "-").toLowerCase() || "document"
     }.png`;
     document.body.appendChild(link);
     link.click();
@@ -190,17 +124,14 @@ export function DocumentTable({
 
     if (navigator.share) {
       try {
-        // Convert data URL to Blob
         const response = await fetch(qrCodeUrl);
         const blob = await response.blob();
-        const file = new File(
-          [blob],
-          `qrcode-${currentDocument.projectName}.png`,
-          { type: "image/png" }
-        );
+        const file = new File([blob], `qrcode-${projectName}.png`, {
+          type: "image/png",
+        });
 
         await navigator.share({
-          title: `QR Code for ${currentDocument.projectName}`,
+          title: `QR Code for ${projectName}`,
           text: "Scan this QR code to access the document",
           files: [file],
         });
@@ -208,7 +139,6 @@ export function DocumentTable({
         console.error("Error sharing:", error);
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
       alert(
         "Sharing is not supported in your browser. You can download the QR code instead."
       );
@@ -216,22 +146,22 @@ export function DocumentTable({
   };
 
   // Define columns for the table
-  const columns: ColumnDef<Document>[] = [
+  const columns: ColumnDef<Document, any>[] = [
     {
-      accessorKey: "projectName",
+      accessorKey: "title",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Project Name
+            Title
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("projectName")}</div>
+        <div className="font-medium">{row.getValue("title")}</div>
       ),
     },
     {
@@ -250,7 +180,7 @@ export function DocumentTable({
       cell: ({ row }) => <div>{row.getValue("publisher")}</div>,
     },
     {
-      accessorKey: "uploadDate",
+      accessorKey: "uploadedDate",
       header: ({ column }) => {
         return (
           <Button
@@ -263,25 +193,7 @@ export function DocumentTable({
         );
       },
       cell: ({ row }) => {
-        const date = row.getValue<Date>("uploadDate");
-        return <div>{format(date, "MMM dd, yyyy")}</div>;
-      },
-    },
-    {
-      accessorKey: "lastModified",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Last Modified
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const date = row.getValue<Date>("lastModified");
+        const date = row.getValue<Date>("uploadedDate");
         return <div>{format(date, "MMM dd, yyyy")}</div>;
       },
     },
@@ -337,7 +249,7 @@ export function DocumentTable({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.open(document.downloadUrl, "_blank")}
+            onClick={() => window.open(document.fileUrl, "_blank")}
             className="flex items-center gap-1"
           >
             <Download className="h-4 w-4" />
@@ -372,12 +284,10 @@ export function DocumentTable({
       <h2 className="text-xl font-semibold mb-4">{title}</h2>
       <div className="flex flex-col sm:flex-row items-start sm:items-center py-4 gap-3">
         <Input
-          placeholder="Filter projects..."
-          value={
-            (table.getColumn("projectName")?.getFilterValue() as string) ?? ""
-          }
+          placeholder="Filter documents..."
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("projectName")?.setFilterValue(event.target.value)
+            table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -399,9 +309,8 @@ export function DocumentTable({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="Approved">Approved</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Rejected">Rejected</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
           <DropdownMenu>
@@ -509,9 +418,7 @@ export function DocumentTable({
       <Dialog open={qrModalOpen} onOpenChange={setQrModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              QR Code for {currentDocument?.projectName}
-            </DialogTitle>
+            <DialogTitle>QR Code for {projectName}</DialogTitle>
             <DialogDescription>
               Scan this QR code to access the document
             </DialogDescription>
@@ -519,9 +426,11 @@ export function DocumentTable({
           <div className="flex flex-col items-center justify-center p-4">
             {qrCodeUrl && (
               <div className="border p-4 rounded-lg bg-white">
-                <img
+                <Image
                   src={qrCodeUrl || "/placeholder.svg"}
                   alt="QR Code"
+                  width={256}
+                  height={256}
                   className="w-64 h-64"
                 />
               </div>

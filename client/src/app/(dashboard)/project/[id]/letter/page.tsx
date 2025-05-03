@@ -3,8 +3,7 @@ import LetterPage, {
   type IncomingLetter,
   type OutgoingLetter,
 } from "@/components/letter-management";
-import { RootState } from "@reduxjs/toolkit/query";
-import { useEffect } from "react";
+import { RootState } from "@/state/store";
 import { useSelector } from "react-redux";
 
 export default function Home() {
@@ -19,10 +18,14 @@ export default function Home() {
 
   return (
     <LetterPage
-      projectName={currentProject.projectName}
-      projectId={currentProject.id}
-      incomingLetters={currentProject.incomingLetters}
-      outgoingLetters={currentProject.outgoingLetters}
+      projectName={currentProject?.projectName as string}
+      projectId={currentProject?.id as string}
+      incomingLetters={
+        currentProject?.incomingLetters as unknown as IncomingLetter[]
+      }
+      outgoingLetters={
+        currentProject?.outgoingLetters as unknown as OutgoingLetter[]
+      }
       onDownload={handleDownload}
     />
   );

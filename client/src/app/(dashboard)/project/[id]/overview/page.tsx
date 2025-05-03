@@ -42,7 +42,7 @@ export default function ProjectOverview() {
   };
 
   // Format date
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -54,7 +54,7 @@ export default function ProjectOverview() {
   // Calculate days remaining
   const calculateDaysRemaining = () => {
     const today = new Date();
-    const completionDate = new Date(projectData.endDate);
+    const completionDate = new Date(projectData?.endDate);
     const diffTime = completionDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -67,10 +67,10 @@ export default function ProjectOverview() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              {projectData.projectName}
+              {projectData?.projectName || "Project Name Unavailable"}
             </h1>
             <p className="text-muted-foreground mt-1">
-              {projectData.clientName}
+              {projectData?.clientName}
             </p>
           </div>
         </div>
@@ -78,32 +78,19 @@ export default function ProjectOverview() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Project Progress
-              </CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{projectData.progress}%</div>
-              <Progress value={projectData.progress} className="mt-2" />
-              <p className="text-xs text-muted-foreground mt-2">
-                {calculateDaysRemaining()} days remaining
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Budget</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(projectData.budget.spent)}
+                {formatCurrency(projectData?.budget?.spent || 0)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                of {formatCurrency(projectData.budget.total)} (
+                of {formatCurrency(projectData?.budget?.total || 0)} (
                 {Math.round(
-                  (projectData.budget.spent / projectData.budget.total) * 100
+                  (projectData?.budget?.spent ||
+                    0 / projectData?.budget?.total ||
+                    0) * 100
                 )}
                 %)
               </p>
@@ -116,10 +103,10 @@ export default function ProjectOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatDate(projectData.startDate)}
+                {formatDate(projectData?.startDate as Date)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                to {formatDate(projectData.dueDate)}
+                to {formatDate(projectData?.dueDate as Date)}
               </p>
             </CardContent>
           </Card>
@@ -130,7 +117,7 @@ export default function ProjectOverview() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {projectData.team.totalWorkers}
+                {projectData?.team?.totalWorkers || 0}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 workers on site
@@ -147,7 +134,7 @@ export default function ProjectOverview() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>{projectData.location}</span>
+                <span>{projectData?.location}</span>
               </div>
               <div>
                 <h3 className="font-medium mb-2">Key Team Members</h3>
@@ -157,7 +144,7 @@ export default function ProjectOverview() {
                       Project Manager:
                     </span>
                     <span>
-                      {projectData.team
+                      {projectData?.team
                         ? projectData.team.projectManager
                         : "None"}
                     </span>
@@ -167,7 +154,9 @@ export default function ProjectOverview() {
                       Site Engineer:
                     </span>
                     <span>
-                      {projectData.team ? projectData.team.siteManager : "None"}
+                      {projectData?.team
+                        ? projectData.team.siteManager
+                        : "None"}
                     </span>
                   </li>
                   <li className="flex justify-between">
@@ -175,7 +164,7 @@ export default function ProjectOverview() {
                       Civil Engineer:
                     </span>
                     <span>
-                      {projectData.team
+                      {projectData?.team
                         ? projectData.team.civilManager
                         : "None"}
                     </span>
@@ -185,7 +174,7 @@ export default function ProjectOverview() {
                       Architectural Lead:
                     </span>
                     <span>
-                      {projectData.team
+                      {projectData?.team
                         ? projectData.team.architecturalLead
                         : "None"}
                     </span>
@@ -193,11 +182,6 @@ export default function ProjectOverview() {
                 </ul>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/team">View Full Team</Link>
-              </Button>
-            </CardFooter>
           </Card>
         </div>
         Upcoming Milestones
@@ -207,8 +191,8 @@ export default function ProjectOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Array.isArray(projectData.milestones) &&
-                projectData.milestones.map((milestone, index) => (
+              {Array.isArray(projectData?.milestones) &&
+                projectData?.milestones.map((milestone, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
@@ -216,7 +200,7 @@ export default function ProjectOverview() {
                     <div className="flex items-start gap-3">
                       <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
-                        <p className="font-medium">{milestone.title}</p>
+                        <p className="font-medium">{milestone?.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {formatDate(milestone.date)}
                         </p>
@@ -227,11 +211,6 @@ export default function ProjectOverview() {
                 ))}
             </div>
           </CardContent>
-          <CardFooter>
-            <Button variant="outline" asChild className="w-full">
-              <Link href="/schedule">View Full Schedule</Link>
-            </Button>
-          </CardFooter>
         </Card>
       </div>
     </div>
@@ -240,16 +219,13 @@ export default function ProjectOverview() {
 
 // Status badge component
 function Badge({ status }: { status: string }) {
+  console.log("Status:", status);
   const getStatusStyles = () => {
     switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "on-track":
+      case "ontrack":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "at-risk":
+      case "atrisk":
         return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300";
-      case "delayed":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     }
@@ -257,14 +233,10 @@ function Badge({ status }: { status: string }) {
 
   const getStatusText = () => {
     switch (status) {
-      case "completed":
-        return "Completed";
-      case "on-track":
+      case "ontrack":
         return "On Track";
-      case "at-risk":
+      case "atrisk":
         return "At Risk";
-      case "delayed":
-        return "Delayed";
       default:
         return "Unknown";
     }
