@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 export enum Status {
   ONTRACK = "ontrack",
   ATRISK = "atrisk",
+  COMPLETED = "completed",
 }
 
 export enum Priority {

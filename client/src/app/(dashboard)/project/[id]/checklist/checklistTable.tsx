@@ -64,6 +64,7 @@ const StatusBadge = ({ status }: { status: Status }) => {
   const statusStyles = {
     [Status.ONTRACK]: "bg-green-100 text-green-800 hover:bg-green-100",
     [Status.ATRISK]: "bg-red-100 text-red-800 hover:bg-red-100",
+    [Status.COMPLETED]: "bg-green-100 text-red-800 hover:bg-red-100",
   };
 
   const statusLabels = {
@@ -126,26 +127,36 @@ export default function ProjectChecklist({
   const [data, setData] = useState<ChecklistItem[]>(items);
   console.log("typeof:", typeof data[0].dueDate);
   // Toggle task status between ONTRACK and ATRISK
-  const toggleTaskStatus = (id: string) => {
-    setData(
-      data.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status:
-                item.status === Status.ONTRACK ? Status.ATRISK : Status.ONTRACK,
-            }
-          : item
-      )
-    );
-  };
+  // const toggleTaskStatus = (id: string) => {
+  //   setData(
+  //     data.map((item) =>
+  //       item.id === id
+  //         ? {
+  //             ...item,
+  //             status:
+  //               item.status === Status.ONTRACK ? Status.ATRISK : Status.ONTRACK,
+  //           }
+  //         : item
+  //     )
+  //   );
+  // };
 
   // Calculate completion percentage (not applicable with current status enum)
   const onTrackTasks = data.filter(
     (item) => item.status === Status.ONTRACK
   ).length;
-  const completionPercentage =
-    data.length > 0 ? Math.round((onTrackTasks / data.length) * 100) : 0;
+  const completedTasks = data.filter(
+    (item) => item.status === Status.COMPLETED
+  ).length;
+  const percentage = (type: string) => {
+    return data.length > 0
+      ? Math.round(
+          ((type === "completed" ? completedTasks : onTrackTasks) /
+            data.length) *
+            100
+        )
+      : 0;
+  };
 
   // Define columns for the table
   const columns: ColumnDef<ChecklistItem>[] = [
@@ -270,13 +281,17 @@ export default function ProjectChecklist({
   return (
     <div className="w-full">
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-semibold">{projectName} Checklist</h2>
-          <div className="text-sm text-muted-foreground">
-            {onTrackTasks} of {data.length} tasks on track
-          </div>
+        <h2 className="text-xl font-semibold mb-4">{projectName} Checklist</h2>
+        <div className="text-sm text-muted-foreground">
+          {onTrackTasks} of {data.length}{" "}
+          <span className="font-bold">tasks on track</span>
+          <Progress value={percentage("on-track")} className="h-2 mt-2" />
         </div>
-        <Progress value={completionPercentage} className="h-2" />
+        <div className="text-sm text-muted-foreground mt-6">
+          {completedTasks} of {data.length} tasks{" "}
+          <span className="font-bold">completed</span>
+          <Progress value={percentage("completed")} className="h-2 mt-2" />
+        </div>
       </div>
 
       {data.length === 0 ? (
@@ -352,6 +367,7 @@ export default function ProjectChecklist({
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value={Status.ONTRACK}>On Track</SelectItem>
                   <SelectItem value={Status.ATRISK}>At Risk</SelectItem>
+                  <SelectItem value={Status.COMPLETED}>Completed</SelectItem>
                 </SelectContent>
               </Select>
 
