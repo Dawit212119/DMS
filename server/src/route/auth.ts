@@ -4,6 +4,8 @@ import {
   login,
   logOut,
   me,
+  resetPassword,
+  resetPasswordRequest,
   signup,
   verifyUser,
 } from "../controller/auth";
@@ -16,5 +18,7 @@ authRoute.get("/me", authMiddleware, me);
 authRoute.post("/logout", authMiddleware, logOut);
 authRoute.get("/verify/:userId/:uniqueString", verifyUser);
 authRoute.get("/verified", getStatus);
+authRoute.post("/resetpasswordrequest", resetPasswordRequest);
+authRoute.post("/resetpassword", resetPassword);
 
 export default authRoute;

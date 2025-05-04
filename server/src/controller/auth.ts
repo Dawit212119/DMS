@@ -8,7 +8,10 @@ import { ErrorCodes } from "../exceptions/root.js";
 import { prismaClient } from "../prisma.js";
 import { SignUpSchema } from "../schema/user.js";
 import { generateTokenAndSetCookie } from "../lib/generateToken.js";
-import { sendVerificationEmail } from "../lib/sendVerificationEmail.js";
+import {
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from "../lib/sendVerificationEmail.js";
 // At the top of your file
 import { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -150,4 +153,92 @@ export const verifyUser = async (
 };
 export const getStatus = async (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "../../src/views/verified.html"));
+};
+export const resetPasswordRequest = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, redirectUrl } = req.body;
+  console.log(email);
+  try {
+    const user = await prismaClient.user.findFirst({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      return next(
+        new BadRequestException(
+          "No user exist with this email sign up!",
+          ErrorCodes.USER_NOT_FOUND
+        )
+      );
+    }
+    if (!user.isVarified) {
+      console.log("not verified");
+      return next(
+        new BadRequestException(
+          "Your account has not been verified please check your mail box",
+          ErrorCodes.UnAUTHORIZED
+        )
+      );
+    }
+    sendResetPasswordEmail(user, redirectUrl, res);
+  } catch (error) {
+    next(error);
+  }
+};
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId, resetString, newPassword } = req.body;
+  const passwordReset = await prismaClient.resetPassword.findFirst({
+    where: {
+      userId,
+    },
+  });
+  if (!passwordReset) {
+    return next(
+      new BadRequestException(
+        "No password reset request found!",
+        ErrorCodes.UnAUTHORIZED
+      )
+    );
+  }
+  if (passwordReset.expiresAt < new Date(Date.now())) {
+    return next(
+      new BadRequestException(
+        "Your password reset link expired please try again.",
+        ErrorCodes.UnAUTHORIZED
+      )
+    );
+  }
+  if (passwordReset.resetString !== resetString) {
+    return next(
+      new BadRequestException(
+        "Invalid reset link please try again.",
+        ErrorCodes.UnAUTHORIZED
+      )
+    );
+  }
+  await prismaClient.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      password: hashSync(newPassword, 10),
+    },
+  });
+  await prismaClient.resetPassword.deleteMany({
+    where: {
+      userId,
+    },
+  });
+  res.status(200).json({
+    success: true,
+    message: "Password has been reseted successfully!",
+  });
 };
