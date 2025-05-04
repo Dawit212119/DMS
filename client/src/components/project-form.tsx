@@ -555,7 +555,7 @@ export default function ProjectForm({
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="flex items-center bg-blue-green-gradient hover:opacity-90 transition-opacity animate-gradient"
+                className="flex items-center bg-teal-500 hover:bg-teal-600 text-white transition-colors"
               >
                 {isSubmitting
                   ? "Submitting..."
