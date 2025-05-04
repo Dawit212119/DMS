@@ -39,10 +39,11 @@ function Signin() {
     setError(null);
     try {
       const responseData = await signinUser(data).unwrap();
-      console.log(responseData);
+      console.log("response data", responseData);
       router.push("/");
     } catch (err: any) {
-      setError(err.message || "An error occurred during sign in");
+      setError(err?.data?.message || "An error occurred during sign in");
+      console.log("response", err);
     }
   };
 
@@ -64,6 +65,14 @@ function Signin() {
         </CardHeader>
 
         <CardContent>
+          {/* Display error message */}
+          {error && (
+            <div className="mb-4 flex items-center gap-2 rounded-md border border-red-400 bg-red-100 px-4 py-3 text-sm text-red-700">
+              <AlertCircle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-800">
