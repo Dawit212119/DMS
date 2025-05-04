@@ -20,7 +20,6 @@ const uploadFiles = async (
     res.status(400).json({ error: "No file uploaded" });
     return;
   }
-
   try {
     const file = req.files as Express.Multer.File[];
     const upload = await Promise.allSettled(
