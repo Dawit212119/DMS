@@ -14,7 +14,6 @@ const MonthlyPage = () => {
     }) || [];
   return (
     <div>
-      {" "}
       <DocumentTable
         projectName={project?.projectName}
         documents={monthlyReports}

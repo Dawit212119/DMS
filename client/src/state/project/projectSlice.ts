@@ -34,7 +34,7 @@ enum ReportType {
   ANNUALLY = "annually",
 }
 
-enum Category {
+export enum Category {
   FOUNDATION = "foundation",
   STRUCTURAL = "structural",
   ELECTRICAL = "electrical",
@@ -89,7 +89,7 @@ export interface Document {
   projectId: string;
 }
 
-interface SiteImage {
+export interface SiteImage {
   id: string;
   title: string;
   location: string;
@@ -167,7 +167,7 @@ export interface ProjectState {
   error: string | null;
 }
 
-const initialState: ProjectState = {
+let initialState: ProjectState = {
   projects: [],
   currentProject: null,
   totalPages: 1,
@@ -188,14 +188,12 @@ export const fetchProjects = createAsyncThunk(
         }
       );
 
-      console.log("response:", response);
-
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || "Request failed");
       }
-
-      return await response.json();
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.log(error);
       return rejectWithValue((error as Error).message);
@@ -259,6 +257,9 @@ const projectSlice = createSlice({
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;
     },
+    setTotalPages: (state, action) => {
+      state.totalPages = action.payload;
+    },
     setProjects: (state, action) => {
       state.projects = action.payload;
     },
@@ -275,14 +276,13 @@ const projectSlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchProjects.fulfilled, (state, action) => {
-        console.log(action.payload?.totalPages);
+        console.log("totalPages", action.payload?.data);
         state.status = "succeeded";
         state.projects = action.payload?.data.projects || [];
-        state.totalPages = action.payload?.totalPages || 1;
-        state.currentPage = action.payload?.currentPage || 1;
+        state.totalPages = action.payload?.data.pagination.totalPages || 1;
+        state.currentPage = action.payload?.data.pagination.currentPage || 1;
       })
       .addCase(fetchProjects.rejected, (state, action) => {
-        console.log(action.error);
         state.status = "failed";
         state.error = action.error.message || "Failed to fetch projects";
       })
@@ -326,6 +326,7 @@ const projectSlice = createSlice({
 
 export const {
   setCurrentPage,
+  setTotalPages,
   setProjects,
   setCurrentProject,
   resetCurrentProject,

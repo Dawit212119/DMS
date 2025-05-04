@@ -295,7 +295,7 @@ export const getProjects = async (
         },
       },
       orderBy: {
-        startDate: "desc",
+        createdAt: "desc",
       },
     });
 
