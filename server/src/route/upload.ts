@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post("/files", upload.array("files"), uploadFiles);
 router.post("/images", upload.array("images"), uploadImage);
-router.post("/coverimg", upload.single("image"), uploadCoverImg);
+router.post("/coverimg", upload.single("file"), uploadCoverImg);
 
 export default router;

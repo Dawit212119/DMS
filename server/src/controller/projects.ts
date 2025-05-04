@@ -35,7 +35,7 @@ export async function createProject(
     console.log("the structured format for project>>>>>>>", req.body);
     // Validate Project Data
     const projectData = ProjectSchema.parse(req.body.project);
-
+    console.log("present");
     // Create Project in the database
     const project = await prismaClient.project.create({
       data: {
@@ -46,6 +46,7 @@ export async function createProject(
         location: projectData?.location || "Default Location",
         startDate: projectData?.startDate || new Date(),
         endDate: projectData?.endDate || new Date(),
+        coverImage: projectData?.coverImage,
       },
     });
 
@@ -457,6 +458,7 @@ export async function updateProject(
         location: projectData?.location ?? "Default Location",
         startDate: projectData?.startDate ?? new Date(),
         endDate: projectData?.endDate ?? new Date(),
+        coverImage: projectData?.coverImage ?? "",
       },
     });
 
