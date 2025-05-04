@@ -8,6 +8,7 @@ import {
   FolderKanban,
   Folder,
   User,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -191,17 +192,7 @@ export default function Header() {
             <ul className="flex flex-col space-y-4">
               <li>
                 <Link
-                  href="/dashboard"
-                  className="flex items-center gap-3 rounded-lg p-3 text-base font-medium text-gray-800 hover:bg-primary/10 active:bg-primary/20"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <LayoutDashboard className="h-5 w-5" />
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/project"
+                  href="/projects"
                   className="flex items-center gap-3 rounded-lg p-3 text-base font-medium text-gray-800 hover:bg-primary/10 active:bg-primary/20"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -213,18 +204,25 @@ export default function Header() {
             <div className="mt-6 border-t border-gray-200 pt-6">
               <Button
                 asChild
-                variant="default"
+                variant={user ? "destructive" : "default"}
                 size="default"
                 className="w-full"
               >
-                <Link
-                  href="/sign-in"
-                  className="flex items-center justify-center gap-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <LogIn className="h-5 w-5" />
-                  Sign In
-                </Link>
+                {!user ? (
+                  <Link
+                    href="/sign-in"
+                    className="flex items-center justify-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <LogIn className="h-5 w-5" />
+                    Sign In
+                  </Link>
+                ) : (
+                  <div onClick={handleLogout}>
+                    <LogOut className="h-5 w-5" />
+                    Log Out
+                  </div>
+                )}
               </Button>
             </div>
           </nav>

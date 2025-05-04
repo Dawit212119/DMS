@@ -102,7 +102,7 @@ export default function ProjectsPage() {
                 location={project.location}
                 startDate={new Date(project.startDate).toLocaleDateString()}
                 endDate={new Date(project.endDate).toLocaleDateString()}
-                imageUrl="/placeholder.svg?height=200&width=400"
+                imageUrl={project.coverImage}
               />
             ))}
           </div>
