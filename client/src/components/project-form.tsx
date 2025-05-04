@@ -25,6 +25,7 @@ export type FormData = {
   location: string;
   startDate: string;
   endDate: string;
+  coverImage: string;
 
   // Budget Info
   budget: { totalBudget: string; amountSpent: string };
@@ -120,6 +121,7 @@ const initialFormData: FormData = {
   location: "",
   startDate: "",
   endDate: "",
+  coverImage: "",
   budget: {
     totalBudget: "0",
     amountSpent: "0",
@@ -162,6 +164,7 @@ function transformProjectData(formData: FormData) {
       location: raw.location,
       startDate: new Date(raw.startDate).toISOString(),
       endDate: new Date(raw.endDate).toISOString(),
+      coverImage: raw.coverImage,
     },
     budget: {
       total: Number.parseFloat(raw.budget.totalBudget),
@@ -232,6 +235,7 @@ function transformApiDataToFormData(apiData: any): FormData {
       projectName: apiData?.projectName || "",
       clientName: apiData?.clientName || "",
       location: apiData?.location || "",
+      coverImage: apiData?.coverImage || "",
       startDate: apiData?.startDate
         ? new Date(apiData.startDate).toISOString().split("T")[0]
         : "",
