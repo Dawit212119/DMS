@@ -16,7 +16,6 @@ import Letters from "./form-steps/letters";
 import Reports from "./form-steps/reports";
 import ReviewForm from "./form-steps/review-form";
 import { toast } from "sonner";
-import { title } from "process";
 
 // FormData type remains the same as in the previous version
 export type FormData = {
