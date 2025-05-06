@@ -20,6 +20,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useRouter } from "next/router";
 
 export default function ProjectsPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -29,6 +30,7 @@ export default function ProjectsPage() {
     }
   );
 
+  const router = useRouter();
   useEffect(() => {
     dispatch(fetchProjects(currentPage));
   }, [currentPage, dispatch]);
@@ -74,7 +76,11 @@ export default function ProjectsPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Projects</h1>
         </div>
-        <div className="text-red-500">Error: {error}</div>
+        <div className="text-red-500 text-center">
+          Fail;d to fetch.{" "}
+          <button onClick={() => router.reload()}>Refresh</button> the page and
+          try again!
+        </div>
       </div>
     );
   }
