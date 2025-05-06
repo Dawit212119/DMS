@@ -35,9 +35,8 @@ export default function HomePage() {
                       Manage Your Projects With Ease
                     </h1>
                     <p className="max-w-[600px] text-green-700 md:text-xl">
-                      Streamline your document management workflow with our
-                      comprehensive solution for site documentation, reports,
-                      and checklists.
+                      Streamline document management workflow with comprehensive
+                      solution for site document , cheklist, and reports
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 min-[400px]:flex-row">
