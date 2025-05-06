@@ -54,7 +54,8 @@ export default function ChecklistItems() {
 
       {formData.checklistItems.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          No checklist items added yet. Click "Add Item" to create one.
+          No checklist items added yet. Click &quot;Add Item&quot; to create
+          one.
         </div>
       ) : (
         <div className="space-y-4">

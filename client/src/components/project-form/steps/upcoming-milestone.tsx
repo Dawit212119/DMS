@@ -35,7 +35,8 @@ export default function UpcomingMilestone() {
 
       {formData.milestones.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          No milestones added yet. Click "Add Milestone" to create one.
+          No milestones added yet. Click &quot;Add Milestone&quot; to create
+          one.
         </div>
       ) : (
         <div className="space-y-6">
