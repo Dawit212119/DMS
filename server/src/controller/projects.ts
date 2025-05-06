@@ -289,7 +289,6 @@ export const getProjects = async (
         outgoingLetters: true,
         reports: true,
         siteImages: {
-          take: 1,
           orderBy: {
             date: "desc",
           },

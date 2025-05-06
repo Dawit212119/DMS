@@ -71,7 +71,6 @@ const StatusBadge = ({ status }: { status: Status }) => {
     [Status.ONTRACK]: "On Track",
     [Status.ATRISK]: "At Risk",
   };
-
   return (
     <Badge className={statusStyles[status]} variant="outline">
       {statusLabels[status]}
@@ -125,7 +124,6 @@ export default function ProjectChecklist({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [data, setData] = useState<ChecklistItem[]>(items);
-  console.log("typeof:", typeof data[0].dueDate);
   // Toggle task status between ONTRACK and ATRISK
   // const toggleTaskStatus = (id: string) => {
   //   setData(

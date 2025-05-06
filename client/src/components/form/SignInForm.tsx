@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { useSigninUserMutation } from "@/state/features/authApi";
+import { useGetMeQuery, useSigninUserMutation } from "@/state/features/authApi";
 import { Mail, Lock, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ type FormData = {
 };
 
 function Signin() {
+  const { data: user, isLoading: loading } = useGetMeQuery();
   const {
     register,
     handleSubmit,
@@ -48,6 +49,17 @@ function Signin() {
   };
 
   const isProcessing = isSubmitting || isLoading;
+
+  useEffect(() => {
+    if (user) router.push("/");
+  }, [user, router]);
+
+  if (loading) {
+    return;
+  }
+  if (user) {
+    return <p>Redirecting...</p>;
+  }
 
   return (
     <div className="">
