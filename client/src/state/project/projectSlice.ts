@@ -142,6 +142,7 @@ export interface Report {
 export interface Project {
   id: string;
   projectName: string;
+  coverImage: string;
   clientName: string;
   location: string;
   startDate: Date;

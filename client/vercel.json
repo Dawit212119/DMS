@@ -4,5 +4,11 @@
       "NEXT_IGNORE_ESLINT": "1",
       "ESLINT_NO_DEV_ERRORS": "true"
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/.*",
+      "dest": "/index.html"
+    }
+  ]
 }
